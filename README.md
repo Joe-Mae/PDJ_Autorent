@@ -1,0 +1,217 @@
+# PDJ Autorent
+
+Plateforme de location de véhicules pour une agence unique à Lomé.
+Réservation en ligne, paiement et caution à l'agence.
+
+---
+
+## Ce que fait le site
+
+Le client cherche une voiture libre sur ses dates, voit le prix exact,
+réserve, dépose ses papiers, reçoit un rappel la veille et vient à l'agence
+avec ses originaux. **Rien n'est payé en ligne** : le site affiche le montant
+à préparer, la caution comprise, et l'encaissement se fait au guichet.
+
+## Les cinq règles qui structurent tout
+
+1. **Le site ne montre que ce qui est réellement libre.** Pas de véhicule
+   affiché « pas disponible » : ce n'est pas dans la base de données.
+2. **Le prix est figé à la réservation.** Si l'agence change ses tarifs le
+   lendemain, les réservations déjà prises gardent le leur.
+3. **Rien n'est confirmé automatiquement.** Un agent vérifie les documents,
+   puis confirme. C'est le seul garde-fou fiable contre les réservations
+   fantômes.
+4. **Le chauffeur est une ressource.** Trois chauffeurs, trois ventes par
+   période : la case se désactive d'elle-même quand il n'y en a plus.
+5. **L'arrondi des blocs de chauffeur se fait par jour calendaire.**
+   8 h → 19 h = 11 h = 3 blocs. C'est la règle la plus coûteuse à mal expliquer,
+   donc elle est affichée en permanence.
+
+## Installation
+
+```bash
+composer install
+npm install
+
+cp .env.example .env
+php artisan key:generate
+
+# MySQL
+php artisan migrate --seed
+
+npm run build      # ou : npm run dev
+php artisan serve
+```
+
+### Base de données
+
+MySQL 8 en production. Le jeu de démonstration a été validé sur MySQL et
+fonctionne aussi sur SQLite, pratique pour les tests.
+
+```env
+DB_CONNECTION=mysql
+DB_DATABASE=pdj_autorent
+DB_USERNAME=...
+DB_PASSWORD=...
+```
+
+### Comptes de démonstration
+
+| Rôle | E-mail | Mot de passe |
+|---|---|---|
+| Super admin | `super@pdj-autorent.tg` | `pdjautorent` |
+| Gestionnaire | `gestion@pdj-autorent.tg` | `pdjautorent` |
+| Agent d'accueil | `agent@pdj-autorent.tg` | `pdjautorent` |
+
+Cinq clients, quinze véhicules répartis sur six catégories, trois chauffeurs,
+une vingtaine de réservations passées pour que l'espace client et l'admin
+ne soient pas vides.
+
+## Organisation du code
+
+```
+app/
+├── Enums/              les statuts métier, une enum par notion
+│   ├── BookingStatus      en_attente → confirmée → en_cours → terminée, + refus, absence, annulation
+│   ├── VehicleStatus      disponible, réservé, en location, maintenance, hors service
+│   ├── DocumentType       pièce d'identité, permis, selfie, contrat, photo
+│   └── ...
+├── Services/           la logique métier, testable sans HTTP
+│   ├── AvailabilityService  quels véhicules sont libres, quels chauffeurs
+│   ├── PricingService       le prix, à partir de la catégorie et de la période
+│   ├── BookingService       création transactionnelle, transitions de statut
+│   ├── SettingsService      les réglages modifiables depuis l'admin
+│   ├── NotificationService  WhatsApp d'abord, SMS en secours
+│   └── ReferenceGenerator   PDJ-8F3K2A, sans caractères ambigus à l'oral
+├── Support/
+│   ├── BookingPeriod    le créneau, les jours, les blocs de chauffeur
+│   └── PriceQuote       le décompte, prêt à afficher
+├── Http/Controllers/
+│   ├── *                 le public et le tunnel de réservation
+│   ├── Admin/            l'administration
+│   ├── Account/          l'espace client
+│   └── Agent/            les écrans du guichet (tablette)
+└── Console/Commands/
+    ├── MarkNoShows         passe en « non présenté » après le délai de grâce
+    └── SendPickupReminders rappel J-1 sur WhatsApp
+```
+
+### Pourquoi les services existent
+
+Les trois règles les plus coûteuses à casser — la disponibilité, le prix et
+le cycle de vie d'une réservation — vivent dans des services, pas dans les
+contrôleurs. Une règle de métier se lit à un seul endroit, se teste sans
+HTTP, et ne se duplique pas entre l'admin, le tunnel et l'écran agent.
+
+```php
+// La disponibilité tient en une requête : le test de chevauchement est le
+// même partout, la seule variable est le battement.
+Booking::query()
+    ->active()
+    ->forPeriod($padded->startsAt, $padded->endsAt)
+    ->exists();
+```
+
+## Le tunnel de réservation
+
+Cinq écrans, un seul but par écran :
+
+| Étape | Écran | Ce que le client fait |
+|---|---|---|
+| 1 | Récapitulatif | choisit la période, active ou non le chauffeur |
+| 2 | Conducteur | son identité, son téléphone |
+| 3 | Vérification | tape le code reçu par WhatsApp |
+| 4 | Documents | dépose pièce d'identité, et permis seulement s'il conduit |
+| 5 | Confirmation | relit tout, envoie |
+
+Le prix est figé dès l'étape 1. Changer de dates ou ajouter un chauffeur le
+recalcule, mais rien ne part vers l'agence avant l'étape 5.
+
+### Avec chauffeur, le permis n'est pas demandé
+
+C'est le gros gain de conversion de l'option : le client n'a qu'une pièce à
+envoyer au lieu de deux, et la case chauffeur se pré-coche au-delà de cinq
+jours de location.
+
+## Disponibilité et anti-double réservation
+
+Un créneau est pris si `debut_demande < fin_existante ET fin_demandee > debut_existant`,
+créneau élargi du battement (2 h par défaut) avant confrontation.
+
+La création d'une réservation rejoue ce contrôle **à l'intérieur** d'un verrou
+de ligne sur le véhicule :
+
+```php
+DB::transaction(function () {
+    $locked = Vehicle::query()->whereKey($vehicle->id)->lockForUpdate()->firstOrFail();
+    $this->assertVehicleBookable($locked, $period);  // refait ici, pas avant
+    // ...
+});
+```
+
+L'index `(vehicle_id, starts_at, ends_at, status)` rend ce contrôle peu
+coûteux ; il n'y a pas de cache d'invalidité à gérer.
+
+## Les documents du client
+
+Stockés **hors de `public/`**, sur un disque privé, avec un nom de fichier
+aléatoire. Accès par URL signée valable 15 minutes. Suppression automatique
+12 mois après la location, ou sur demande.
+
+Un agent vérifie chaque pièce : conforme, non conforme, ou à revoir plus tard.
+Un refus exige un motif, parce qu'un client à qui on dit non sans
+explanation ne revient pas.
+
+## Les écrans du guichet
+
+Parcours de retrait verrouillé dans l'ordre, une action par écran :
+
+1. contrôle des originaux → 2. état des lieux (4 photos minimum) →
+3. encaissement de la location → 4. caution, sur un reçu séparé →
+5. contrat signé au doigt → 6. remise des clés
+
+On ne rend pas les clés avant d'avoir tout validé : c'est la seule façon que
+la clôture de journée corresponde à ce qui s'est passé.
+
+## Tâches planifiées
+
+```php
+// routes/console.php
+Schedule::command('bookings:mark-no-shows')->everyFifteenMinutes();
+Schedule::command('bookings:send-reminders')->dailyAt('09:00');
+Schedule::command('documents:purge')->dailyAt('03:00');
+```
+
+## Langues
+
+Toutes les pages publiques en français et en anglais, avec préfixe d'URL
+(`/fr/...`, `/en/...`). Un lien envoyé par WhatsApp s'ouvre dans la langue
+du lien, pas dans celle du destinataire.
+
+L'espace client reste en français pour la V1, avec un bandeau qui le dit.
+
+## Tests
+
+```bash
+php vendor/bin/phpunit tests/Unit
+```
+
+Le calcul des blocs de chauffeur et le test de chevauchement sont couverts
+cas par cas, parce que ce sont les deux endroits où une erreur se voit sur
+la facture du client.
+
+## Réglages
+
+Tout ce qui touche au métier est modifiable depuis `/admin/parametres`, sans
+redéploiement : horaires, battement, délai de grâce, tarif du bloc chauffeur,
+âge minimum, ancienneté du permis, vitesse maximale, cautions par catégorie,
+nombre de réservations actives, seuil de blocage pour absence.
+
+## Passer en production
+- [ ] `APP_ENV=production`, `APP_DEBUG=false`
+- [ ] `APP_URL` en `https://` et certificat TLS actif
+- [ ] `php artisan config:cache && php artisan route:cache && php artisan view:cache`
+- [ ] sauvegardes MySQL quotidiennes, rétention 30 jours
+- [ ] brancher la passerelle WhatsApp dans `NotificationService::raw()`
+- [ ] photos réelles de la flotte et de la façade de l'agence
+- [ ] changer le mot de passe des comptes de démonstration, ou les supprimer

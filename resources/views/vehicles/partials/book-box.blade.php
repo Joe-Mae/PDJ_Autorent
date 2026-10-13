@@ -1,0 +1,76 @@
+@php
+    /**
+     * Le seul appel à l'action de la fiche. Un bouton, pas deux : « Réserver »
+     * mène directement à l'étape 1 du tunnel avec les dates déjà figées.
+     *
+     * @var bool $sticky
+     */
+    $sticky = $sticky ?? false;
+    $money = fn (int $amount) => number_format($amount, 0, ' ', ' ').' F CFA';
+    $query = array_filter([
+        'avec_chauffeur' => $quote->withDriver ? 1 : null,
+    ], fn ($value) => $value !== null);
+@endphp
+
+@if (! $isFree)
+    <div class="alert alert-warning">
+        <i class="bi bi-calendar-x me-1"></i>{{ __('vehicle.not_free') }}
+    </div>
+@elseif ($sticky)
+    <div class="sticky-book">
+        <div>
+            <div class="label">{{ $quote->days }} {{ __('general.day_short') }}{{ $quote->days > 1 ? 's' : '' }}</div>
+            <div class="amount">{{ $money($quote->priceTotal) }}</div>
+        </div>
+        <form action="{{ route('booking.create', ['locale' => $locale]) }}" method="POST" class="flex-grow-1">
+            @csrf
+            <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
+            <input type="hidden" name="du" value="{{ $period->startsAtDate() }}">
+            <input type="hidden" name="au" value="{{ $period->endsAtDate() }}">
+            <input type="hidden" name="heure_depart" value="{{ $period->startsAtHour() }}">
+            <input type="hidden" name="heure_retour" value="{{ $period->endsAtHour() }}">
+            @if ($quote->withDriver)
+                <input type="hidden" name="avec_chauffeur" value="1">
+            @endif
+            <button type="submit" class="btn btn-primary w-100">{{ __('general.book') }}</button>
+        </form>
+    </div>
+@else
+    <div class="pdj-card">
+        <div class="section-title">{{ __('vehicle.period') }}</div>
+        <p class="small mb-2">
+            {{ $period->startsAt->translatedFormat('D d M') }} {{ sprintf('%02dh00', $period->startsAtHour()) }}
+            <i class="bi bi-arrow-right mx-1"></i>
+            {{ $period->endsAt->translatedFormat('D d M') }} {{ sprintf('%02dh00', $period->endsAtHour()) }}
+        </p>
+
+        @if ($quote->withDriver)
+            <div class="driver-option mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-person-badge"></i>
+                    <strong class="small">{{ __('driver.badge') }}</strong>
+                </div>
+                <div class="hint mt-1">
+                    {{ $quote->days }} {{ __('general.days') }} ×
+                    {{ number_format($quote->driverDailyPrice, 0, ' ', ' ') }} F CFA —
+                    {{ number_format($quote->priceDriver, 0, ' ', ' ') }} F CFA
+                </div>
+            </div>
+        @endif
+
+        <form action="{{ route('booking.create', ['locale' => $locale]) }}" method="POST">
+            @csrf
+            <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
+            <input type="hidden" name="du" value="{{ $period->startsAtDate() }}">
+            <input type="hidden" name="au" value="{{ $period->endsAtDate() }}">
+            <input type="hidden" name="heure_depart" value="{{ $period->startsAtHour() }}">
+            <input type="hidden" name="heure_retour" value="{{ $period->endsAtHour() }}">
+            @if ($quote->withDriver)
+                <input type="hidden" name="avec_chauffeur" value="1">
+            @endif
+            <button type="submit" class="btn btn-primary btn-lg w-100">{{ __('general.book') }}</button>
+        </form>
+
+        <p class="small text-muted text-center mt-2 mb-0">{{ __('general.no_online_payment') }}</p>
+    </div>
+@endif

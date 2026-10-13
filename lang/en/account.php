@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'hello' => 'Hello :name',
+    'edit_profile' => 'My profile',
+    'my_bookings' => 'My bookings',
+    'my_documents' => 'My documents',
+    'my_profile' => 'My profile',
+    'see_details' => 'See details',
+    'history' => 'History',
+    'see_all' => 'See all',
+    'no_history' => 'No rental yet.',
+    'no_upcoming' => 'You have no upcoming booking.',
+    'no_booking' => 'No booking.',
+    'no_document' => 'No document.',
+    'documents_ok' => 'Your documents are there. Nothing to send before you come.',
+    'outstanding' => ':amount F CFA still to pay at the agency.',
+    'in_days' => 'In :days days',
+    'leave_review' => 'Leave a review',
+    'send_review' => 'Send my review',
+    'documents_intro' => 'Your verified documents are reused automatically: no need to send them again.',
+    'download' => 'Download',
+    'identity' => 'My identity',
+    'current_password' => 'Current password',
+];

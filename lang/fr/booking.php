@@ -1,0 +1,126 @@
+<?php
+
+return [
+    'status' => [
+        'en_attente' => 'En attente de validation',
+        'confirmee' => 'Confirmée',
+        'en_cours' => 'En cours',
+        'terminee' => 'Terminée',
+        'annulee' => 'Annulée',
+        'refusee' => 'Refusée',
+        'non_presente' => 'Non présenté',
+    ],
+
+    'status_reason' => [
+        'no_show' => 'Client absent au délai de grâce',
+    ],
+
+    'block_reason' => [
+        'maintenance' => 'Maintenance',
+        'controle_technique' => 'Contrôle technique',
+        'accident' => 'Accident / réparation',
+        'detente' => 'Détente planifiée',
+        'interne' => 'Usage interne',
+    ],
+
+    'step' => [
+        'summary' => 'Récapitulatif',
+        'contact' => 'Conducteur',
+        'verify' => 'Vérification',
+        'documents' => 'Documents',
+        'review' => 'Confirmation',
+    ],
+
+    'line' => [
+        'rental' => 'Location :days jours',
+        'driver' => 'Chauffeur :blocks blocs de 4 h',
+    ],
+
+    'error' => [
+        'vehicle_not_bookable' => 'Ce véhicule n\'est pas disponible à la location pour le moment.',
+        'vehicle_just_taken' => 'Cette voiture vient d\'être réservée pour ces dates. Voici les alternatives.',
+        'vehicle_in_maintenance' => 'Ce véhicule est bloqué à l\'atelier sur cette période.',
+        'no_driver_available' => 'Pas de chauffeur disponible sur ces dates.',
+        'account_blocked' => 'Votre compte est bloqué après plusieurs absences. Appelez l\'agence au :phone pour le débloquer.',
+        'too_many_bookings' => 'Vous avez déjà :max réservation(s) en cours. Annulez-en une ou contactez l\'agence.',        'too_young' => 'Il faut avoir :age ans révolus pour louer un véhicule.',
+        'invalid_transition' => 'On ne peut pas passer de « :from » à « :to ».',
+        'cannot_cancel' => 'Cette réservation est « :status » : elle ne peut plus être annulée en ligne.',
+        'documents_missing' => 'Il manque un document. Returnnez à l\'étape précédente pour le déposer.',
+        'outside_opening_hours' => 'L\'agence est ouverte de :open à :close. Choisissez une heure dans cette plage.',
+        'code_expired' => 'Le code a expiré. Demandez-en un nouveau.',
+        'code_invalid' => 'Code incorrect. Il vous reste :left tentative(s).',
+        'code_sent' => 'Code envoyé au :phone.',
+        'no_account' => 'Votre compte est introuvable. Recommencer l\'étape précédente.',
+        'min_license' => 'Votre permis doit avoir au moins :years an(s) d\'ancienneté.',
+    ],
+
+    'cancelled_ok' => 'Réservation annulée. Aucun frais ne vous est facturé.',
+
+    'summary_title' => 'Votre réservation',
+    'cost_summary' => 'Résumé du coût',
+    'change_vehicle' => 'Changer de voiture',
+    'update_price' => 'Mettre à jour le prix',
+    'continue' => 'Continuer',
+
+    'contact_title' => 'Qui conduit ?',
+    'contact_intro' => 'Le nom doit être exactement celui de votre pièce d\'identité et de votre permis.',
+    'field_first_name' => 'Prénom',
+    'field_last_name' => 'Nom',
+    'field_birth_date' => 'Date de naissance',
+    'field_birth_date_hint' => 'Il faut avoir :age ans révolus. L\'âge est vérifié à partir de votre pièce d\'identité.',
+    'field_phone' => 'Téléphone',
+    'field_phone_hint' => 'C\'est par là que nous vous envoyons la confirmation et le rappel de la veille.',
+    'field_email' => 'E-mail',
+    'field_email_hint' => 'Utile si vous voulez un justificatif écrit. Facultatif.',
+    'field_password' => 'Mot de passe',
+    'field_password_hint' => '8 caractères minimum. Vous pourrez aussi le définir plus tard.',
+    'field_password_confirm' => 'Confirmation',
+    'password_intro' => 'Vous n\'avez pas encore de compte ? Choisissez un mot de passe pour suivre vos réservations.',
+    'optional' => 'facultatif',
+
+    'verify_title' => 'Vérifions votre numéro',
+    'verify_intro' => 'Un code à 6 chiffres vient d\'être envoyé au :phone.',
+    'verify_cta' => 'Vérifier mon numéro',
+    'verify_why' => 'On vérifie le numéro parce que c\'est par WhatsApp que vous recevez votre confirmation, votre rappel et votre bon de réservation. Sans numéro vérifié, le rappel ne part pas.',
+    'code_digit' => 'Chiffre :number',
+    'code_sent' => 'Code renvoyé au :phone.',
+    'resend_whatsapp' => 'Renvoyer sur WhatsApp',
+    'resend_sms' => 'Renvoyer par SMS',
+    'phone_verified' => 'Numéro vérifié',
+
+    'documents_title' => 'Vos documents',
+    'documents_intro' => 'Photo ou scan, c\'est juste pour gagner du temps au comptoir. Les originaux restent obligatoires.',
+    'missing_documents' => 'Il manque encore :',
+    'back_to_documents' => 'Retour aux documents',
+
+    'review_title' => 'Vérifions tout',
+    'review_intro' => 'Un dernier coup d\'œil avant d\'envoyer.',
+    'to_pay' => 'à payer à l\'agence',
+
+    'confirm_cta' => 'Confirmer ma réservation',
+    'confirm_note' => 'Aucun paiement maintenant. Un agent vérifie vos documents et confirme dans les 2 heures.',
+
+    'confirmation_title' => 'Votre réservation est enregistrée',
+    'confirmation_meta' => 'Réservation enregistrée — PDJ Autorent Lomé',
+    'confirmation_intro' => 'Un agent vérifie vos documents. Vous savez dans les 2 heures si c\'est confirmé.',
+    'reference' => 'Référence',
+    'download_receipt' => 'Télécharger le bon de réservation',
+    'what_happens_next' => 'La suite',
+    'next_steps' => 'Vous recevez un SMS et un WhatsApp dès que l\'agent a vérifié vos papiers. La veille, un rappel vous demande de confirmer votre venue. Le matin du retrait, vous présentez vos originaux et vous réglez à l\'agence.',
+    'bring_with_you' => 'À présenter au retrait',
+    'original' => '(original)',
+    'amount_breakdown' => 'location + caution',
+    'agency' => 'L\'agence',
+    'open_maps' => 'Ouvrir dans Google Maps',
+
+    'driver_blocks' => 'blocs de :hours h',
+    'cancel_confirm' => 'Annuler cette réservation ? L\'annulation est gratuite, aucun frais ne vous sera facturé.',
+    'cancel_free' => 'Annuler gratuitement',
+
+    'presence_confirmed' => 'Merci, votre venue est enregistrée. À bientôt !',
+
+    'reminder' => [
+        'license_needed' => 'n\'oubliez pas votre permis de conduire',
+        'no_license_needed' => 'avec un chauffeur, pas besoin du permis — pensez juste à votre pièce d\'identité',
+    ],
+];

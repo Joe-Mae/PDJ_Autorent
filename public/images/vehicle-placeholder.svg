@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" role="img" aria-label="Véhicule de l'agence">
+  <title>Véhicule de l'agence</title>
+  <defs>
+    <linearGradient id="ciel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f2f8f5"/>
+      <stop offset="55%" stop-color="#e2efe8"/>
+      <stop offset="100%" stop-color="#d3e6dc"/>
+    </linearGradient>
+    <linearGradient id="route" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0a6e4c" stop-opacity="0"/>
+      <stop offset="45%" stop-color="#0a6e4c" stop-opacity=".16"/>
+      <stop offset="100%" stop-color="#0a6e4c" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="vitre" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity=".95"/>
+      <stop offset="100%" stop-color="#cfe4da" stop-opacity=".9"/>
+    </linearGradient>
+    <linearGradient id="carrosserie" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0f8a60"/>
+      <stop offset="100%" stop-color="#075138"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="50%" cy="58%" r="52%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity=".85"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#ciel)"/>
+  <rect width="800" height="500" fill="url(#halo)"/>
+
+  <!-- Trame de fond : rappelle un fond de carte, sans jamais shouting. -->
+  <g stroke="#0a6e4c" stroke-opacity=".07" stroke-width="1.5">
+    <path d="M0 120 H800 M0 200 H800 M0 280 H800 M0 360 H800"/>
+    <path d="M110 0 V500 M250 0 V500 M390 0 V500 M530 0 V500 M670 0 V500"/>
+  </g>
+
+  <rect x="0" y="330" width="800" height="42" fill="url(#route)"/>
+
+  <!-- Silhouette : une berline de profil, lisible à petite taille. -->
+  <g fill="none" stroke="url(#carrosserie)" stroke-width="11" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M128 336 L128 292 Q128 274 150 268 L206 210 Q226 196 256 196 L496 196 Q532 196 556 218 L620 274 L672 288 Q694 296 694 320 L694 336 Z"/>
+  </g>
+
+  <path d="M150 268 L206 210 Q226 196 256 196 L340 196 L340 268 Z" fill="url(#vitre)" stroke="#0a6e4c" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M356 196 L496 196 Q530 196 552 216 L612 268 L356 268 Z" fill="url(#vitre)" stroke="#0a6e4c" stroke-width="7" stroke-linejoin="round"/>
+
+  <!-- Le bande jaune : le rappel du drapeau, sur la ligne de caisse. -->
+  <path d="M128 300 H694" stroke="#ffc72c" stroke-width="7" stroke-linecap="round"/>
+
+  <g fill="#0a6e4c">
+    <circle cx="238" cy="338" r="40"/>
+    <circle cx="600" cy="338" r="40"/>
+  </g>
+  <g fill="#eaf4ef">
+    <circle cx="238" cy="338" r="16"/>
+    <circle cx="600" cy="338" r="16"/>
+  </g>
+
+  <!-- Reflet au sol : ancre le véhicule et évite l'effet « sticker ». -->
+  <ellipse cx="410" cy="392" rx="286" ry="16" fill="#0a6e4c" opacity=".10"/>
+</svg>
