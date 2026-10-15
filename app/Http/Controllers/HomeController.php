@@ -53,16 +53,6 @@ class HomeController extends Controller
                 ->filter();
         }
 
-        if ($heroVehicles->isEmpty()) {
-            $heroVehicles = Vehicle::query()
-                ->bookable()
-                ->whereHas('media', fn (Builder $query) => $query->where('collection_name', Vehicle::MEDIA_GALLERY))
-                ->with(['media' => fn (MorphMany $query) => $query->where('collection_name', Vehicle::MEDIA_GALLERY)])
-                ->orderByDesc('id')
-                ->limit(4)
-                ->get();
-        }
-
         return view('home', [
             'banners' => Banner::query()->live('home_hero')->get(),
             'featured' => Vehicle::query()

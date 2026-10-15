@@ -37,6 +37,8 @@ class BookingController extends Controller
                 ->when($request->date('au'), fn ($q, $d) => $q->whereDate('starts_at', '<=', $d))
                 ->when($request->string('q')->toString(), function ($q, $term) {
                     $q->where(fn ($sub) => $sub->where('reference', 'like', "%{$term}%")
+                        ->orWhere('customer_phone', 'like', "%{$term}%")
+                        ->orWhere('customer_name', 'like', "%{$term}%")
                         ->orWhereHas('user', fn ($u) => $u->where('phone', 'like', "%{$term}%")
                             ->orWhere('last_name', 'like', "%{$term}%")));
                 })

@@ -14,6 +14,15 @@
     $money = fn (int $amount) => number_format($amount, 0, ' ', ' ').' F CFA';
     $quote = app(\App\Services\PricingService::class)->quote($vehicle->category, $period, $withDriver);
     $params = request()->query();
+    $bookingParams = [
+        'locale' => $locale,
+        'vehicle' => $vehicle,
+        'du' => $period->startsAtDate(),
+        'au' => $period->endsAtDate(),
+        'heure_depart' => $period->startsAtHour(),
+        'heure_retour' => $period->endsAtHour(),
+        'avec_chauffeur' => $withDriver ? 1 : null,
+    ];
 @endphp
 
 <div class="vehicle-row">
@@ -58,9 +67,9 @@
             {{ __('general.for_period', ['days' => $quote->days]) }}
         </div>
         <div class="deposit">{{ __('general.deposit', ['price' => $money($quote->deposit)]) }}</div>
-        <a class="btn btn-primary btn-sm w-100 mt-2 d-none d-sm-inline-flex"
-           href="{{ route('vehicles.show', ['locale' => $locale, 'vehicle' => $vehicle]) }}?{{ http_build_query($params) }}">
-            {{ __('general.see_vehicle') }}
+        <a class="btn btn-primary btn-sm w-100 mt-2"
+           href="{{ route('booking.guest.create', $bookingParams) }}">
+            {{ __('general.book') }}
         </a>
     </div>
 </div>

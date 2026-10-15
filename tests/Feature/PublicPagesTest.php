@@ -61,15 +61,35 @@ class PublicPagesTest extends TestCase
             ->assertSee($fleetLabel);
     }
 
+    public function test_navigation_ne_displays_plus_le_bouton_de_connexion(): void
+    {
+        $this->get('/fr')
+            ->assertDontSee('href="'.route('login', ['locale' => 'fr']).'"', escape: false)
+            ->assertDontSee(__('nav.login'));
+    }
+
+    public function test_la_liste_garage_ne_propose_pas_de_bouton_voir_cette_voiture(): void
+    {
+        $this->vehicle();
+
+        $this->get('/fr/vehicules')
+            ->assertSee(__('general.book'))
+            ->assertDontSee(__('general.see_vehicle'));
+    }
+
     public function test_homepage_renders_an_accessible_photo_carousel_from_vehicle_gallery(): void
     {
         Storage::fake('fleet');
+        $vehicleIds = [];
 
         foreach (['hero-one.jpg', 'hero-two.jpg'] as $photo) {
             $vehicle = $this->vehicle();
             $vehicle->addMedia(UploadedFile::fake()->image($photo))
                 ->toMediaCollection(Vehicle::MEDIA_GALLERY, 'fleet');
+            $vehicleIds[] = $vehicle->id;
         }
+
+        $this->settings()->put('site.hero_vehicle_ids', $vehicleIds);
 
         $this->get('/fr')
             ->assertSee('class="pdj-hero home-hero"', escape: false)
@@ -82,6 +102,21 @@ class PublicPagesTest extends TestCase
             ->assertSee('Photo précédente')
             ->assertSee('Photo suivante')
             ->assertSee('Mettre le diaporama en pause');
+    }
+
+    public function test_homepage_does_not_add_vehicle_photos_to_an_unconfigured_slideshow(): void
+    {
+        Storage::fake('fleet');
+        $vehicle = $this->vehicle();
+        $vehicle->addMedia(UploadedFile::fake()->image('not-selected.jpg'))
+            ->toMediaCollection(Vehicle::MEDIA_GALLERY, 'fleet');
+        $this->settings()->put('site.hero_vehicle_ids', []);
+        $this->settings()->put('site.hero_uploaded_images', []);
+
+        $this->get('/fr')
+            ->assertOk()
+            ->assertDontSee('data-hero-slide', escape: false)
+            ->assertDontSee('data-hero-next', escape: false);
     }
 
     public static function contactLocales(): array

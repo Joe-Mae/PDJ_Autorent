@@ -6,6 +6,7 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BookingDocumentController;
 use App\Http\Controllers\BookingReceiptController;
 use App\Http\Controllers\DriverOnlyBookingController;
+use App\Http\Controllers\GuestBookingController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\PhoneVerificationController;
@@ -34,7 +35,18 @@ Route::prefix('{locale}')
 
         Route::get('/vehicules', [VehicleController::class, 'index'])->name('vehicles.index');
         Route::get('/vehicules/categorie/{category}', [VehicleController::class, 'index'])->name('vehicles.category');
+        Route::get('/vehicules/{vehicle}/devis', [GuestBookingController::class, 'quote'])
+            ->middleware('throttle:60,1')
+            ->name('booking.guest.quote');
+        Route::get('/vehicules/{vehicle}/reserver-sans-compte', [GuestBookingController::class, 'create'])->name('booking.guest.create');
+        Route::post('/vehicules/{vehicle}/reserver-sans-compte', [GuestBookingController::class, 'store'])
+            ->middleware('throttle:5,1')
+            ->name('booking.guest.store');
         Route::get('/vehicules/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
+        Route::get('/demande-reservation/{booking}/{token}', [GuestBookingController::class, 'confirmation'])
+            ->middleware('throttle:30,1')
+            ->where('token', '[A-Za-z0-9]{64}')
+            ->name('booking.guest.confirmation');
         Route::post('/vehicules/filtres', [VehicleController::class, 'filter'])->name('vehicles.filter');
 
         // ── Tunnel de réservation ────────────────────────────────────────────

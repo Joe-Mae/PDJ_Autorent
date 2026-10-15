@@ -1492,6 +1492,133 @@ body.public-site {
         color: var(--pdj-public-text);
     }
 
+    .driver-page {
+        width: 100%;
+        max-width: 36rem;
+        margin-inline: auto;
+
+        &__header {
+            margin-bottom: 1.5rem;
+        }
+
+        &__rate {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.65rem 0.9rem;
+            border-radius: 0.65rem;
+            background: #e6f4ed;
+            color: #087744;
+            font-size: 0.9rem;
+        }
+
+        &__tabs {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 0.25rem;
+            padding: 0.25rem;
+            border-radius: 0.75rem;
+            background: #eaeae8;
+
+            .nav-item {
+                flex: 1 1 0;
+                min-width: 0;
+            }
+
+            .nav-link {
+                width: 100%;
+                height: 100%;
+                padding: 0.7rem 0.5rem;
+                border-radius: 0.55rem;
+                color: #5c6269;
+                font-size: 0.9rem;
+                font-weight: 600;
+
+                &.active {
+                    background: #151515;
+                    color: #fff;
+                }
+            }
+        }
+
+        &__card {
+            padding: 1.35rem;
+            border: 1px solid #e3e5e8;
+            border-top: 4px solid var(--pdj-public-yellow);
+            border-radius: 1rem;
+            background: #fff;
+            box-shadow: 0 12px 34px rgba(20, 22, 26, 0.06);
+
+            .search-panel__label {
+                color: #715600;
+            }
+        }
+
+        &__date-group {
+            margin-bottom: 1.4rem;
+
+            .form-label {
+                color: #53606a;
+            }
+
+            .form-control,
+            .form-select {
+                min-height: 3rem;
+            }
+        }
+
+        &__solo-rates {
+            display: grid;
+            gap: 0.5rem;
+            padding: 0.9rem;
+            border-radius: 0.75rem;
+            background: #e6f4ed;
+            color: #087744;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        &__price-preview {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            min-height: 3.25rem;
+            padding: 0.85rem 1rem;
+            border-radius: 0.75rem;
+            background: #e6f4ed;
+            color: #171a1e;
+            font-size: 0.9rem;
+
+            strong {
+                flex-shrink: 0;
+                color: #087744;
+                font-size: 1rem;
+            }
+        }
+
+        &__price-empty {
+            color: #53606a;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .driver-page {
+            &__card {
+                padding: 1.1rem;
+            }
+
+            &__tabs .nav-link {
+                font-size: 0.82rem;
+            }
+
+            &__price-preview {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+        }
+    }
+
     a:not(.btn):not(.pdj-logo) {
         color: var(--pdj-site-brand, #0a6e4c);
 

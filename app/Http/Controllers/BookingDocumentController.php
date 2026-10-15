@@ -73,6 +73,8 @@ class BookingDocumentController extends Controller
 
     private function guardOwnership(Request $request, Booking $booking): void
     {
+        abort_if($booking->guest_access_token_hash !== null, 404);
+
         $user = $request->user();
 
         if ($user === null) {

@@ -22,18 +22,16 @@
             <div class="label">{{ $quote->days }} {{ __('general.day_short') }}{{ $quote->days > 1 ? 's' : '' }}</div>
             <div class="amount">{{ $money($quote->priceTotal) }}</div>
         </div>
-        <form action="{{ route('booking.create', ['locale' => $locale]) }}" method="POST" class="flex-grow-1">
-            @csrf
-            <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
-            <input type="hidden" name="du" value="{{ $period->startsAtDate() }}">
-            <input type="hidden" name="au" value="{{ $period->endsAtDate() }}">
-            <input type="hidden" name="heure_depart" value="{{ $period->startsAtHour() }}">
-            <input type="hidden" name="heure_retour" value="{{ $period->endsAtHour() }}">
-            @if ($quote->withDriver)
-                <input type="hidden" name="avec_chauffeur" value="1">
-            @endif
-            <button type="submit" class="btn btn-primary w-100">{{ __('general.book') }}</button>
-        </form>
+        <a class="btn btn-primary w-100"
+           href="{{ route('booking.guest.create', [
+               'locale' => $locale,
+               'vehicle' => $vehicle,
+               'du' => $period->startsAtDate(),
+               'au' => $period->endsAtDate(),
+               'heure_depart' => $period->startsAtHour(),
+               'heure_retour' => $period->endsAtHour(),
+               'avec_chauffeur' => $quote->withDriver ? 1 : null,
+           ]) }}">{{ __('general.book') }}</a>
     </div>
 @else
     <div class="pdj-card">
@@ -58,18 +56,16 @@
             </div>
         @endif
 
-        <form action="{{ route('booking.create', ['locale' => $locale]) }}" method="POST">
-            @csrf
-            <input type="hidden" name="vehicle_id" value="{{ $vehicle->id }}">
-            <input type="hidden" name="du" value="{{ $period->startsAtDate() }}">
-            <input type="hidden" name="au" value="{{ $period->endsAtDate() }}">
-            <input type="hidden" name="heure_depart" value="{{ $period->startsAtHour() }}">
-            <input type="hidden" name="heure_retour" value="{{ $period->endsAtHour() }}">
-            @if ($quote->withDriver)
-                <input type="hidden" name="avec_chauffeur" value="1">
-            @endif
-            <button type="submit" class="btn btn-primary btn-lg w-100">{{ __('general.book') }}</button>
-        </form>
+        <a class="btn btn-primary btn-lg w-100"
+           href="{{ route('booking.guest.create', [
+               'locale' => $locale,
+               'vehicle' => $vehicle,
+               'du' => $period->startsAtDate(),
+               'au' => $period->endsAtDate(),
+               'heure_depart' => $period->startsAtHour(),
+               'heure_retour' => $period->endsAtHour(),
+               'avec_chauffeur' => $quote->withDriver ? 1 : null,
+           ]) }}">{{ __('general.book') }}</a>
 
         <p class="small text-muted text-center mt-2 mb-0">{{ __('general.no_online_payment') }}</p>
     </div>

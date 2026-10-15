@@ -65,11 +65,6 @@
                             <i class="bi bi-box-arrow-right"></i>
                         </button>
                     </form>
-                @else
-                    <a class="btn btn-outline-primary d-none d-sm-inline-flex align-items-center"
-                       href="{{ route('login', ['locale' => $locale]) }}">
-                        {{ __('nav.login') }}
-                    </a>
                 @endauth
 
                 <button class="btn btn-primary d-lg-none" type="button"
@@ -111,10 +106,6 @@
                     <i class="bi bi-box-arrow-right"></i>{{ __('nav.logout') }}
                 </button>
             </form>
-        @else
-            <a class="btn btn-outline-primary" href="{{ route('login', ['locale' => $locale]) }}">
-                {{ __('nav.login') }}
-            </a>
         @endauth
     </div>
 </div>

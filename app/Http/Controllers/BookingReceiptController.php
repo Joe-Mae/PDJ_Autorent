@@ -21,6 +21,11 @@ class BookingReceiptController extends Controller
     public function __invoke(Request $request, string $locale, Booking $booking): Response
     {
         $user = $request->user();
+
+        if ($booking->guest_access_token_hash !== null) {
+            abort_unless($user?->isStaff() ?? false, 404);
+        }
+
         $period = BookingPeriod::fromDates(
             $booking->starts_at->toImmutable(),
             $booking->ends_at->toImmutable(),

@@ -67,33 +67,53 @@
             <h2 class="h6 fw-bold mb-3">{{ __('admin.client') }}</h2>
             <table class="table admin-table mb-0">
                 <tbody>
-                    <tr><td>{{ __('booking.field_first_name') }}</td><td class="text-end">{{ $booking->user?->first_name }}</td></tr>
-                    <tr><td>{{ __('booking.field_last_name') }}</td><td class="text-end">{{ $booking->user?->last_name }}</td></tr>
+                    @if ($booking->user)
+                        <tr><td>{{ __('booking.field_first_name') }}</td><td class="text-end">{{ $booking->user->first_name }}</td></tr>
+                        <tr><td>{{ __('booking.field_last_name') }}</td><td class="text-end">{{ $booking->user->last_name }}</td></tr>
+                    @else
+                        <tr><td>{{ __('booking.guest.name') }}</td><td class="text-end">{{ $booking->customer_name ?? '—' }}</td></tr>
+                    @endif
                     <tr>
                         <td>{{ __('booking.field_phone') }}</td>
                         <td class="text-end">
-                            <a href="tel:{{ $booking->user?->phone }}">{{ $booking->user?->phone }}</a>
+                            @php($clientPhone = $booking->user?->phone ?? $booking->customer_phone)
+                            @if ($clientPhone)
+                                <a href="tel:{{ $clientPhone }}">{{ $clientPhone }}</a>
+                            @else
+                                —
+                            @endif
                             @if ($booking->hasPhoneVerified())
                                 <i class="bi bi-patch-check-fill text-success"></i>
-                            @else
+                            @elseif ($booking->user)
                                 <span class="badge bg-warning text-dark">{{ __('admin.phone_unverified') }}</span>
                             @endif
                         </td>
                     </tr>
-                    <tr>
-                        <td>{{ __('booking.field_birth_date') }}</td>
-                        <td class="text-end">{{ $booking->user?->birth_date?->format('d/m/Y') }} ({{ $booking->user?->age() }} ans)</td>
-                    </tr>
-                    <tr>
-                        <td>{{ __('admin.absences') }}</td>
-                        <td class="text-end">
-                            @if ($booking->user?->isBlocked())
-                                <span class="badge bg-danger">{{ __('admin.blocked') }}</span>
-                            @else
-                                {{ $booking->user?->no_show_count ?? 0 }}
-                            @endif
-                        </td>
-                    </tr>
+                    @if ($booking->user)
+                        <tr>
+                            <td>{{ __('booking.field_email') }}</td>
+                            <td class="text-end">{{ $booking->user->email }}</td>
+                        </tr>
+                        <tr>
+                            <td>{{ __('booking.field_birth_date') }}</td>
+                            <td class="text-end">{{ $booking->user->birth_date?->format('d/m/Y') }} ({{ $booking->user->age() }} ans)</td>
+                        </tr>
+                        <tr>
+                            <td>{{ __('admin.absences') }}</td>
+                            <td class="text-end">
+                                @if ($booking->user->isBlocked())
+                                    <span class="badge bg-danger">{{ __('admin.blocked') }}</span>
+                                @else
+                                    {{ $booking->user->no_show_count }}
+                                @endif
+                            </td>
+                        </tr>
+                    @else
+                        <tr><td>{{ __('booking.field_email') }}</td><td class="text-end">{{ $booking->customer_email ?? '—' }}</td></tr>
+                        @if ($booking->customer_comment)
+                            <tr><td>{{ __('booking.guest.comment') }}</td><td class="text-end">{{ $booking->customer_comment }}</td></tr>
+                        @endif
+                    @endif
                 </tbody>
             </table>
         </div>

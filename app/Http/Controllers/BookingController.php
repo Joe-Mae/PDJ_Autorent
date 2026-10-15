@@ -399,6 +399,12 @@ class BookingController extends Controller
 
         $langue = $booking->user?->preferred_locale === 'en' ? 'en' : $locale;
 
+        if ($booking->guest_access_token_hash !== null) {
+            return redirect()
+                ->route('home', ['locale' => $langue])
+                ->with('status', __('booking.presence_confirmed'));
+        }
+
         return redirect()
             ->route('booking.show', ['locale' => $langue, 'booking' => $booking])
             ->with('status', __('booking.presence_confirmed'));
@@ -418,6 +424,8 @@ class BookingController extends Controller
 
     private function guardOwnership(Request $request, Booking $booking): void
     {
+        abort_if($booking->guest_access_token_hash !== null, 404);
+
         $user = $request->user();
 
         if ($user === null) {

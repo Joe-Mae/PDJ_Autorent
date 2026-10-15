@@ -71,8 +71,11 @@
                     </td>
                     <td class="small">{{ $booking->vehicle->displayName() }}</td>
                     <td class="small">
-                        {{ $booking->user?->displayName() ?? '—' }}<br>
-                        <a class="text-muted" href="tel:{{ $booking->user?->phone }}">{{ $booking->user?->phone }}</a>
+                        {{ $booking->user?->displayName() ?? $booking->customer_name ?? '—' }}<br>
+                        @php($clientPhone = $booking->user?->phone ?? $booking->customer_phone)
+                        @if ($clientPhone)
+                            <a class="text-muted" href="tel:{{ $clientPhone }}">{{ $clientPhone }}</a>
+                        @endif
                     </td>
                     <td class="text-end small fw-semibold">{{ number_format($booking->price_total, 0, ' ', ' ') }}</td>
                     <td><span class="badge bg-{{ $booking->status->color() }}">{{ $booking->status->label() }}</span></td>

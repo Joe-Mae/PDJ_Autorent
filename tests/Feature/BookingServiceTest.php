@@ -9,6 +9,7 @@ use App\Models\Booking;
 use App\Models\BookingBlock;
 use App\Models\User;
 use App\Services\BookingService;
+use App\Services\ReferenceGenerator;
 use App\Support\BookingPeriod;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -420,6 +421,50 @@ class BookingServiceTest extends TestCase
         $finished = $this->bookings()->finish($started, $agent, 43_250, 'full');
         $this->assertSame(BookingStatus::Terminee, $finished->status);
         $this->assertSame(43_250, $finished->mileage_at_return);
+    }
+
+    public function test_refuse_de_confirmer_si_le_vehicule_est_devenu_indisponible(): void
+    {
+        $agent = $this->staff();
+        $vehicle = $this->vehicle();
+        $period = $this->period(4);
+        $referenceGenerator = app(ReferenceGenerator::class);
+        $dailyPrice = (int) $vehicle->category->daily_price;
+        $bookingAttributes = [
+            'user_id' => null,
+            'vehicle_id' => $vehicle->id,
+            'category_id' => $vehicle->category_id,
+            'starts_at' => $period->startsAt,
+            'ends_at' => $period->endsAt,
+            'days' => $period->days(),
+            'pickup_hour' => 8,
+            'return_hour' => 19,
+            'with_driver' => false,
+            'driver_blocks' => 0,
+            'driver_hours' => 0,
+            'daily_price' => $dailyPrice,
+            'price_rental' => $dailyPrice * $period->days(),
+            'price_driver' => 0,
+            'price_total' => $dailyPrice * $period->days(),
+            'deposit_amount' => $vehicle->category->deposit(),
+            'currency' => 'XOF',
+            'holiday_days' => 0,
+            'status' => BookingStatus::EnAttente,
+            'public_token' => bin2hex(random_bytes(20)),
+        ];
+        $booking = Booking::query()->create([
+            ...$bookingAttributes,
+            'reference' => $referenceGenerator->generate(),
+        ]);
+        Booking::query()->create([
+            ...$bookingAttributes,
+            'reference' => $referenceGenerator->generate(),
+            'public_token' => bin2hex(random_bytes(20)),
+        ]);
+
+        $this->expectException(BookingException::class);
+
+        $this->bookings()->confirm($booking, $agent);
     }
 
     public function test_refuse_de_demarrer_une_reservation_non_confirmee(): void

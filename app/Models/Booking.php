@@ -25,11 +25,15 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
     'pickup_notes', 'return_notes',
     'phone_verified_at', 'reminder_sent_at', 'client_confirmed_presence_at',
     'grace_expires_at', 'public_token',
+    'customer_name', 'customer_phone', 'customer_email', 'customer_comment',
+    'guest_access_token_hash',
 ])]
 class Booking extends Model
 {
     /** @use HasFactory<BookingFactory> */
     use HasFactory;
+
+    protected $hidden = ['guest_access_token_hash'];
 
     public function getRouteKeyName(): string
     {

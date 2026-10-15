@@ -20,7 +20,7 @@
         <section class="card border-0 shadow-sm mb-4">
             <div class="card-body p-4">
                 <h2 class="h5 mb-1">Diaporama de l’accueil</h2>
-                <p class="small text-muted mb-3">Importez vos propres photos ou sélectionnez les photos des véhicules. Les photos importées s’affichent en premier, puis les véhicules sélectionnés. Quatre photos maximum au total ; sans sélection, le site choisit automatiquement des photos de véhicules.</p>
+                <p class="small text-muted mb-3">Importez vos propres photos ou sélectionnez les photos des véhicules. Les photos importées s’affichent en premier, puis les véhicules sélectionnés. Quatre photos maximum au total ; sans sélection, aucune image ne sera affichée dans le diaporama.</p>
 
                 @if ($heroImages->isNotEmpty())
                     <div class="row g-3 mb-4">

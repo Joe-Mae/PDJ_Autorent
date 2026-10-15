@@ -122,7 +122,7 @@ class NotificationService
 
     private function dispatch(Booking $booking, string $channel, string $template, array $data): bool
     {
-        $phone = $booking->user?->phone;
+        $phone = $booking->user?->phone ?? $booking->customer_phone;
 
         return $phone ? $this->raw($phone, $channel, $template, $data) : false;
     }

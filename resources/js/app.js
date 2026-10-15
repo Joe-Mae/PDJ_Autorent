@@ -6,8 +6,68 @@ import * as bootstrap from 'bootstrap';
  * Trois choses méritent du JavaScript, pas une de plus :
  *  1. le filtrage en AJAX, pour ne pas recharger la page à chaque case cochée ;
  *  2. la bascule chauffeur, pour recalculer le prix sans round-trip ;
- *  3. la galerie de la fiche véhicule.
+ *  3. les estimations de réservation et la galerie de la fiche véhicule.
  */
+
+// ─── Devis en direct pour une demande sans compte ─────────────────────────
+document.querySelectorAll('[data-guest-booking-form]').forEach((form) => {
+    const start = form.elements.namedItem('du');
+    const end = form.elements.namedItem('au');
+    const pickup = form.elements.namedItem('heure_depart');
+    const returnHour = form.elements.namedItem('heure_retour');
+    const dailyPrice = form.querySelector('[data-guest-daily-price]');
+    const days = form.querySelector('[data-guest-days]');
+    const total = form.querySelector('[data-guest-total]');
+    const error = form.querySelector('[data-guest-quote-error]');
+    let timer;
+    let activeRequest;
+
+    const refreshQuote = async () => {
+        activeRequest?.abort();
+        activeRequest = new AbortController();
+        const params = new URLSearchParams();
+        params.set('du', start.value);
+        params.set('au', end.value);
+        params.set('heure_depart', pickup.value);
+        params.set('heure_retour', returnHour.value);
+
+        const driver = form.elements.namedItem('avec_chauffeur');
+        if (driver?.value) params.set('avec_chauffeur', driver.value);
+
+        try {
+            const response = await fetch(`${form.dataset.quoteUrl}?${params}`, {
+                headers: { Accept: 'application/json' },
+                signal: activeRequest.signal,
+            });
+            const data = await response.json();
+
+            if (!response.ok) throw new Error(form.dataset.quoteError);
+
+            const formatter = new Intl.NumberFormat(document.documentElement.lang || 'fr-FR');
+            dailyPrice.textContent = formatter.format(data.daily_price);
+            days.textContent = formatter.format(data.days);
+            total.textContent = formatter.format(data.price_total);
+            error.hidden = true;
+        } catch (exception) {
+            if (exception.name === 'AbortError') return;
+
+            error.textContent = exception.message || form.dataset.quoteError;
+            error.hidden = false;
+        }
+    };
+
+    [start, end, pickup, returnHour].forEach((input) => {
+        input.addEventListener('change', () => {
+            if (input === start) end.min = start.value || end.min;
+
+            clearTimeout(timer);
+            timer = setTimeout(refreshQuote, 180);
+        });
+    });
+
+    end.min = start.value || end.min;
+    refreshQuote();
+});
 
 // ─── Filtres en AJAX ───────────────────────────────────────────────────────
 const filtersForm = document.querySelector('[data-filters-form]');
@@ -72,6 +132,65 @@ if (filtersForm) {
         sync();
     }
 }
+
+// ─── Aperçu tarifaire des réservations avec chauffeur ──────────────────────
+document.querySelectorAll('[data-driver-price-form]').forEach((form) => {
+    const startInput = form.querySelector('[data-price-start]');
+    const endInput = form.querySelector('[data-price-end]');
+    const preview = form.querySelector('[data-driver-price-preview]');
+    const emptyLabel = preview?.querySelector('[data-price-empty]');
+    const breakdown = preview?.querySelector('[data-price-breakdown]');
+    const total = preview?.querySelector('[data-price-total]');
+    const initialEndMin = endInput?.min ?? '';
+
+    if (!startInput || !endInput || !preview || !emptyLabel || !breakdown || !total) return;
+
+    const daysBetween = (start, end) => {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || !/^\d{4}-\d{2}-\d{2}$/.test(end)) return null;
+
+        const startTime = Date.parse(`${start}T00:00:00Z`);
+        const endTime = Date.parse(`${end}T00:00:00Z`);
+        const duration = (endTime - startTime) / 86400000;
+
+        return Number.isInteger(duration) && duration >= 0 ? Math.max(1, duration) : null;
+    };
+
+    const updatePreview = () => {
+        endInput.min = startInput.value || initialEndMin;
+
+        const days = daysBetween(startInput.value, endInput.value);
+
+        if (days === null) {
+            emptyLabel.textContent = preview.dataset.emptyLabel;
+            emptyLabel.hidden = false;
+            breakdown.hidden = true;
+            total.hidden = true;
+
+            return;
+        }
+
+        const discountAfterDays = Number(preview.dataset.discountAfterDays);
+        const discountRate = Number(preview.dataset.discountDailyRate);
+        const dailyRate = days > discountAfterDays && Number.isFinite(discountRate)
+            ? discountRate
+            : Number(preview.dataset.dailyRate);
+        const formatter = new Intl.NumberFormat(document.documentElement.lang || 'fr-FR');
+
+        emptyLabel.hidden = true;
+        breakdown.textContent = preview.dataset.dailyLabel
+            .replace('__DAYS__', formatter.format(days))
+            .replace('__DAILY__', formatter.format(dailyRate));
+        breakdown.hidden = false;
+        total.textContent = `${formatter.format(days * dailyRate)} ${preview.dataset.currency}`;
+        total.hidden = false;
+    };
+
+    startInput.addEventListener('input', updatePreview);
+    startInput.addEventListener('change', updatePreview);
+    endInput.addEventListener('input', updatePreview);
+    endInput.addEventListener('change', updatePreview);
+    updatePreview();
+});
 
 // ─── Panneau de filtres plein écran sur mobile ─────────────────────────────
 const filtersToggle = document.querySelector('[data-filters-toggle]');
@@ -395,13 +514,11 @@ if (heroCarousel) {
             || mouvementReduit
             || rotationPaused
             || document.hidden
-            || heroCarousel.matches(':hover')
-            || heroCarousel.contains(document.activeElement)
         ) {
             return;
         }
 
-        timer = window.setInterval(() => showSlide(activeIndex + 1), 6500);
+        timer = window.setInterval(() => showSlide(activeIndex + 1), 10000);
     };
 
     if (slides.length > 1) {
@@ -434,10 +551,6 @@ if (heroCarousel) {
             startRotation();
         });
 
-        heroCarousel.addEventListener('mouseenter', stopRotation);
-        heroCarousel.addEventListener('mouseleave', startRotation);
-        heroCarousel.addEventListener('focusin', stopRotation);
-        heroCarousel.addEventListener('focusout', startRotation);
         document.addEventListener('visibilitychange', startRotation);
         startRotation();
     }

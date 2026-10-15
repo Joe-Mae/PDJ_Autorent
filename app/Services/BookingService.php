@@ -39,7 +39,12 @@ class BookingService
      *     user: ?User,
      *     with_driver: bool,
      *     phone_verified_at: ?\DateTimeInterface,
-     *     public_token?: string
+     *     public_token?: string,
+     *     customer_name?: string,
+     *     customer_phone?: string,
+     *     customer_email?: string,
+     *     customer_comment?: ?string,
+     *     guest_access_token_hash?: string
      * }  $data
      */
     public function create(array $data): Booking
@@ -76,6 +81,11 @@ class BookingService
                 'currency' => 'XOF',
                 'status' => BookingStatus::EnAttente,
                 'phone_verified_at' => $data['phone_verified_at'] ?? null,
+                'customer_name' => $data['customer_name'] ?? null,
+                'customer_phone' => $data['customer_phone'] ?? null,
+                'customer_email' => $data['customer_email'] ?? null,
+                'customer_comment' => $data['customer_comment'] ?? null,
+                'guest_access_token_hash' => $data['guest_access_token_hash'] ?? null,
                 'grace_expires_at' => $period->startsAt
                     ->copy()
                     ->addHours($this->settings->int('booking.grace_period_hours')),
@@ -131,17 +141,36 @@ class BookingService
 
     public function confirm(Booking $booking, User $agent): Booking
     {
-        $this->assertTransition($booking, BookingStatus::Confirmee);
+        return DB::transaction(function () use ($booking, $agent) {
+            $vehicle = Vehicle::query()
+                ->whereKey($booking->vehicle_id)
+                ->lockForUpdate()
+                ->firstOrFail();
+            $lockedBooking = Booking::query()
+                ->whereKey($booking->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
+            $period = BookingPeriod::fromDates(
+                $lockedBooking->starts_at->toImmutable(),
+                $lockedBooking->ends_at->toImmutable(),
+                $this->settings->openHour(),
+                $this->settings->closeHour(),
+            );
 
-        $booking->update([
-            'status' => BookingStatus::Confirmee,
-            'confirmed_at' => now(),
-            'status_reason' => null,
-        ]);
+            $this->assertTransition($lockedBooking, BookingStatus::Confirmee);
+            $this->assertVehicleBookable($vehicle, $period, $lockedBooking);
+            $this->assertDriverAvailable($period, $lockedBooking->with_driver);
 
-        $this->log('booking.confirmed', $booking, [], $agent);
+            $lockedBooking->update([
+                'status' => BookingStatus::Confirmee,
+                'confirmed_at' => now(),
+                'status_reason' => null,
+            ]);
 
-        return $booking->refresh();
+            $this->log('booking.confirmed', $lockedBooking, [], $agent);
+
+            return $lockedBooking->refresh();
+        });
     }
 
     public function refuse(Booking $booking, User $agent, string $reason): Booking
