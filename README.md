@@ -210,7 +210,8 @@ Tout ce qui touche au métier est modifiable depuis `/admin/parametres`, sans
 redéploiement : horaires, battement, délai de grâce, tarif du bloc chauffeur,
 âge minimum, ancienneté du permis, vitesse maximale, cautions par catégorie,
 nombre de réservations actives, seuil de blocage pour absence, devise
-(`general.currency`).
+(`general.currency`), préfixe des références de réservation
+(`booking.reference_prefix`).
 
 Aucun montant n'est écrit en dur : tout affichage passe par
 `SettingsService::money()`, qui lit la devise en cours. Changer la devise sur

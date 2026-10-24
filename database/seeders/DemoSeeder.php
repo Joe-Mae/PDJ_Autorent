@@ -73,6 +73,7 @@ class DemoSeeder extends Seeder
             ['booking.min_days', '1', 'reservation', 'Durée minimum de location (jours)', 'int'],
             ['booking.late_fee_multiplier', '1', 'reservation', 'Pénalité de retard : 1 = un jour de location par jour commencé', 'int'],
             ['booking.insurance_deductible', '150000', 'reservation', 'Franchise assurance (:currency)', 'int'],
+            ['booking.reference_prefix', 'PDJ-', 'reservation', 'Préfixe des références de réservation', 'string'],
 
             ['driver.block_hours', '4', 'driver', 'Durée d\'un bloc chauffeur (heures)', 'int'],
             ['driver.block_price', '7000', 'driver', 'Supplément chauffeur avec voiture (:currency/jour)', 'int'],

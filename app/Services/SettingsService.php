@@ -36,6 +36,7 @@ class SettingsService
         'booking.late_fee_multiplier' => '1',
         'booking.min_days' => '1',
         'booking.insurance_deductible' => '150000',
+        'booking.reference_prefix' => 'PDJ-',
 
         'driver.block_hours' => '4',
         'driver.block_price' => '7000',

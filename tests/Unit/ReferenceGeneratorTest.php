@@ -14,7 +14,7 @@ class ReferenceGeneratorTest extends TestCase
 {
     public function test_produit_une_reference_bien_formee(): void
     {
-        $generator = new ReferenceGenerator;
+        $generator = new ReferenceGenerator(null);
 
         for ($i = 0; $i < 50; $i++) {
             $reference = $generator->generate(fn () => false);
@@ -24,9 +24,15 @@ class ReferenceGeneratorTest extends TestCase
         }
     }
 
+    /** Sans réglage (test unitaire sans base), c'est la marque par défaut qui sert. */
+    public function test_sans_reglage_le_prefixe_est_la_marque_par_defaut(): void
+    {
+        $this->assertSame(ReferenceGenerator::DEFAULT_PREFIX, (new ReferenceGenerator(null))->prefix());
+    }
+
     public function test_n_utilise_aucun_caracterre_ambigu(): void
     {
-        $generator = new ReferenceGenerator;
+        $generator = new ReferenceGenerator(null);
 
         for ($i = 0; $i < 200; $i++) {
             $reference = $generator->generate(fn () => false);
@@ -43,7 +49,7 @@ class ReferenceGeneratorTest extends TestCase
 
     public function test_rejette_les_references_mal_ecrites(): void
     {
-        $generator = new ReferenceGenerator;
+        $generator = new ReferenceGenerator(null);
 
         $this->assertFalse($generator->isValid('PDJ-ABC'));
         $this->assertFalse($generator->isValid('PDJ-ABCDEFG'));
@@ -53,7 +59,7 @@ class ReferenceGeneratorTest extends TestCase
 
     public function test_produit_des_references_differentes(): void
     {
-        $generator = new ReferenceGenerator;
+        $generator = new ReferenceGenerator(null);
         $references = [];
 
         for ($i = 0; $i < 100; $i++) {
@@ -65,7 +71,7 @@ class ReferenceGeneratorTest extends TestCase
 
     public function test_repete_tant_que_la_reference_existe_deja(): void
     {
-        $generator = new ReferenceGenerator;
+        $generator = new ReferenceGenerator(null);
         $tentatives = 0;
 
         $reference = $generator->generate(function (string $candidate) use (&$tentatives) {
