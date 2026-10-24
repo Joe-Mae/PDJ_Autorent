@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\DriverOnlyBookingStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AssignDriverRequest;
 use App\Models\Driver;
 use App\Models\DriverOnlyBooking;
 use App\Services\AvailabilityService;
@@ -86,9 +87,9 @@ class DriverOnlyBookingController extends Controller
         return back()->with('status', __('driver.solo_refused'));
     }
 
-    public function assign(Request $request, DriverOnlyBooking $driverOnlyBooking): RedirectResponse
+    public function assign(AssignDriverRequest $request, DriverOnlyBooking $driverOnlyBooking): RedirectResponse
     {
-        $data = $request->validate(['driver' => ['required', 'integer', 'exists:drivers,id']]);
+        $data = $request->validated();
 
         $assigned = DB::transaction(function () use ($driverOnlyBooking, $data): bool {
             $this->availability->lockAvailableDrivers();

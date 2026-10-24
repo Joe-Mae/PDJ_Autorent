@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\UpdateSettingsRequest;
 use App\Models\Setting;
 use App\Services\SettingsService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 /**
  * Réglages de l'agence.
@@ -42,12 +42,9 @@ class SettingController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(UpdateSettingsRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'settings' => ['required', 'array'],
-            'settings.*' => ['nullable'],
-        ]);
+        $data = $request->validated();
 
         foreach ($data['settings'] as $key => $value) {
             $setting = Setting::query()->find($key);

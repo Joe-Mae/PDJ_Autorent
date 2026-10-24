@@ -91,6 +91,11 @@ app/
 │   ├── Admin/            l'administration
 │   ├── Account/          le profil du personnel (nom, mot de passe)
 │   └── Agent/            les écrans du guichet (tablette)
+├── Http/Requests/
+│   ├── Admin/ Site/ Agent/ Account/   une Form Request par formulaire,
+│   │                   règles et messages hors des contrôleurs
+│   └── Concerns/        les gardes partagées (propriété d'une réservation,
+│                        jeton invité, dépôt de pièce)
 └── Console/Commands/
     ├── MarkNoShows         passe en « non présenté » après le délai de grâce
     └── SendPickupReminders rappel J-1 sur WhatsApp

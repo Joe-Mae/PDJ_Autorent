@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Enums\DocumentType;
 use App\Exceptions\BookingException;
+use App\Http\Requests\Concerns\GuardsBookingOwnership;
+use App\Http\Requests\Site\CreateBookingRequest;
+use App\Http\Requests\Site\StoreContactRequest;
+use App\Http\Requests\Site\ToggleDriverRequest;
+use App\Http\Requests\Site\VerifyBookingPhoneCodeRequest;
 use App\Models\Booking;
 use App\Models\CustomerDocument;
 use App\Models\PhoneCode;
@@ -37,6 +42,8 @@ use Illuminate\Validation\ValidationException;
  */
 class BookingController extends Controller
 {
+    use GuardsBookingOwnership;
+
     public function __construct(
         private readonly BookingService $bookings,
         private readonly AvailabilityService $availability,
@@ -76,16 +83,9 @@ class BookingController extends Controller
      * réservation directement ici laisserait passer toutes ces règles, et
      * notamment la double réservation sur le même véhicule.
      */
-    public function create(Request $request, string $locale): RedirectResponse
+    public function create(CreateBookingRequest $request, string $locale): RedirectResponse
     {
-        $data = $request->validate([
-            'vehicle_id' => ['required', 'exists:vehicles,id'],
-            'du' => ['required', 'date_format:Y-m-d'],
-            'au' => ['required', 'date_format:Y-m-d', 'after_or_equal:du'],
-            'heure_depart' => ['required', 'integer'],
-            'heure_retour' => ['required', 'integer'],
-            'avec_chauffeur' => ['nullable', 'boolean'],
-        ]);
+        $data = $request->validated();
 
         $vehicle = Vehicle::query()->with('category')->findOrFail($data['vehicle_id']);
         $period = BookingPeriod::make(
@@ -142,12 +142,9 @@ class BookingController extends Controller
     }
 
     /** Bascule chauffeur : le décompte se recalcule, le prix est réécrit. */
-    public function toggleDriver(Request $request, string $locale, Booking $booking): RedirectResponse
+    public function toggleDriver(ToggleDriverRequest $request, string $locale, Booking $booking): RedirectResponse
     {
-        $this->guardOwnership($request, $booking);
-        abort_if($booking->status->isFinal(), 422);
-
-        $data = $request->validate(['avec_chauffeur' => ['required', 'boolean']]);
+        $data = $request->validated();
         $period = $this->periodOf($booking);
 
         try {
@@ -173,20 +170,9 @@ class BookingController extends Controller
     }
 
     /** Enregistre l'identité, crée le compte, puis déclenche le code de vérification. */
-    public function storeContact(Request $request, string $locale, Booking $booking): RedirectResponse
+    public function storeContact(StoreContactRequest $request, string $locale, Booking $booking): RedirectResponse
     {
-        $this->guardOwnership($request, $booking);
-        abort_if($booking->status->isFinal(), 422);
-
-        $data = $request->validate([
-            'first_name' => ['required', 'string', 'max:80'],
-            'last_name' => ['required', 'string', 'max:80'],
-            'birth_date' => ['required', 'date', 'before:today'],
-            'phone' => ['required', 'string', 'regex:/^\+?[0-9\s]{8,20}$/'],
-            'email' => ['nullable', 'email', 'max:150'],
-        ], [
-            'birth_date.before' => __('validation.booking.age', ['age' => $this->settings->int('booking.min_age')]),
-        ]);
+        $data = $request->validated();
 
         $user = $this->resolveUser($request, $data);
         $minAge = $this->settings->int('booking.min_age');
@@ -221,11 +207,9 @@ class BookingController extends Controller
         ]);
     }
 
-    public function verifyPhoneStore(Request $request, string $locale, Booking $booking): RedirectResponse
+    public function verifyPhoneStore(VerifyBookingPhoneCodeRequest $request, string $locale, Booking $booking): RedirectResponse
     {
-        $this->guardOwnership($request, $booking);
-
-        $data = $request->validate(['code' => ['required', 'digits:6']]);
+        $data = $request->validated();
         $user = $booking->user;
 
         if ($user === null) {
@@ -401,35 +385,6 @@ class BookingController extends Controller
             $this->settings->openHour(),
             $this->settings->closeHour(),
         );
-    }
-
-    private function guardOwnership(Request $request, Booking $booking): void
-    {
-        abort_if($booking->guest_access_token_hash !== null, 404);
-
-        $user = $request->user();
-
-        if ($user === null) {
-            return;
-        }
-
-        if ($booking->user_id === null) {
-            // Une réservation sans compte appartient à celui qui l'a créée dans
-            // ce navigateur. La session en garde la trace : rattacher n'importe
-            // quelle réservation orpheline à n'importe quel compte connecté
-            // suffirait à prendre le contrôle d'une réservation dont on
-            // connaît la référence, lue au téléphone : documents et
-            // confirmation compris.
-            $owned = (array) $request->session()->get('pdj.reservations', []);
-
-            abort_unless(in_array($booking->reference, $owned, true), 403);
-
-            $booking->update(['user_id' => $user->id]);
-
-            return;
-        }
-
-        abort_unless($booking->user_id === $user->id || $user->isStaff(), 403);
     }
 
     /**

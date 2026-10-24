@@ -6,6 +6,8 @@ use App\Enums\BookingStatus;
 use App\Enums\PaymentKind;
 use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Agent\RefundDepositRequest;
+use App\Http\Requests\Agent\StoreReturnRequest;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Models\Vehicle;
@@ -13,8 +15,6 @@ use App\Services\BookingService;
 use App\Services\SettingsService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 /**
  * Retour du véhicule.
@@ -53,19 +53,9 @@ class ReturnController extends Controller
         ]);
     }
 
-    public function store(Request $request, Booking $booking): RedirectResponse
+    public function store(StoreReturnRequest $request, Booking $booking): RedirectResponse
     {
-        $data = $request->validate([
-            'mileage' => ['required', 'integer', 'min:'.($booking->mileage_at_pickup ?? 0)],
-            'fuel_level' => ['required', Rule::in(['empty', 'quarter', 'half', 'three_quarters', 'full'])],
-            'damage_note' => ['nullable', 'string', 'max:1000'],
-            'late_fee' => ['nullable', 'integer', 'min:0'],
-            'photos' => ['required', 'array', 'min:4', 'max:10'],
-            'photos.*' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:8192'],
-        ], [
-            'photos.min' => __('agent.at_least_photos', ['count' => 4]),
-            'mileage.min' => __('agent.mileage_lower_than_pickup'),
-        ]);
+        $data = $request->validated();
 
         foreach ($data['photos'] as $index => $photo) {
             $booking->addMedia($photo)
@@ -105,12 +95,9 @@ class ReturnController extends Controller
         ]);
     }
 
-    public function refundDeposit(Request $request, Booking $booking): RedirectResponse
+    public function refundDeposit(RefundDepositRequest $request, Booking $booking): RedirectResponse
     {
-        $data = $request->validate([
-            'deducted_amount' => ['required', 'integer', 'min:0'],
-            'note' => ['nullable', 'string', 'max:255'],
-        ]);
+        $data = $request->validated();
 
         $paid = $booking->depositPaid();
         $deducted = (int) $data['deducted_amount'];

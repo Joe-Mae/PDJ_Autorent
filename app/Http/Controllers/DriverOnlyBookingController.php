@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\BookingException;
+use App\Http\Requests\Site\StoreDriverOnlyBookingRequest;
 use App\Services\DriverOnlyBookingService;
 use App\Services\SettingsService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 
 class DriverOnlyBookingController extends Controller
@@ -16,19 +16,9 @@ class DriverOnlyBookingController extends Controller
         private readonly SettingsService $settings,
     ) {}
 
-    public function store(Request $request, string $locale): RedirectResponse
+    public function store(StoreDriverOnlyBookingRequest $request, string $locale): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:120'],
-            'phone' => ['required', 'string', 'regex:/^\+?[0-9\s]{8,30}$/'],
-            'du' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
-            'au' => ['required', 'date_format:Y-m-d', 'after_or_equal:du'],
-            'identity_document' => [
-                'required', 'file', 'max:5120',
-                'mimes:jpg,jpeg,png,pdf',
-                'mimetypes:image/jpeg,image/png,application/pdf',
-            ],
-        ]);
+        $data = $request->validated();
 
         /** @var UploadedFile $identityDocument */
         $identityDocument = $request->file('identity_document');

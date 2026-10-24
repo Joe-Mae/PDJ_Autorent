@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Enums\BookingStatus;
 use App\Enums\DocumentType;
 use App\Exceptions\BookingException;
+use App\Http\Requests\Site\CreateGuestBookingRequest;
+use App\Http\Requests\Site\LookupBookingRequest;
+use App\Http\Requests\Site\QuoteGuestBookingRequest;
+use App\Http\Requests\Site\StoreGuestBookingRequest;
 use App\Models\Booking;
 use App\Models\DriverOnlyBooking;
 use App\Models\Vehicle;
@@ -15,7 +19,6 @@ use App\Support\BookingPeriod;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -27,17 +30,9 @@ class GuestBookingController extends Controller
         private readonly SettingsService $settings,
     ) {}
 
-    public function create(Request $request, string $locale, Vehicle $vehicle): View
+    public function create(CreateGuestBookingRequest $request, string $locale, Vehicle $vehicle): View
     {
-        abort_unless($vehicle->isBookable(), 404);
-
-        $dates = $request->validate([
-            'du' => ['nullable', 'date_format:Y-m-d', 'required_with:au', 'after_or_equal:today'],
-            'au' => ['nullable', 'date_format:Y-m-d', 'required_with:du', 'after_or_equal:du'],
-            'heure_depart' => ['nullable', 'integer'],
-            'heure_retour' => ['nullable', 'integer'],
-            'avec_chauffeur' => ['nullable', 'boolean'],
-        ]);
+        $dates = $request->validated();
 
         if (blank($dates['du'] ?? null) || blank($dates['au'] ?? null)) {
             $start = today()->addDay();
@@ -64,17 +59,9 @@ class GuestBookingController extends Controller
         ]);
     }
 
-    public function quote(Request $request, string $locale, Vehicle $vehicle): JsonResponse
+    public function quote(QuoteGuestBookingRequest $request, string $locale, Vehicle $vehicle): JsonResponse
     {
-        abort_unless($vehicle->isBookable(), 404);
-
-        $data = $request->validate([
-            'du' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
-            'au' => ['required', 'date_format:Y-m-d', 'after_or_equal:du'],
-            'heure_depart' => ['required', 'integer', 'between:'.$this->settings->openHour().','.$this->settings->closeHour()],
-            'heure_retour' => ['required', 'integer', 'between:'.$this->settings->openHour().','.$this->settings->closeHour()],
-            'avec_chauffeur' => ['nullable', 'boolean'],
-        ]);
+        $data = $request->validated();
 
         $period = $this->periodFrom($data);
         $this->validatePeriod($period);
@@ -89,21 +76,9 @@ class GuestBookingController extends Controller
         ]);
     }
 
-    public function store(Request $request, string $locale, Vehicle $vehicle): RedirectResponse
+    public function store(StoreGuestBookingRequest $request, string $locale, Vehicle $vehicle): RedirectResponse
     {
-        abort_unless($vehicle->isBookable(), 404);
-
-        $data = $request->validate([
-            'du' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
-            'au' => ['required', 'date_format:Y-m-d', 'after_or_equal:du'],
-            'heure_depart' => ['required', 'integer', 'between:'.$this->settings->openHour().','.$this->settings->closeHour()],
-            'heure_retour' => ['required', 'integer', 'between:'.$this->settings->openHour().','.$this->settings->closeHour()],
-            'avec_chauffeur' => ['nullable', 'boolean'],
-            'customer_name' => ['required', 'string', 'max:160'],
-            'customer_phone' => ['required', 'string', 'regex:/^\+?[0-9\s]{8,20}$/'],
-            'customer_email' => ['required', 'email', 'max:255'],
-            'customer_comment' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $data = $request->validated();
 
         $period = $this->periodFrom($data);
         $this->validatePeriod($period);
@@ -203,11 +178,9 @@ class GuestBookingController extends Controller
         ]);
     }
 
-    public function lookupStore(Request $request, string $locale): View
+    public function lookupStore(LookupBookingRequest $request, string $locale): View
     {
-        $data = $request->validate([
-            'reference' => ['required', 'string', 'max:20'],
-        ]);
+        $data = $request->validated();
 
         $reference = strtoupper(trim($data['reference']));
         $booking = Booking::query()

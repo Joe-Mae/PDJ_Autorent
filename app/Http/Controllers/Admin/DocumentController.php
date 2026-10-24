@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\ReviewDocumentRequest;
 use App\Models\AuditLog;
 use App\Models\Booking;
 use App\Models\CustomerDocument;
@@ -67,15 +68,9 @@ class DocumentController extends Controller
         ]);
     }
 
-    public function review(Request $request, CustomerDocument $document): RedirectResponse
+    public function review(ReviewDocumentRequest $request, CustomerDocument $document): RedirectResponse
     {
-        $data = $request->validate([
-            'verdict' => ['required', 'in:conforme,non_conforme,a_relever'],
-            'note' => ['nullable', 'string', 'max:500'],
-            'expires_at' => ['nullable', 'date', 'after:today'],
-        ], [
-            'verdict.required' => __('admin.verdict_required'),
-        ]);
+        $data = $request->validated();
 
         // Un refus sans motif n'aide ni le client ni l'agent suivant.
         if ($data['verdict'] === 'non_conforme' && blank($data['note'] ?? null)) {

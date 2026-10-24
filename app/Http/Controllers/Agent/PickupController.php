@@ -10,6 +10,12 @@ use App\Enums\PaymentKind;
 use App\Enums\PaymentMethod;
 use App\Exceptions\BookingException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Agent\PickBookingRequest;
+use App\Http\Requests\Agent\SignPickupContractRequest;
+use App\Http\Requests\Agent\StorePickupConditionReportRequest;
+use App\Http\Requests\Agent\StorePickupDepositRequest;
+use App\Http\Requests\Agent\StorePickupDocumentsRequest;
+use App\Http\Requests\Agent\StorePickupPaymentRequest;
 use App\Models\Booking;
 use App\Models\CustomerDocument;
 use App\Models\Payment;
@@ -21,7 +27,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -55,11 +60,9 @@ class PickupController extends Controller
     }
 
     /** Recherche par référence ou scan du QR code du bon. */
-    public function pick(Request $request): RedirectResponse
+    public function pick(PickBookingRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'reference' => ['required', 'string', 'max:12'],
-        ]);
+        $data = $request->validated();
 
         $booking = Booking::query()
             ->where('reference', strtoupper($data['reference']))
@@ -81,23 +84,9 @@ class PickupController extends Controller
         ]);
     }
 
-    public function storeDocuments(Request $request, Booking $booking): RedirectResponse
+    public function storeDocuments(StorePickupDocumentsRequest $request, Booking $booking): RedirectResponse
     {
-        abort_unless($booking->status === BookingStatus::Confirmee, 422);
-
-        $data = $request->validate([
-            'identity_original_verified' => ['nullable', 'boolean'],
-            'identity_name_matches' => ['nullable', 'boolean'],
-            'customer_age_eligible' => ['nullable', 'boolean'],
-            'driver_license_original_verified' => ['nullable', 'boolean'],
-            'driver_license_category_authorized' => ['nullable', 'boolean'],
-            'driver_license_category' => ['nullable', 'string', 'max:30'],
-            'driver_license_issued_at' => ['nullable', 'date_format:Y-m-d'],
-            'driver_license_expires_at' => ['nullable', 'date_format:Y-m-d'],
-            'verification_note' => ['nullable', 'string', 'max:1000'],
-            'license_copy_consent' => ['sometimes', 'accepted'],
-            'license_copy' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
-        ]);
+        $data = $request->validated();
 
         if ($request->hasFile('license_copy') && ! $request->boolean('license_copy_consent')) {
             throw ValidationException::withMessages([
@@ -264,17 +253,9 @@ class PickupController extends Controller
         ]);
     }
 
-    public function storeConditionReport(Request $request, Booking $booking): RedirectResponse
+    public function storeConditionReport(StorePickupConditionReportRequest $request, Booking $booking): RedirectResponse
     {
-        $data = $request->validate([
-            'mileage' => ['required', 'integer', 'min:0'],
-            'fuel_level' => ['required', Rule::in(['quarter', 'half', 'three_quarters', 'full'])],
-            'damage_reported' => ['nullable', 'string', 'max:1000'],
-            'photos' => ['required', 'array', 'min:4', 'max:10'],
-            'photos.*' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:8192'],
-        ], [
-            'photos.min' => __('agent.at_least_photos', ['count' => 4]),
-        ]);
+        $data = $request->validated();
 
         foreach ($data['photos'] as $index => $photo) {
             $booking->addMedia($photo)
@@ -303,13 +284,9 @@ class PickupController extends Controller
         ]);
     }
 
-    public function storePayment(Request $request, Booking $booking): RedirectResponse
+    public function storePayment(StorePickupPaymentRequest $request, Booking $booking): RedirectResponse
     {
-        $data = $request->validate([
-            'method' => ['required', Rule::in(array_column(PaymentMethod::cases(), 'value'))],
-            'amount' => ['required', 'integer', 'min:1'],
-            'reference' => ['nullable', 'string', 'max:100'],
-        ]);
+        $data = $request->validated();
 
         $expected = (int) $booking->price_total;
         $received = (int) $data['amount'];
@@ -342,12 +319,9 @@ class PickupController extends Controller
         ]);
     }
 
-    public function storeDeposit(Request $request, Booking $booking): RedirectResponse
+    public function storeDeposit(StorePickupDepositRequest $request, Booking $booking): RedirectResponse
     {
-        $data = $request->validate([
-            'method' => ['required', Rule::in(array_column(PaymentMethod::depositMethods(), 'value'))],
-            'amount' => ['required', 'integer', 'min:0'],
-        ]);
+        $data = $request->validated();
 
         Payment::query()->create([
             'booking_id' => $booking->id,
@@ -372,12 +346,9 @@ class PickupController extends Controller
         ]);
     }
 
-    public function signContract(Request $request, Booking $booking): RedirectResponse
+    public function signContract(SignPickupContractRequest $request, Booking $booking): RedirectResponse
     {
-        $data = $request->validate([
-            'signature' => ['required', 'string', 'max:255'],
-            'accepted_conditions' => ['required', 'accepted'],
-        ]);
+        $data = $request->validated();
 
         $booking->addMediaFromString($data['signature'])
             ->usingFileName($booking->reference.'-signature.svg')

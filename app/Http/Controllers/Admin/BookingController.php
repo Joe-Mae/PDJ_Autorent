@@ -7,6 +7,8 @@ use App\Enums\DriverOnlyBookingStatus;
 use App\Enums\PaymentKind;
 use App\Exceptions\BookingException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\RefuseBookingRequest;
+use App\Http\Requests\Admin\UpdateBookingRequest;
 use App\Models\Booking;
 use App\Models\Driver;
 use App\Models\DriverOnlyBooking;
@@ -102,13 +104,9 @@ class BookingController extends Controller
         return back()->with('status', __('admin.booking_confirmed', ['ref' => $booking->reference]));
     }
 
-    public function refuse(Request $request, Booking $booking): RedirectResponse
+    public function refuse(RefuseBookingRequest $request, Booking $booking): RedirectResponse
     {
-        $data = $request->validate([
-            'motif' => ['required', 'string', 'max:255'],
-        ], [
-            'motif.required' => __('admin.reason_required'),
-        ]);
+        $data = $request->validated();
 
         try {
             $this->bookings->refuse($booking, $request->user(), $data['motif']);
@@ -133,15 +131,9 @@ class BookingController extends Controller
     }
 
     /** Re-dater une réservation : le prix est recalculé et réécrit. */
-    public function update(Request $request, Booking $booking): RedirectResponse
+    public function update(UpdateBookingRequest $request, Booking $booking): RedirectResponse
     {
-        $data = $request->validate([
-            'du' => ['required', 'date'],
-            'au' => ['required', 'date', 'after_or_equal:du'],
-            'heure_depart' => ['required', 'integer', 'between:6,22'],
-            'heure_retour' => ['required', 'integer', 'between:6,22'],
-            'avec_chauffeur' => ['nullable', 'boolean'],
-        ]);
+        $data = $request->validated();
 
         $period = BookingPeriod::make(
             $data['du'],

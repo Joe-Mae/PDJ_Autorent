@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\ReviewStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SaveContentRequest;
 use App\Models\Banner;
 use App\Models\Faq;
 use App\Models\Holiday;
@@ -11,7 +12,6 @@ use App\Models\Review;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 /**
  * Contenus éditables du site : bannières, FAQ, avis, jours fériés.
@@ -64,21 +64,21 @@ class ContentController extends Controller
         ]);
     }
 
-    public function save(Request $request, string $type, int $id): RedirectResponse
+    public function save(SaveContentRequest $request, string $type, int $id): RedirectResponse
     {
         $config = $this->config($type);
         $item = $config['model']::query()->findOrFail($id);
 
-        $item->update($this->validated($request, $type, $item));
+        $item->update($this->validated($request));
 
         return back()->with('status', __('admin.content_saved'));
     }
 
-    public function update(Request $request, string $type): RedirectResponse
+    public function update(SaveContentRequest $request, string $type): RedirectResponse
     {
         $this->config($type);
 
-        $data = $this->validated($request, $type);
+        $data = $this->validated($request);
 
         if ($type === 'avis' && isset($data['status'])) {
             Review::query()->whereKey($data['id'])->update(['status' => ReviewStatus::from($data['status'])]);
@@ -103,45 +103,17 @@ class ContentController extends Controller
         return self::TYPES[$type];
     }
 
-    /** @return array<string, mixed> */
-    private function validated(Request $request, string $type, mixed $item = null): array
+    /**
+     * Données validées du contenu, avec les cases à cocher ramenées à des
+     * booléens : « absente du POST » vaut false, c'est le seul moyen de
+     * décocher une case depuis un formulaire HTML.
+     *
+     * @return array<string, mixed>
+     */
+    private function validated(SaveContentRequest $request): array
     {
-        $data = match ($type) {
-            'bannieres' => $request->validate([
-                'title_fr' => ['required', 'string', 'max:150'],
-                'title_en' => ['nullable', 'string', 'max:150'],
-                'subtitle_fr' => ['nullable', 'string', 'max:500'],
-                'subtitle_en' => ['nullable', 'string', 'max:500'],
-                'slot' => ['required', Rule::in(['home_hero', 'home_middle', 'home_bottom'])],
-                'is_active' => ['nullable', 'boolean'],
-            ]),
-            'faq' => $request->validate([
-                'category_fr' => ['required', 'string', 'max:80'],
-                'category_en' => ['required', 'string', 'max:80'],
-                'question_fr' => ['required', 'string', 'max:255'],
-                'question_en' => ['required', 'string', 'max:255'],
-                'answer_fr' => ['required', 'string', 'max:3000'],
-                'answer_en' => ['nullable', 'string', 'max:3000'],
-                'sort_order' => ['required', 'integer', 'min:0'],
-                'is_published' => ['nullable', 'boolean'],
-            ]),
-            'avis' => $request->validate([
-                'id' => ['nullable', 'exists:reviews,id'],
-                'status' => ['nullable', Rule::in(array_column(ReviewStatus::cases(), 'value'))],
-                'agency_answer' => ['nullable', 'string', 'max:500'],
-            ]),
-            'feries' => $request->validate([
-                'date' => ['required', 'date'],
-                'label_fr' => ['required', 'string', 'max:120'],
-                'label_en' => ['required', 'string', 'max:120'],
-                'is_agency_closed' => ['nullable', 'boolean'],
-                'is_price_surcharged' => ['nullable', 'boolean'],
-            ]),
-            default => [],
-        };
+        $data = $request->validated();
 
-        // Les cases à cocher absentes du POST valent false : c'est le seul moyen
-        // de les décocher depuis un formulaire HTML.
         foreach (['is_active', 'is_published', 'is_agency_closed', 'is_price_surcharged'] as $flag) {
             if (array_key_exists($flag, $data)) {
                 $data[$flag] = (bool) $data[$flag];

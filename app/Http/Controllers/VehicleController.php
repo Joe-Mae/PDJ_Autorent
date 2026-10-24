@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Site\SearchVehiclesRequest;
 use App\Models\Review;
 use App\Models\Vehicle;
 use App\Models\VehicleCategory;
@@ -11,7 +12,6 @@ use App\Services\SettingsService;
 use App\Support\BookingPeriod;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 /**
  * Recherche et fiche véhicule.
@@ -28,9 +28,9 @@ class VehicleController extends Controller
         private readonly SettingsService $settings,
     ) {}
 
-    public function index(Request $request, string $locale, ?VehicleCategory $category = null): View
+    public function index(SearchVehiclesRequest $request, string $locale, ?VehicleCategory $category = null): View
     {
-        $validated = $this->validateSearch($request);
+        $validated = $this->searchData($request->validated());
 
         // Sans dates, on montre la flotte telle qu'elle est, calculée sur le
         // créneau par défaut. Sans cela, le lien « La flotte » du menu — le
@@ -54,11 +54,9 @@ class VehicleController extends Controller
         ]);
     }
 
-    public function show(Request $request, string $locale, Vehicle $vehicle): View
+    public function show(SearchVehiclesRequest $request, string $locale, Vehicle $vehicle): View
     {
-        abort_unless($vehicle->isBookable(), 404);
-
-        $validated = $this->validateSearch($request);
+        $validated = $this->searchData($request->validated());
         $hasDates = $validated !== null && ! empty($validated['du']) && ! empty($validated['au']);
         $period = $hasDates ? $this->periodFrom($validated) : null;
         $isFree = $period ? $this->availability->isVehicleFree($vehicle, $period) : null;
@@ -91,9 +89,9 @@ class VehicleController extends Controller
      * Endpoint AJAX des filtres : renvoie juste le nombre de résultats, le
      * fragment HTML des lignes, et l'URL partageable. Pas de rechargement.
      */
-    public function filter(Request $request, string $locale): JsonResponse
+    public function filter(SearchVehiclesRequest $request, string $locale): JsonResponse
     {
-        $validated = $this->validateSearch($request) ?? $request->only([
+        $validated = $this->searchData($request->validated()) ?? $request->only([
             'category', 'transmission', 'fuel', 'seats_min', 'price_min', 'price_max', 'with_driver', 'sort',
         ]);
 
@@ -115,26 +113,16 @@ class VehicleController extends Controller
     }
 
     /**
+     * Normalise les filtres validés : sans dates, la recherche n'a pas de
+     * créneau et le contrôleur choisit sa période par défaut. Les clés
+     * françaises du formulaire (prix_min, tri…) prennent leurs equivalents
+     * lues par AvailabilityService.
+     *
+     * @param  array<string, mixed>  $data
      * @return array<string, mixed>|null
      */
-    private function validateSearch(Request $request): ?array
+    private function searchData(array $data): ?array
     {
-        $data = $request->validate([
-            'du' => ['nullable', 'date_format:Y-m-d'],
-            'au' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:du'],
-            'heure_depart' => ['nullable', 'integer', 'between:6,22'],
-            'heure_retour' => ['nullable', 'integer', 'between:6,22'],
-            'avec_chauffeur' => ['nullable', 'boolean'],
-            'categorie' => ['nullable', 'string', 'exists:vehicle_categories,slug'],
-            'transmission' => ['nullable', 'in:manuelle,automatique'],
-            'fuel' => ['nullable', 'array'],
-            'fuel.*' => ['in:essence,diesel,hybride,electrique'],
-            'places_min' => ['nullable', 'integer', 'between:2,9'],
-            'prix_min' => ['nullable', 'integer', 'min:0'],
-            'prix_max' => ['nullable', 'integer', 'min:0'],
-            'tri' => ['nullable', 'in:prix-asc,prix-desc'],
-        ], [], [], null, false);
-
         if (blank($data['du'] ?? null) || blank($data['au'] ?? null)) {
             return null;
         }

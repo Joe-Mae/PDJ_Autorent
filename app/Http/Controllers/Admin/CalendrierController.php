@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\BlockReason;
 use App\Enums\VehicleStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreBookingBlockRequest;
 use App\Models\Booking;
 use App\Models\BookingBlock;
 use App\Models\Vehicle;
@@ -56,15 +57,9 @@ class CalendrierController extends Controller
     }
 
     /** Un blocage d'atelier, posé au glisser-déposer depuis le planning. */
-    public function storeBlock(Request $request): RedirectResponse
+    public function storeBlock(StoreBookingBlockRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'vehicle_id' => ['required', 'exists:vehicles,id'],
-            'starts_at' => ['required', 'date'],
-            'ends_at' => ['required', 'date', 'after_or_equal:starts_at'],
-            'reason' => ['required', 'in:'.implode(',', array_column(BlockReason::cases(), 'value'))],
-            'note' => ['nullable', 'string', 'max:255'],
-        ]);
+        $data = $request->validated();
 
         BookingBlock::query()->create([
             ...$data,

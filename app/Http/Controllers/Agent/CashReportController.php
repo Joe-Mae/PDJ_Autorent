@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Agent;
 
 use App\Enums\PaymentKind;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Agent\CloseCashReportRequest;
 use App\Models\AuditLog;
 use App\Models\Payment;
 use App\Services\SettingsService;
@@ -38,12 +39,9 @@ class CashReportController extends Controller
     }
 
     /** Clôture : on fige le total et on trace qui a fermé. */
-    public function close(Request $request): RedirectResponse
+    public function close(CloseCashReportRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'counted' => ['required', 'integer', 'min:0'],
-            'note' => ['nullable', 'string', 'max:255'],
-        ]);
+        $data = $request->validated();
 
         $date = today();
         $expected = (int) Payment::query()

@@ -3,15 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SaveSiteAppearanceRequest;
 use App\Models\Setting;
 use App\Models\Vehicle;
 use App\Services\SettingsService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use RuntimeException;
 
 class SiteAppearanceController extends Controller
@@ -76,66 +75,9 @@ class SiteAppearanceController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(SaveSiteAppearanceRequest $request): RedirectResponse
     {
-        $heroVehicleIdsInput = $request->input('hero_vehicle_ids', []);
-        if (is_array($heroVehicleIdsInput)) {
-            $request->merge([
-                'hero_vehicle_ids' => array_values(array_filter(
-                    $heroVehicleIdsInput,
-                    fn ($id) => $id !== null && $id !== '',
-                )),
-            ]);
-        }
-
-        $removeHeroImagesInput = $request->input('remove_hero_images', []);
-        if (is_array($removeHeroImagesInput)) {
-            $request->merge([
-                'remove_hero_images' => array_values(array_filter(
-                    $removeHeroImagesInput,
-                    fn ($path) => $path !== null && $path !== '',
-                )),
-            ]);
-        }
-
-        $data = $request->validate([
-            'hero_vehicle_ids' => ['nullable', 'array', 'max:4'],
-            'hero_vehicle_ids.*' => ['integer', 'distinct', Rule::exists('vehicles', 'id')],
-            'hero_images' => ['nullable', 'array', 'max:4'],
-            'hero_images.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'remove_hero_images' => ['nullable', 'array'],
-            'remove_hero_images.*' => ['string', 'distinct'],
-            'brand_color' => ['required', 'regex:/\A#[0-9A-Fa-f]{6}\z/'],
-            'accent_color' => ['required', 'regex:/\A#[0-9A-Fa-f]{6}\z/'],
-            'brand_mark' => ['nullable', 'string', 'max:8'],
-            'brand_label' => ['required', 'string', 'max:40'],
-            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'remove_logo' => ['nullable', 'boolean'],
-            'hero_eyebrow_fr' => ['required', 'string', 'max:100'],
-            'hero_eyebrow_en' => ['required', 'string', 'max:100'],
-            'footer_tagline_fr' => ['required', 'string', 'max:180'],
-            'footer_tagline_en' => ['required', 'string', 'max:180'],
-            'nav_home_fr' => ['required', 'string', 'max:40'],
-            'nav_home_en' => ['required', 'string', 'max:40'],
-            'nav_fleet_fr' => ['required', 'string', 'max:40'],
-            'nav_fleet_en' => ['required', 'string', 'max:40'],
-            'nav_driver_fr' => ['required', 'string', 'max:40'],
-            'nav_driver_en' => ['required', 'string', 'max:40'],
-            'nav_faq_fr' => ['required', 'string', 'max:50'],
-            'nav_faq_en' => ['required', 'string', 'max:50'],
-            'nav_contact_fr' => ['required', 'string', 'max:40'],
-            'nav_contact_en' => ['required', 'string', 'max:40'],
-            'nav_lookup_fr' => ['required', 'string', 'max:40'],
-            'nav_lookup_en' => ['required', 'string', 'max:40'],
-        ], [
-            'hero_images.max' => 'Vous pouvez importer quatre photos au maximum à la fois.',
-            'hero_images.*.image' => 'Chaque fichier du diaporama doit être une image valide.',
-            'hero_images.*.mimes' => 'Formats acceptés pour le diaporama : JPG, PNG ou WebP.',
-            'hero_images.*.max' => 'Chaque photo du diaporama ne doit pas dépasser 2 Mo.',
-            'logo.image' => 'Le logo doit être une image valide.',
-            'logo.mimes' => 'Formats acceptés pour le logo : JPG, PNG ou WebP.',
-            'logo.max' => 'Le logo ne doit pas dépasser 2 Mo.',
-        ]);
+        $data = $request->validated();
 
         // Le logo est un fichier unique : on garde l'ancien pour le supprimer
         // seulement quand le nouveau est bien enregistré.

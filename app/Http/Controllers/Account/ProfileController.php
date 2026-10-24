@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Account\UpdatePasswordRequest;
+use App\Http\Requests\Account\UpdateProfileRequest;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ProfileController extends Controller
@@ -19,18 +20,11 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(UpdateProfileRequest $request): RedirectResponse
     {
         $user = $request->user();
 
-        $data = $request->validate([
-            'first_name' => ['required', 'string', 'max:80'],
-            'last_name' => ['required', 'string', 'max:80'],
-            'phone' => ['required', 'string', 'regex:/^\+?[0-9\s]{8,20}$/', Rule::unique('users', 'phone')->ignore($user->id)],
-            'email' => ['nullable', 'email', 'max:150', Rule::unique('users', 'email')->ignore($user->id)],
-            'birth_date' => ['required', 'date', 'before:today'],
-            'preferred_locale' => ['required', 'in:fr,en'],
-        ]);
+        $data = $request->validated();
 
         $data['name'] = trim("{$data['first_name']} {$data['last_name']}");
 
@@ -39,12 +33,9 @@ class ProfileController extends Controller
         return back()->with('status', __('profile.updated'));
     }
 
-    public function updatePassword(Request $request): RedirectResponse
+    public function updatePassword(UpdatePasswordRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'current_password' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
+        $data = $request->validated();
 
         if (! Hash::check($data['current_password'], $request->user()->password)) {
             throw ValidationException::withMessages([

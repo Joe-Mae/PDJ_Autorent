@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Site\VerifyCodeRequest;
 use App\Models\PhoneCode;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -24,9 +25,9 @@ class PhoneVerificationController extends Controller
     }
 
     /** Vérification faite en AJAX : le tunnel ne recharge pas la page. */
-    public function verify(Request $request): RedirectResponse
+    public function verify(VerifyCodeRequest $request): RedirectResponse
     {
-        $data = $request->validate(['code' => ['required', 'digits:6']]);
+        $data = $request->validated();
 
         $phoneCode = PhoneCode::query()
             ->where('phone', $data['phone'] ?? '')

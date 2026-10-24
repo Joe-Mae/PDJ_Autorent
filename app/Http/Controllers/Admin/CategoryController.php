@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SaveVehicleCategoryRequest;
 use App\Models\VehicleCategory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 /**
  * Catégories et tarifs.
@@ -35,7 +34,7 @@ class CategoryController extends Controller
         return view('admin.categories.form', ['category' => new VehicleCategory(['seats' => 5, 'doors' => 5, 'bags' => 3])]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(SaveVehicleCategoryRequest $request): RedirectResponse
     {
         VehicleCategory::query()->create($this->validated($request));
 
@@ -50,9 +49,9 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function update(Request $request, VehicleCategory $category): RedirectResponse
+    public function update(SaveVehicleCategoryRequest $request, VehicleCategory $category): RedirectResponse
     {
-        $category->update($this->validated($request, $category));
+        $category->update($this->validated($request));
 
         return redirect()->route('admin.categories.index')->with('status', __('admin.category_updated'));
     }
@@ -72,24 +71,9 @@ class CategoryController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function validated(Request $request, ?VehicleCategory $category = null): array
+    private function validated(SaveVehicleCategoryRequest $request): array
     {
-        $data = $request->validate([
-            'name_fr' => ['required', 'string', 'max:80'],
-            'name_en' => ['required', 'string', 'max:80'],
-            'slug' => ['nullable', 'string', 'max:80', Rule::unique('vehicle_categories', 'slug')->ignore($category?->id)],
-            'description_fr' => ['nullable', 'string', 'max:500'],
-            'description_en' => ['nullable', 'string', 'max:500'],
-            'daily_price' => ['required', 'integer', 'min:1000'],
-            'deposit_amount' => ['required', 'integer', 'min:0'],
-            'daily_price_holiday' => ['nullable', 'integer', 'min:1000'],
-            'seats' => ['required', 'integer', 'between:2,9'],
-            'doors' => ['required', 'integer', 'between:2,6'],
-            'bags' => ['required', 'integer', 'between:0,9'],
-            'sort_order' => ['required', 'integer', 'min:0'],
-            'is_active' => ['nullable', 'boolean'],
-            'is_featured' => ['nullable', 'boolean'],
-        ]);
+        $data = $request->validated();
 
         return array_merge($data, [
             'slug' => $data['slug'] ?? Str::slug($data['name_fr']),

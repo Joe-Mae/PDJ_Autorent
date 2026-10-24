@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\DriverStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\SaveDriverRequest;
 use App\Models\Driver;
 use App\Services\AvailabilityService;
 use App\Services\SettingsService;
@@ -11,7 +12,6 @@ use App\Support\BookingPeriod;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 /**
  * Chauffeurs.
@@ -67,7 +67,7 @@ class DriverController extends Controller
         return view('admin.drivers.form', ['driver' => new Driver(['status' => DriverStatus::Actif])]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(SaveDriverRequest $request): RedirectResponse
     {
         Driver::query()->create($this->validated($request));
 
@@ -79,9 +79,9 @@ class DriverController extends Controller
         return view('admin.drivers.form', ['driver' => $driver]);
     }
 
-    public function update(Request $request, Driver $driver): RedirectResponse
+    public function update(SaveDriverRequest $request, Driver $driver): RedirectResponse
     {
-        $driver->update($this->validated($request, $driver));
+        $driver->update($this->validated($request));
 
         return redirect()->route('admin.drivers.index')->with('status', __('admin.driver_updated'));
     }
@@ -96,16 +96,9 @@ class DriverController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function validated(Request $request, ?Driver $driver = null): array
+    private function validated(SaveDriverRequest $request): array
     {
-        $data = $request->validate([
-            'first_name' => ['required', 'string', 'max:80'],
-            'last_name' => ['required', 'string', 'max:80'],
-            'phone' => ['required', 'string', 'max:20', Rule::unique('drivers', 'phone')->ignore($driver?->id)],
-            'whatsapp' => ['nullable', 'string', 'max:20'],
-            'status' => ['required', Rule::in(array_column(DriverStatus::cases(), 'value'))],
-            'bio' => ['nullable', 'string', 'max:500'],
-        ]);
+        $data = $request->validated();
 
         return array_merge($data, ['whatsapp' => $data['whatsapp'] ?? $data['phone']]);
     }

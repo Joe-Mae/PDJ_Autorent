@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\RequirePrepaymentRequest;
 use App\Models\Booking;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
@@ -84,11 +85,9 @@ class CustomerController extends Controller
      * Exiger une caution anticipée : c'est la sortie de secours pour un client
      * à deux absences — on ne le bloque pas, on demande la garantie d'abord.
      */
-    public function requirePrepayment(Request $request, User $user): RedirectResponse
+    public function requirePrepayment(RequirePrepaymentRequest $request, User $user): RedirectResponse
     {
-        $data = $request->validate([
-            'required' => ['required', 'boolean'],
-        ]);
+        $data = $request->validated();
 
         $user->update(['prepayment_required' => (bool) $data['required']]);
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Site\SendContactMessageRequest;
 use App\Models\ContactMessage;
 use App\Models\Faq;
 use App\Models\Page;
@@ -12,7 +13,6 @@ use App\Services\NotificationService;
 use App\Services\SettingsService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
 /**
  * Pages de contenu.
@@ -53,14 +53,9 @@ class PageController extends Controller
         ]);
     }
 
-    public function sendContact(Request $request): RedirectResponse
+    public function sendContact(SendContactMessageRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:100'],
-            'phone' => ['required', 'string', 'max:30'],
-            'email' => ['nullable', 'email', 'max:150'],
-            'message' => ['required', 'string', 'max:1500'],
-        ]);
+        $data = $request->validated();
 
         // Le message est conservé en base : un visiteur qui écrit un dimanche
         // doit retrouver sa demande le lundi, même si personne n'a ouvert

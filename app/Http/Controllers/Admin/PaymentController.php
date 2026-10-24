@@ -6,13 +6,14 @@ use App\Enums\BookingStatus;
 use App\Enums\PaymentKind;
 use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\RefundDepositRequest;
+use App\Http\Requests\Admin\StorePaymentRequest;
 use App\Models\Booking;
 use App\Models\Payment;
 use App\Services\SettingsService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 /**
  * Caisse de l'agence.
@@ -79,16 +80,9 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StorePaymentRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'booking_id' => ['required', 'exists:bookings,id'],
-            'kind' => ['required', Rule::in(array_column(PaymentKind::cases(), 'value'))],
-            'method' => ['required', Rule::in(array_column(PaymentMethod::cases(), 'value'))],
-            'amount' => ['required', 'integer', 'min:1'],
-            'reference' => ['nullable', 'string', 'max:100'],
-            'note' => ['nullable', 'string', 'max:255'],
-        ]);
+        $data = $request->validated();
 
         $booking = Booking::query()->findOrFail($data['booking_id']);
 
@@ -106,14 +100,9 @@ class PaymentController extends Controller
      * dégâts, retard) sont saisis à part : le client doit voir la ligne avant
      * de récupérer ce qui reste.
      */
-    public function refundDeposit(Request $request, Payment $payment): RedirectResponse
+    public function refundDeposit(RefundDepositRequest $request, Payment $payment): RedirectResponse
     {
-        abort_unless($payment->kind === PaymentKind::Deposit, 422);
-
-        $data = $request->validate([
-            'deducted_amount' => ['nullable', 'integer', 'min:0', 'max:'.$payment->amount],
-            'note' => ['nullable', 'string', 'max:255'],
-        ]);
+        $data = $request->validated();
 
         $deducted = (int) ($data['deducted_amount'] ?? 0);
         $refundable = $payment->amount - $deducted;

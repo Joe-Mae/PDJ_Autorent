@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\VehicleStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\DestroyManyVehiclesRequest;
+use App\Http\Requests\Admin\SaveVehicleRequest;
+use App\Http\Requests\Admin\SetVehicleStatusRequest;
 use App\Models\Vehicle;
 use App\Models\VehicleCategory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 /**
  * Gestion de la flotte.
@@ -22,18 +24,6 @@ use Illuminate\Validation\Rule;
  */
 class VehicleController extends Controller
 {
-    /** Nombre de photos acceptées d'un coup. */
-    private const MAX_PHOTOS = 10;
-
-    /**
-     * Taille maximale d'une photo, en kilo-octets.
-     *
-     * Volontairement inférieure à upload_max_filesize (2 M par défaut) : on
-     * refuse le fichier avec un message lisible, plutôt que de le laisser
-     * disparaître sans explication.
-     */
-    private const MAX_PHOTO_KILOS = 2048;
-
     public function index(Request $request): View
     {
         return view('admin.vehicles.index', [
@@ -71,7 +61,7 @@ class VehicleController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(SaveVehicleRequest $request): RedirectResponse
     {
         $data = $this->validated($request);
 
@@ -107,9 +97,9 @@ class VehicleController extends Controller
         ]);
     }
 
-    public function update(Request $request, Vehicle $vehicle): RedirectResponse
+    public function update(SaveVehicleRequest $request, Vehicle $vehicle): RedirectResponse
     {
-        $data = $this->validated($request, $vehicle);
+        $data = $this->validated($request);
 
         $vehicle->update([
             ...$data,
@@ -145,12 +135,9 @@ class VehicleController extends Controller
     }
 
     /** Suppression (ou archivage) en masse des véhicules sélectionnés. */
-    public function destroyMany(Request $request): RedirectResponse
+    public function destroyMany(DestroyManyVehiclesRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'ids' => ['required', 'array', 'min:1'],
-            'ids.*' => ['integer', 'exists:vehicles,id'],
-        ]);
+        $data = $request->validated();
 
         $archived = 0;
         $deleted = 0;
@@ -179,11 +166,9 @@ class VehicleController extends Controller
     }
 
     /** Passage rapide de statut depuis la liste (disponible / maintenance / hors service). */
-    public function setStatus(Request $request, Vehicle $vehicle): RedirectResponse
+    public function setStatus(SetVehicleStatusRequest $request, Vehicle $vehicle): RedirectResponse
     {
-        $data = $request->validate([
-            'status' => ['required', Rule::in(array_column(VehicleStatus::cases(), 'value'))],
-        ]);
+        $data = $request->validated();
 
         $vehicle->update(['status' => VehicleStatus::from($data['status'])]);
 
@@ -191,45 +176,9 @@ class VehicleController extends Controller
     }
 
     /** @return array<string, mixed> */
-    private function validated(Request $request, ?Vehicle $vehicle = null): array
+    private function validated(SaveVehicleRequest $request): array
     {
-        $data = $request->validate([
-            'category_id' => ['required', 'exists:vehicle_categories,id'],
-            'brand' => ['required', 'string', 'max:60'],
-            'model' => ['required', 'string', 'max:80'],
-            'plate' => ['required', 'string', 'max:20', Rule::unique('vehicles', 'plate')->ignore($vehicle?->id)],
-            'year' => ['required', 'integer', 'between:2000,'.(now()->year + 1)],
-            'transmission' => ['required', 'in:manuelle,automatique'],
-            'fuel' => ['required', 'in:essence,diesel,hybride,electrique'],
-            'seats' => ['required', 'integer', 'between:2,9'],
-            'doors' => ['required', 'integer', 'between:2,6'],
-            'bags' => ['required', 'integer', 'between:0,9'],
-            'air_conditioning' => ['nullable', 'boolean'],
-            'mileage' => ['nullable', 'integer', 'min:0'],
-            'next_technical_control_at' => ['nullable', 'date'],
-            'description_fr' => ['nullable', 'string', 'max:1000'],
-            'description_en' => ['nullable', 'string', 'max:1000'],
-            'is_active' => ['nullable', 'boolean'],
-
-            // Le format et la taille sont vérifiés ici, et non laissés au
-            // serveur. Sans ces règles, une photo de téléphone trop lourde est
-            // refusée par PHP sans qu'aucun message n'apparaisse : l'agent
-            // voit simplement « rien ne s'est enregistré ».
-            'photos' => ['nullable', 'array', 'max:'.self::MAX_PHOTOS],
-            'photos.*' => [
-                'image',
-                'mimes:jpg,jpeg,png,webp',
-                'max:'.self::MAX_PHOTO_KILOS,
-            ],
-            'main_photo_id' => ['nullable', 'integer'],
-            'main_photo_index' => ['nullable', 'integer', 'min:0'],
-        ], [
-            'plate.unique' => __('admin.plate_taken'),
-            'photos.max' => __('admin.photos_too_many', ['max' => self::MAX_PHOTOS]),
-            'photos.*.image' => __('admin.photo_not_image'),
-            'photos.*.mimes' => __('admin.photo_bad_format'),
-            'photos.*.max' => __('admin.photo_too_heavy', ['max' => self::MAX_PHOTO_KILOS]),
-        ]);
+        $data = $request->validated();
 
         return array_merge($data, [
             // La colonne est NOT NULL : un formulaire laissé vide arrivait avec

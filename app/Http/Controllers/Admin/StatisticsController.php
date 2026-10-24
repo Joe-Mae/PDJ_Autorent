@@ -6,6 +6,7 @@ use App\Enums\BookingStatus;
 use App\Enums\DriverOnlyBookingStatus;
 use App\Enums\PaymentKind;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\FilterStatisticsRequest;
 use App\Models\Booking;
 use App\Models\Driver;
 use App\Models\DriverOnlyBooking;
@@ -14,15 +15,12 @@ use App\Models\Vehicle;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 
 class StatisticsController extends Controller
 {
-    public function index(Request $request): View
+    public function index(FilterStatisticsRequest $request): View
     {
-        $filters = $request->validate([
-            'periode' => ['nullable', 'in:semaine,mois,annee'],
-        ]);
+        $filters = $request->validated();
         $period = $filters['periode'] ?? 'mois';
         $range = $this->range($period);
 
