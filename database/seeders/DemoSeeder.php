@@ -19,6 +19,9 @@ use Spatie\Permission\PermissionRegistrar;
  * Jeu de démonstration : une flotte de 12 véhicules à Lomé, 3 chauffeurs, les
  * réglages par défaut et les contenus de la page d'accueil.
  *
+ * Chaque ligne est écrite par sa clé naturelle (slug, plaque, téléphone,
+ * question…) : un second `php artisan db:seed` met à jour sans dupliquer.
+ *
  * Les tarifs sont ceux d'une agence de Lomé de taille moyenne : 18 000 F CFA
  * pour une citadine, 150 000 pour une berline de luxe. Ce sont des ordres de
  * grandeur crédibles, pas des prix réels — à ajuster avec l'agence.
@@ -167,11 +170,14 @@ class DemoSeeder extends Seeder
         ];
 
         foreach ($categories as $category) {
-            VehicleCategory::query()->create([
-                ...$category,
-                'name_en' => $category['name_en'] ?? $category['name_fr'],
-                'doors' => $category['slug'] === 'utilitaires' ? 4 : 5,
-            ]);
+            VehicleCategory::query()->updateOrCreate(
+                ['slug' => $category['slug']],
+                [
+                    ...$category,
+                    'name_en' => $category['name_en'] ?? $category['name_fr'],
+                    'doors' => $category['slug'] === 'utilitaires' ? 4 : 5,
+                ],
+            );
         }
     }
 
@@ -200,28 +206,30 @@ class DemoSeeder extends Seeder
         foreach ($catalog as [$categorySlug, $brand, $model, $plate, $year, $transmission, $fuel, $bags, $featured]) {
             $category = VehicleCategory::query()->where('slug', $categorySlug)->firstOrFail();
 
-            Vehicle::query()->create([
-                'category_id' => $category->id,
-                'brand' => $brand,
-                'model' => $model,
-                'plate' => $plate,
-                'year' => $year,
-                'transmission' => $transmission,
-                'fuel' => $fuel,
-                'seats' => $category->seats,
-                'doors' => $category->doors,
-                'bags' => $bags,
-                'air_conditioning' => in_array($categorySlug, $airConditioned, true),
-                'features' => array_values(array_filter([
-                    'gps', 'bluetooth', 'cruise', 'usb', 'reversing_camera',
-                    in_array($categorySlug, ['luxe', 'berlines'], true) ? 'leather' : null,
-                ])),
-                'description_fr' => "{$brand} {$model} {$year}, entretenu par nos soins et révisé avant chaque location.",
-                'mileage' => fake()->numberBetween(8000, 120000),
-                'next_technical_control_at' => now()->addMonths(fake()->numberBetween(2, 10)),
-                'status' => VehicleStatus::Disponible,
-                'is_active' => true,
-            ]);
+            Vehicle::query()->updateOrCreate(
+                ['plate' => $plate],
+                [
+                    'category_id' => $category->id,
+                    'brand' => $brand,
+                    'model' => $model,
+                    'plate' => $plate,
+                    'year' => $year,
+                    'transmission' => $transmission,
+                    'fuel' => $fuel,
+                    'seats' => $category->seats,
+                    'doors' => $category->doors,
+                    'bags' => $bags,
+                    'air_conditioning' => in_array($categorySlug, $airConditioned, true),
+                    'features' => array_values(array_filter([
+                        'gps', 'bluetooth', 'cruise', 'usb', 'reversing_camera',
+                        in_array($categorySlug, ['luxe', 'berlines'], true) ? 'leather' : null,
+                    ])),
+                    'description_fr' => "{$brand} {$model} {$year}, entretenu par nos soins et révisé avant chaque location.",
+                    'mileage' => fake()->numberBetween(8000, 120000),
+                    'next_technical_control_at' => now()->addMonths(fake()->numberBetween(2, 10)),
+                    'status' => VehicleStatus::Disponible,
+                    'is_active' => true,
+                ]);
         }
     }
 
@@ -234,16 +242,18 @@ class DemoSeeder extends Seeder
         ];
 
         foreach ($drivers as [$first, $last, $phone, $rating, $rentals]) {
-            Driver::query()->create([
-                'first_name' => $first,
-                'last_name' => $last,
-                'phone' => $phone,
-                'whatsapp' => $phone,
-                'status' => DriverStatus::Actif,
-                'rating' => $rating,
-                'completed_rentals' => $rentals,
-                'bio' => "Chauffeur professionnel, {$rentals} locations réalisées à Lomé.",
-            ]);
+            Driver::query()->updateOrCreate(
+                ['phone' => $phone],
+                [
+                    'first_name' => $first,
+                    'last_name' => $last,
+                    'phone' => $phone,
+                    'whatsapp' => $phone,
+                    'status' => DriverStatus::Actif,
+                    'rating' => $rating,
+                    'completed_rentals' => $rentals,
+                    'bio' => "Chauffeur professionnel, {$rentals} locations réalisées à Lomé.",
+                ]);
         }
     }
 
@@ -271,7 +281,10 @@ class DemoSeeder extends Seeder
         ];
 
         foreach ($banners as $banner) {
-            Banner::query()->create($banner);
+            Banner::query()->updateOrCreate(
+                ['slot' => $banner['slot'], 'sort_order' => $banner['sort_order']],
+                $banner,
+            );
         }
     }
 
@@ -353,7 +366,10 @@ class DemoSeeder extends Seeder
         ];
 
         foreach ($faqs as $faq) {
-            Faq::query()->create($faq);
+            Faq::query()->updateOrCreate(
+                ['question_fr' => $faq['question_fr']],
+                $faq,
+            );
         }
     }
 
@@ -374,10 +390,21 @@ class DemoSeeder extends Seeder
         foreach ($holidays as [$date, $fr, $en, $closed, $surcharged]) {
             $full = "{$year}-{$date}";
 
-            Holiday::query()->updateOrCreate(
-                ['date' => $full],
-                ['label_fr' => $fr, 'label_en' => $en, 'is_agency_closed' => $closed, 'is_price_surcharged' => $surcharged],
-            );
+            // whereDate et non where : la colonne stocke un datetime, une
+            // égalité stricte sur « 2026-01-01 » ne retrouverait jamais la
+            // ligne écrite au premier passage.
+            $holiday = Holiday::query()->whereDate('date', $full)->first();
+
+            if ($holiday === null) {
+                $holiday = new Holiday(['date' => $full]);
+            }
+
+            $holiday->fill([
+                'label_fr' => $fr,
+                'label_en' => $en,
+                'is_agency_closed' => $closed,
+                'is_price_surcharged' => $surcharged,
+            ])->save();
         }
     }
 }

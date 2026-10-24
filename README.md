@@ -48,6 +48,12 @@ php artisan serve
 MySQL 8 en production. Le jeu de démonstration a été validé sur MySQL et
 fonctionne aussi sur SQLite, pratique pour les tests.
 
+Le seeding est rejouable : `php artisan db:seed` peut être relancé à tout
+moment (après une migration, pour récupérer un réglage oublié) sans dupliquer
+aucune ligne — chaque seeder écrit par clé naturelle. Seul l'historique de
+démonstration (réservations, paiements, avis) n'est jamais recréé une fois
+les réservations en place.
+
 ```env
 DB_CONNECTION=mysql
 DB_DATABASE=pdj_autorent

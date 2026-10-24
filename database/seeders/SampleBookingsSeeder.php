@@ -25,6 +25,13 @@ class SampleBookingsSeeder extends Seeder
 {
     public function run(): void
     {
+        // Historique aléatoire, créé une seule fois : un second passage ne
+        // doit pas empiler de nouvelles réservations sur les existantes,
+        // ni re-publier les avis des réservations terminées.
+        if (Booking::query()->exists()) {
+            return;
+        }
+
         $vehicles = Vehicle::query()->with('category')->get();
         $drivers = Driver::query()->available()->get();
 

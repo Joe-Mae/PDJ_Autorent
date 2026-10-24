@@ -36,7 +36,9 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($staff as [$first, $last, $email, $role]) {
-            $user = User::query()->create([
+            // firstOrCreate et non updateOrCreate : un second passage ne
+            // touche ni le téléphone ni le mot de passe choisis en dev.
+            $user = User::query()->firstOrCreate(['email' => $email], [
                 'name' => "{$first} {$last}",
                 'first_name' => $first,
                 'last_name' => $last,
