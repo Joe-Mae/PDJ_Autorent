@@ -8,6 +8,7 @@ use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Payment;
+use App\Services\SettingsService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -130,8 +131,8 @@ class PaymentController extends Controller
         ]);
 
         return back()->with('status', __('admin.deposit_refunded', [
-            'amount' => number_format($refundable, 0, ' ', ' ').' F CFA',
-            'deducted' => number_format($deducted, 0, ' ', ' ').' F CFA',
+            'amount' => app(SettingsService::class)->money($refundable),
+            'deducted' => app(SettingsService::class)->money($deducted),
         ]));
     }
 

@@ -14,7 +14,12 @@
         ['mileage', []],
         ['damage', []],
         ['cancellation', []],
-        ['driver', []],
+        ['driver', [
+            'with_car' => app(\App\Services\SettingsService::class)->money(app(\App\Services\SettingsService::class)->int('driver.block_price')),
+            'standard' => app(\App\Services\SettingsService::class)->money(app(\App\Services\SettingsService::class)->int('driver.solo_daily_price')),
+            'discount' => app(\App\Services\SettingsService::class)->money(app(\App\Services\SettingsService::class)->int('driver.solo_discount_daily_price')),
+            'days' => app(\App\Services\SettingsService::class)->int('driver.solo_discount_after_days'),
+        ]],
     ] as [$key, $params])
         <div class="pdj-card mb-3">
             <h2 class="h6 fw-bold">{{ __('page.terms_'.$key) }}</h2>

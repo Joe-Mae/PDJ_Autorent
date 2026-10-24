@@ -6,6 +6,8 @@
     @php
         $activeTab = $errors->any() || session('driver_only_booking_reference') ? 'driver-only' : 'vehicle-driver';
         $settings = app(\App\Services\SettingsService::class);
+        $money = fn (int $amount) => $settings->money($amount);
+        $currency = $settings->currency();
         $startDate = today()->addDay()->toDateString();
         $returnDate = today()->addDay()->addDays(3)->toDateString();
         $hours = range($settings->openHour(), $settings->closeHour());
@@ -16,7 +18,7 @@
             <h1 class="h2 fw-bold mb-2">{{ __('driver.title_page') }}</h1>
             <p class="text-muted mb-3">{{ __('driver.page_intro') }}</p>
             <div class="driver-page__rate">
-                <strong>{{ number_format($vehicleDailyPrice, 0, ' ', ' ') }} {{ __('driver.price_unit') }}</strong>
+                <strong>{{ number_format($vehicleDailyPrice, 0, ' ', ' ') }} {{ __('driver.price_unit', ['currency' => $currency]) }}</strong>
             </div>
         </header>
 
@@ -25,8 +27,8 @@
                 {{ __('driver.solo_received', [
                     'reference' => session('driver_only_booking_reference'),
                     'days' => session('driver_only_booking_days'),
-                    'daily_price' => number_format(session('driver_only_booking_daily_price'), 0, ' ', ' '),
-                    'total' => number_format(session('driver_only_booking_total'), 0, ' ', ' '),
+                    'daily_price' => $money((int) session('driver_only_booking_daily_price')),
+                    'total' => $money((int) session('driver_only_booking_total')),
                 ]) }}
                 <div class="mt-1 small">
                     <a href="{{ route('booking.lookup', ['locale' => $locale]) }}">{{ __('booking.lookup.title') }}</a>
@@ -142,9 +144,9 @@
                             class="driver-page__price-preview mb-3"
                             data-driver-price-preview
                             data-daily-rate="{{ $vehicleDailyPrice }}"
-                            data-daily-label="{{ __('driver.price_calculation', ['days' => '__DAYS__', 'daily_price' => '__DAILY__']) }}"
+                            data-daily-label="{{ __('driver.price_calculation', ['days' => '__DAYS__', 'daily_price' => '__DAILY__', 'currency' => $currency]) }}"
                             data-empty-label="{{ __('driver.price_select_dates') }}"
-                            data-currency="FCFA"
+                            data-currency="{{ $currency }}"
                             aria-live="polite"
                         >
                             <span class="driver-page__price-empty" data-price-empty>{{ __('driver.price_select_dates') }}</span>
@@ -175,19 +177,19 @@
                     <p class="small text-muted mb-3">
                         {{ __('driver.solo_intro', [
                             'days' => $soloDiscountAfterDays,
-                            'price' => number_format($soloDailyPrice, 0, ' ', ' '),
-                            'discount' => number_format($soloDiscountDailyPrice, 0, ' ', ' '),
+                            'price' => $money($soloDailyPrice),
+                            'discount' => $money($soloDiscountDailyPrice),
                         ]) }}
                     </p>
 
                     <div class="driver-page__solo-rates mb-4">
                         <span>{{ __('driver.solo_rate_standard', [
                             'days' => $soloDiscountAfterDays,
-                            'price' => number_format($soloDailyPrice, 0, ' ', ' '),
+                            'price' => $money($soloDailyPrice),
                         ]) }}</span>
                         <span>{{ __('driver.solo_rate_discount', [
                             'days' => $soloDiscountAfterDays + 1,
-                            'price' => number_format($soloDiscountDailyPrice, 0, ' ', ' '),
+                            'price' => $money($soloDiscountDailyPrice),
                         ]) }}</span>
                     </div>
 
@@ -233,9 +235,9 @@
                             data-daily-rate="{{ $soloDailyPrice }}"
                             data-discount-daily-rate="{{ $soloDiscountDailyPrice }}"
                             data-discount-after-days="{{ $soloDiscountAfterDays }}"
-                            data-daily-label="{{ __('driver.price_calculation', ['days' => '__DAYS__', 'daily_price' => '__DAILY__']) }}"
+                            data-daily-label="{{ __('driver.price_calculation', ['days' => '__DAYS__', 'daily_price' => '__DAILY__', 'currency' => $currency]) }}"
                             data-empty-label="{{ __('driver.price_select_dates') }}"
-                            data-currency="FCFA"
+                            data-currency="{{ $currency }}"
                             aria-live="polite"
                         >
                             <span class="driver-page__price-empty" data-price-empty>{{ __('driver.price_select_dates') }}</span>

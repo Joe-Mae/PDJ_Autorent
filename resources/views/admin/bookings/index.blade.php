@@ -164,7 +164,7 @@
                                 <span class="text-muted">→ {{ $booking->ends_at->translatedFormat('d/m/Y H:i') }}</span>
                             </td>
                             <td class="text-end text-nowrap fw-semibold">
-                                {{ number_format($booking->price_total, 0, ' ', ' ') }} F
+                                {{ app(\App\Services\SettingsService::class)->money($booking->price_total) }}
                             </td>
                             <td class="small">
                                 @if ($remaining === 0)
@@ -176,7 +176,7 @@
                                         {{ __('admin.partially_paid') }}
                                     </span>
                                     <div class="text-muted mt-1">
-                                        {{ __('admin.remaining_amount', ['amount' => number_format($remaining, 0, ' ', ' ')]) }}
+                                        {{ __('admin.remaining_amount', ['amount' => app(\App\Services\SettingsService::class)->money($remaining)]) }}
                                     </div>
                                 @else
                                     <span class="badge rounded-pill bg-light text-secondary border">

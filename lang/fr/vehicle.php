@@ -42,6 +42,6 @@ return [
     'cond_km' => 'Kilométrage illimité, dans un usage raisonnable.',
     'cond_fuel' => 'Carburant à votre charge. Le véhicule est rendu avec le même niveau qu\'au départ.',
     'cond_speed' => 'Vitesse maximale 120 km/h, pénalités en cas d\'infraction.',
-    'cond_insurance' => 'Assurance incluse : RC, vol, incendie, bris de vitres. Franchise :amount FCFA.',
+    'cond_insurance' => 'Assurance incluse : RC, vol, incendie, bris de vitres. Franchise :amount.',
     'cond_cancellation' => 'Annulation gratuite jusqu\'à la veille 18 h.',
 ];

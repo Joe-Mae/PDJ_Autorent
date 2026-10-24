@@ -36,12 +36,12 @@
                     <h2 class="h6 fw-bold mb-3">{{ __('admin.tariffs') }}</h2>
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label" for="daily_price">{{ __('admin.daily_price') }} (FCFA)</label>
+                            <label class="form-label" for="daily_price">{{ __('admin.daily_price') }} ({{ app(\App\Services\SettingsService::class)->currency() }})</label>
                             <input type="number" class="form-control" id="daily_price" name="daily_price"
                                    value="{{ old('daily_price', $category->daily_price) }}" min="1000" step="500" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label" for="deposit_amount">{{ __('admin.deposit') }} (FCFA)</label>
+                            <label class="form-label" for="deposit_amount">{{ __('admin.deposit') }} ({{ app(\App\Services\SettingsService::class)->currency() }})</label>
                             <input type="number" class="form-control" id="deposit_amount" name="deposit_amount"
                                    value="{{ old('deposit_amount', $category->deposit_amount) }}" min="0" step="10000" required>
                         </div>

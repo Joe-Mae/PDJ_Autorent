@@ -74,7 +74,7 @@
                 </label>
                 <div class="form-text">
                     {{ __('general.search_driver_hint', [
-                        'price' => number_format($settings->int('driver.block_price'), 0, ' ', ' ').' FCFA',
+                        'price' => app(\App\Services\SettingsService::class)->money($settings->int('driver.block_price')),
                     ]) }}
                 </div>
             </div>

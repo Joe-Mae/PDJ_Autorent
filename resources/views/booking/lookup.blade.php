@@ -99,7 +99,7 @@
                     {{ $driverOnlyBooking->ends_at->translatedFormat('d/m/Y H:i') }}
                 </dd>
                 <dt class="col-sm-4">{{ __('booking.lookup.total') }}</dt>
-                <dd class="col-sm-8">{{ number_format($driverOnlyBooking->price_total, 0, ' ', ' ') }} FCFA</dd>
+                <dd class="col-sm-8">{{ app(\App\Services\SettingsService::class)->money($driverOnlyBooking->price_total) }}</dd>
             </dl>
 
             <p class="small text-muted mt-3 mb-0">{{ __('booking.lookup.driver_only_received') }}</p>

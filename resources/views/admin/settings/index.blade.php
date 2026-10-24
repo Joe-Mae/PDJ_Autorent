@@ -35,6 +35,9 @@
                         @foreach ($group['settings'] as $setting)
                             @php
                                 $label = app()->getLocale() === 'en' && $setting->label_en ? $setting->label_en : $setting->label_fr;
+                                // Les libellés de réglage monétaire portent le placeholder
+                                // :currency — la devise en cours s'y affiche toute seule.
+                                $label = str_replace(':currency', app(\App\Services\SettingsService::class)->currency(), (string) $label);
                                 $isTime = str_ends_with($setting->key, '_time') || $setting->key === 'booking.free_cancellation_before';
                                 $isMoney = str_contains($setting->key, 'price') || str_contains($setting->key, 'deposit');
                             @endphp

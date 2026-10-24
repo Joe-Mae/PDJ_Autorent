@@ -44,7 +44,7 @@
                         <i class="bi bi-shield-check fs-3"></i>
                         <div>
                             <div class="fw-bold">{{ __('general.reassurance.insurance') }}</div>
-                            <div class="small text-muted">{{ __('vehicle.insurance_subtitle', ['amount' => number_format(app(\App\Services\SettingsService::class)->int('booking.insurance_deductible'), 0, ' ', ' ').' FCFA']) }}</div>
+                            <div class="small text-muted">{{ __('vehicle.insurance_subtitle', ['amount' => app(\App\Services\SettingsService::class)->money(app(\App\Services\SettingsService::class)->int('booking.insurance_deductible'))]) }}</div>
                         </div>
                     </div>
                     <div class="d-flex align-items-start gap-3">
@@ -134,7 +134,7 @@
                             {{ trans_choice('{0} :count voiture|{1} :count voiture|[2,*] :count voitures', $category->vehicles_count, ['count' => $category->vehicles_count]) }}
                         </div>
                         <div class="small fw-semibold mt-2" style="color: var(--pdj-green);">
-                            {{ number_format($category->daily_price, 0, ' ', ' ') }} FCFA / {{ __('general.day_short') }}
+                            {{ app(\App\Services\SettingsService::class)->money($category->daily_price) }} / {{ __('general.day_short') }}
                         </div>
                     </a>
                 </div>
@@ -170,10 +170,10 @@
                             {{ $vehicle->transmissionLabel() }} · {{ $vehicle->fuelLabel() }} · {{ $vehicle->seats }} {{ __('vehicle.seats') }}
                         </div>
                         <div class="fw-bold mt-2" style="color: var(--pdj-green);">
-                            {{ number_format($vehicle->category->daily_price, 0, ' ', ' ') }} FCFA / {{ __('general.day_short') }}
+                            {{ app(\App\Services\SettingsService::class)->money($vehicle->category->daily_price) }} / {{ __('general.day_short') }}
                         </div>
                         <div class="small text-muted">
-                            {{ __('general.deposit', ['price' => number_format($vehicle->category->deposit_amount, 0, ' ', ' ').' FCFA']) }}
+                            {{ __('general.deposit', ['price' => app(\App\Services\SettingsService::class)->money($vehicle->category->deposit_amount)]) }}
                         </div>
                     </a>
                 </div>
@@ -192,7 +192,7 @@
                 <h2 class="h4 fw-bold mt-2 mb-2">{{ __('driver.title') }}</h2>
                 <p class="mb-3">{{ __('driver.intro') }}</p>
                 <ul class="list-unstyled small mb-3">
-                    <li class="mb-1"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ __('driver.point1') }}</li>
+                    <li class="mb-1"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ __('driver.point1', ['price' => app(\App\Services\SettingsService::class)->money(app(\App\Services\SettingsService::class)->int('driver.block_price'))]) }}</li>
                     <li class="mb-1"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ __('driver.point2') }}</li>
                     <li class="mb-0"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ __('driver.point3') }}</li>
                 </ul>
@@ -204,7 +204,7 @@
                 <div class="display-4 fw-bold" style="color: var(--pdj-green);">
                     {{ number_format(app(\App\Services\SettingsService::class)->int('driver.block_price'), 0, ' ', ' ') }}
                 </div>
-                <div class="text-muted">{{ __('driver.price_unit') }}</div>
+                <div class="text-muted">{{ __('driver.price_unit', ['currency' => app(\App\Services\SettingsService::class)->currency()]) }}</div>
             </div>
         </div>
     </div>

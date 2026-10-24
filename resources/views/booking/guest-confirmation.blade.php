@@ -31,15 +31,15 @@
             </dd>
 
             <dt class="col-sm-5">{{ __('quote.line.rental', ['days' => $booking->days]) }}</dt>
-            <dd class="col-sm-7">{{ number_format($booking->price_rental, 0, ' ', ' ') }} F CFA</dd>
+            <dd class="col-sm-7">{{ app(\App\Services\SettingsService::class)->money($booking->price_rental) }}</dd>
 
             @if ($booking->with_driver)
                 <dt class="col-sm-5">{{ __('quote.line.driver', ['days' => $booking->days]) }}</dt>
-                <dd class="col-sm-7">{{ number_format($booking->price_driver, 0, ' ', ' ') }} F CFA</dd>
+                <dd class="col-sm-7">{{ app(\App\Services\SettingsService::class)->money($booking->price_driver) }}</dd>
             @endif
 
             <dt class="col-sm-5">{{ __('booking.guest.estimated_total') }}</dt>
-            <dd class="col-sm-7 fw-bold">{{ number_format($booking->price_total, 0, ' ', ' ') }} F CFA</dd>
+            <dd class="col-sm-7 fw-bold">{{ app(\App\Services\SettingsService::class)->money($booking->price_total) }}</dd>
 
             <dt class="col-sm-5">{{ __('booking.guest.status') }}</dt>
             <dd class="col-sm-7">

@@ -34,8 +34,8 @@
             [__('admin.bookings'), number_format($totalBookings, 0, ',', ' '), 'calendar-check', 'primary'],
             [__('admin.completed_rentals'), number_format($completedCount, 0, ',', ' '), 'check-circle', 'success'],
             [__('admin.overdue_rentals'), number_format($overdueCount, 0, ',', ' '), 'exclamation-triangle', 'danger'],
-            [__('admin.actual_rental_revenue'), number_format($actualRentalRevenue, 0, ',', ' ').' F', 'cash-stack', 'success'],
-            [__('admin.outstanding'), number_format($outstanding, 0, ',', ' ').' F', 'hourglass-bottom', 'warning'],
+            [__('admin.actual_rental_revenue'), app(\App\Services\SettingsService::class)->money($actualRentalRevenue), 'cash-stack', 'success'],
+            [__('admin.outstanding'), app(\App\Services\SettingsService::class)->money($outstanding), 'hourglass-bottom', 'warning'],
             [__('admin.fleet_utilization'), $utilization.' %', 'speedometer2', 'info'],
         ] as [$label, $value, $icon, $tone])
             <div class="col-6 col-md-4 col-xl-2">
@@ -77,11 +77,11 @@
 
                 <div class="admin-cash-row mt-3">
                     <span>{{ __('admin.actual_rental_revenue') }}</span>
-                    <strong class="text-success">{{ number_format($actualRentalRevenue, 0, ',', ' ') }} F CFA</strong>
+                    <strong class="text-success">{{ app(\App\Services\SettingsService::class)->money($actualRentalRevenue) }}</strong>
                 </div>
                 <div class="admin-cash-row">
                     <span>{{ __('admin.outstanding') }}</span>
-                    <strong class="{{ $outstanding > 0 ? 'text-danger' : '' }}">{{ number_format($outstanding, 0, ',', ' ') }} F CFA</strong>
+                    <strong class="{{ $outstanding > 0 ? 'text-danger' : '' }}">{{ app(\App\Services\SettingsService::class)->money($outstanding) }}</strong>
                 </div>
             </section>
         </div>

@@ -316,7 +316,7 @@ class PickupController extends Controller
 
         if ($received < $expected) {
             return back()->withErrors(['amount' => __('agent.amount_too_low', [
-                'expected' => number_format($expected, 0, ' ', ' ').' F CFA',
+                'expected' => app(SettingsService::class)->money($expected),
             ])])->withInput();
         }
 

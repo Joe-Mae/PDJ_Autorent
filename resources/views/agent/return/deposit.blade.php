@@ -30,7 +30,7 @@
                 <form method="POST" action="{{ route('agent.return.deposit.store', $booking) }}">
                     @csrf
                     <div class="pdj-card mb-3">
-                        <label class="form-label" for="deducted_amount">{{ __('agent.deduction') }}</label>
+                        <label class="form-label" for="deducted_amount">{{ __('agent.deduction', ['currency' => app(\App\Services\SettingsService::class)->currency()]) }}</label>
                         <input type="number" class="form-control form-control-lg" id="deducted_amount" name="deducted_amount"
                                value="0" min="0" max="{{ $paid }}" step="500" required>
                         <div class="form-text">{{ __('agent.deduction_hint') }}</div>
@@ -39,7 +39,7 @@
                     <div class="pdj-card mb-3">
                         <label class="form-label" for="note">{{ __('agent.deduction_reason') }}</label>
                         <textarea class="form-control" id="note" name="note" rows="2"
-                                  placeholder="{{ __('agent.deduction_placeholder') }}"></textarea>
+                                  placeholder="{{ __('agent.deduction_placeholder', ['currency' => app(\App\Services\SettingsService::class)->currency()]) }}"></textarea>
                         <div class="form-text">{{ __('agent.deduction_explain') }}</div>
                     </div>
 
@@ -58,7 +58,8 @@
                 const input = document.getElementById('deducted_amount');
                 const out = document.getElementById('aRendre');
                 const total = {{ (int) $paid }};
-                const fmt = (n) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
+                const currency = {{ json_encode(app(\App\Services\SettingsService::class)->currency()) }};
+                const fmt = (n) => new Intl.NumberFormat('fr-FR').format(n) + ' ' + currency;
                 const refresh = () => { out.textContent = fmt(Math.max(0, total - (Number(input.value) || 0))); };
                 input.addEventListener('input', refresh);
                 refresh();

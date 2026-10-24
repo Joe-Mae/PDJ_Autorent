@@ -249,7 +249,7 @@ return [
 
     'drivers' => 'Chauffeurs',
     'add_driver' => 'Ajouter un chauffeur',
-    'free_slots' => ':count place(s) chauffeur disponible(s) sur les 14 prochains jours. Avec une voiture :price FCFA par jour.',
+    'free_slots' => ':count place(s) chauffeur disponible(s) sur les 14 prochains jours. Avec une voiture :price par jour.',
     'rentals_done' => 'locations',
     'retire' => 'Retirer',
     'retire_driver_confirm' => 'Retirer ce chauffeur du planning ? Son historique est conservé.',
@@ -316,7 +316,7 @@ return [
     'paid' => 'Payé',
     'partially_paid' => 'Partiel',
     'to_collect' => 'À encaisser',
-    'remaining_amount' => 'Reste :amount F',
+    'remaining_amount' => 'Reste :amount',
 
     // ── Parc ────────────────────────────────────────────────────────────────
     'fleet_count' => ':count véhicule(s) dans le parc',

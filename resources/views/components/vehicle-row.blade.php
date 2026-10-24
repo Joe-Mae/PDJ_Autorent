@@ -11,7 +11,7 @@
      * @var bool $withDriver
      */
     $locale = app()->getLocale();
-    $money = fn (int $amount) => number_format($amount, 0, ' ', ' ').' FCFA';
+    $money = fn (int $amount) => app(\App\Services\SettingsService::class)->money($amount);
     $quote = app(\App\Services\PricingService::class)->quote($vehicle->category, $period, $withDriver);
     $params = request()->query();
     $bookingParams = [

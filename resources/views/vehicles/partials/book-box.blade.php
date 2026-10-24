@@ -6,7 +6,7 @@
      * @var bool $sticky
      */
     $sticky = $sticky ?? false;
-    $money = fn (int $amount) => number_format($amount, 0, ' ', ' ').' FCFA';
+    $money = fn (int $amount) => app(\App\Services\SettingsService::class)->money($amount);
     $query = $quote ? array_filter([
         'avec_chauffeur' => $quote->withDriver ? 1 : null,
     ], fn ($value) => $value !== null) : [];
@@ -58,8 +58,8 @@
                 </div>
                 <div class="hint mt-1">
                     {{ $quote->days }} {{ __('general.days') }} ×
-                    {{ number_format($quote->driverDailyPrice, 0, ' ', ' ') }} FCFA —
-                    {{ number_format($quote->priceDriver, 0, ' ', ' ') }} FCFA
+                    {{ $money($quote->driverDailyPrice) }} —
+                    {{ $money($quote->priceDriver) }}
                 </div>
             </div>
         @endif

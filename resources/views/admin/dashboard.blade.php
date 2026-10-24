@@ -24,8 +24,8 @@
         ];
 
         $alertCards = [
-            [__('admin.period_revenue'), number_format($periodRevenue, 0, ',', ' ').' FCFA', 'cash-stack', 'success', route('admin.payments.index')],
-            [__('admin.outstanding'), number_format($outstanding, 0, ',', ' ').' FCFA', 'hourglass-bottom', 'danger', route('admin.payments.index')],
+            [__('admin.period_revenue'), app(\App\Services\SettingsService::class)->money($periodRevenue), 'cash-stack', 'success', route('admin.payments.index')],
+            [__('admin.outstanding'), app(\App\Services\SettingsService::class)->money($outstanding), 'hourglass-bottom', 'danger', route('admin.payments.index')],
             [__('admin.overdue_rentals'), $stats['overdue'], 'exclamation-triangle', 'danger', route('admin.bookings.index', ['statut' => 'en_cours'])],
             [__('admin.unavailable_vehicles'), $stats['unavailable'], 'tools', 'warning', $isManager ? route('admin.vehicles.index') : null],
         ];
@@ -170,11 +170,11 @@
 
                     <div class="admin-cash-row mt-2">
                         <span>{{ __('admin.period_revenue') }}</span>
-                        <strong class="text-success">{{ number_format($periodRevenue, 0, ',', ' ') }} FCFA</strong>
+                        <strong class="text-success">{{ app(\App\Services\SettingsService::class)->money($periodRevenue) }}</strong>
                     </div>
                     <div class="admin-cash-row">
                         <span>{{ __('admin.outstanding') }}</span>
-                        <strong class="{{ $outstanding > 0 ? 'text-danger' : '' }}">{{ number_format($outstanding, 0, ',', ' ') }} FCFA</strong>
+                        <strong class="{{ $outstanding > 0 ? 'text-danger' : '' }}">{{ app(\App\Services\SettingsService::class)->money($outstanding) }}</strong>
                     </div>
                 </section>
             </div>
@@ -258,7 +258,7 @@
                                         <td>{{ $booking->user?->displayName() ?? $booking->customer_name ?? 'â€”' }}</td>
                                         <td>{{ $booking->vehicle->displayName() }}</td>
                                         <td class="small text-nowrap">{{ $booking->starts_at->translatedFormat('d/m/Y') }} â€” {{ $booking->ends_at->translatedFormat('d/m/Y') }}</td>
-                                        <td class="text-end text-nowrap">{{ number_format($booking->price_total, 0, ' ', ' ') }} F</td>
+                                        <td class="text-end text-nowrap">{{ app(\App\Services\SettingsService::class)->money($booking->price_total) }}</td>
                                         <td>
                                             @if ($booking->isOverdue())
                                                 <span class="badge rounded-pill bg-danger">{{ __('admin.overdue') }}</span>
@@ -427,9 +427,9 @@
                         </div>
                         <i class="bi bi-cash-coin text-success fs-4"></i>
                     </div>
-                    <div class="admin-cash-row"><span>{{ __('admin.rentals') }}</span><strong>{{ number_format($cash['today_in'], 0, ',', ' ') }} F</strong></div>
-                    <div class="admin-cash-row"><span>{{ __('admin.refunds') }}</span><strong>âˆ’ {{ number_format($cash['today_out'], 0, ',', ' ') }} F</strong></div>
-                    <div class="admin-cash-row admin-cash-row--total"><span>{{ __('admin.deposits_held') }}</span><strong>{{ number_format($cash['deposits_held'], 0, ',', ' ') }} F</strong></div>
+                    <div class="admin-cash-row"><span>{{ __('admin.rentals') }}</span><strong>{{ app(\App\Services\SettingsService::class)->money($cash['today_in']) }}</strong></div>
+                    <div class="admin-cash-row"><span>{{ __('admin.refunds') }}</span><strong>âˆ’ {{ app(\App\Services\SettingsService::class)->money($cash['today_out']) }}</strong></div>
+                    <div class="admin-cash-row admin-cash-row--total"><span>{{ __('admin.deposits_held') }}</span><strong>{{ app(\App\Services\SettingsService::class)->money($cash['deposits_held']) }}</strong></div>
                     <a class="btn btn-sm btn-outline-primary w-100 mt-3" href="{{ route('agent.cash.index') }}">
                         {{ __('admin.open_cash') }}
                     </a>

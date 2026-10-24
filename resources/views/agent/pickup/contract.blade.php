@@ -21,7 +21,7 @@
                     <li>{{ __('agent.condition_drivers') }}</li>
                     <li>{{ __('agent.condition_border') }}</li>
                     <li>{{ __('agent.condition_animals') }}</li>
-                    <li>{{ __('agent.condition_insurance', ['amount' => number_format(app(\App\Services\SettingsService::class)->int('booking.insurance_deductible'), 0, ' ', ' ').' FCFA']) }}</li>
+                    <li>{{ __('agent.condition_insurance', ['amount' => app(\App\Services\SettingsService::class)->money(app(\App\Services\SettingsService::class)->int('booking.insurance_deductible'))]) }}</li>
                 </ul>
             </div>
 

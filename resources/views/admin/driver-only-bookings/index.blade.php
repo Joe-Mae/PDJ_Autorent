@@ -123,11 +123,11 @@
                                 {{ $booking->ends_at->translatedFormat('d/m/Y') }}
                                 <div class="text-muted">
                                     {{ $booking->days }} {{ __('general.days') }} ×
-                                    {{ number_format($booking->daily_price, 0, ' ', ' ') }} F
+                                    {{ app(\App\Services\SettingsService::class)->money($booking->daily_price) }}
                                 </div>
                             </td>
                             <td class="text-end text-nowrap fw-semibold">
-                                {{ number_format($booking->price_total, 0, ' ', ' ') }} F
+                                {{ app(\App\Services\SettingsService::class)->money($booking->price_total) }}
                             </td>
                             <td class="small">
                                 @if ($booking->driver)

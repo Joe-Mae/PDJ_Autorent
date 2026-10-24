@@ -249,7 +249,7 @@ return [
 
     'drivers' => 'Chauffeurs',
     'add_driver' => 'Add a chauffeur',
-    'free_slots' => ':count chauffeur slot(s) free over the next 14 days. With a car: :price FCFA per day.',
+    'free_slots' => ':count chauffeur slot(s) free over the next 14 days. With a car: :price per day.',
     'rentals_done' => 'rentals',
     'retire' => 'Retire',
     'retire_driver_confirm' => 'Remove this chauffeur from the schedule? History is kept.',
@@ -316,7 +316,7 @@ return [
     'paid' => 'Paid',
     'partially_paid' => 'Partial',
     'to_collect' => 'To collect',
-    'remaining_amount' => 'Due: :amount F',
+    'remaining_amount' => 'Due: :amount',
 
     // ── Fleet ───────────────────────────────────────────────────────────────
     'fleet_count' => ':count vehicle(s) in the fleet',

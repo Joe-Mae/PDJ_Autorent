@@ -44,7 +44,7 @@
                             <select class="form-select" id="category_id" name="category_id" required>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}" @selected(old('category_id', $vehicle->category_id) === $category->id)>
-                                        {{ $category->name('fr') }} — {{ number_format($category->daily_price, 0, ' ', ' ') }} F CFA/j
+                                        {{ $category->name('fr') }} — {{ app(\App\Services\SettingsService::class)->money($category->daily_price) }}/j
                                     </option>
                                 @endforeach
                             </select>

@@ -42,6 +42,6 @@ return [
     'cond_km' => 'Unlimited mileage, with reasonable use.',
     'cond_fuel' => 'Fuel is at your expense. The vehicle is returned with the same level as at pickup.',
     'cond_speed' => 'Speed limit 120 km/h, penalties for speeding.',
-    'cond_insurance' => 'Insurance included: third party, theft, fire, glass. :amount FCFA excess.',
+    'cond_insurance' => 'Insurance included: third party, theft, fire, glass. :amount excess.',
     'cond_cancellation' => 'Free cancellation until 6pm the day before.',
 ];

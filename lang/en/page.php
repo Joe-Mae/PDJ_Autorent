@@ -81,7 +81,7 @@ return [
     'terms_cancellation' => 'Cancellation',
     'terms_cancellation_text' => 'Cancellation is free as long as the rental has not started. There is no cancellation fee.',
     'terms_driver' => 'Chauffeur',
-    'terms_driver_text' => 'With a car rented from the agency, a chauffeur costs 7,000 FCFA per day (supplement). For a chauffeur-only booking, the rate is 15,000 FCFA per day for up to 3 days, then 13,000 FCFA per day applied to the entire duration beyond 3 days. With a chauffeur, the customer\'s driving licence is not required.',
+    'terms_driver_text' => 'With a car rented from the agency, a chauffeur costs :with_car per day (supplement). For a chauffeur-only booking, the rate is :standard per day for up to :days days, then :discount per day applied to the entire duration beyond :days days. With a chauffeur, the customer\'s driving licence is not required.',
 
     'privacy_title' => 'Your data',
     'privacy_intro' => 'What we collect, why, and for how long.',

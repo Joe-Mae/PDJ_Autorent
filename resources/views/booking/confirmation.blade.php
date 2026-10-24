@@ -41,7 +41,7 @@
             @endunless
             <li class="mb-0">
                 <i class="bi bi-cash-coin me-2"></i>
-                {{ number_format($booking->amountToCarry(), 0, ' ', ' ') }} FCFA
+                {{ app(\App\Services\SettingsService::class)->money($booking->amountToCarry()) }}
                 <span class="text-muted">({{ __('booking.amount_breakdown') }})</span>
             </li>
         </ul>

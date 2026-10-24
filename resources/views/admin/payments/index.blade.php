@@ -26,7 +26,7 @@
                         <i class="bi bi-{{ $icon }}"></i>
                     </div>
                     <div class="admin-stat-card__label">{{ $label }}</div>
-                    <div class="admin-stat-card__value">{{ number_format($value, 0, ',', ' ') }} F</div>
+                    <div class="admin-stat-card__value">{{ app(\App\Services\SettingsService::class)->money($value) }}</div>
                 </div>
             </div>
         @endforeach
@@ -108,7 +108,7 @@
                        href="{{ route('admin.bookings.show', $line['booking']) }}">
                         <span class="admin-prestation__main">
                             <span class="fw-semibold">{{ $line['booking']->reference }}</span>
-                            <small>{{ __('admin.remaining_amount', ['amount' => number_format($line['remaining'], 0, ' ', ' ')]) }}</small>
+                            <small>{{ __('admin.remaining_amount', ['amount' => app(\App\Services\SettingsService::class)->money($line['remaining'])]) }}</small>
                         </span>
                         <span class="admin-prestation__type">{{ __('admin.to_collect') }}</span>
                     </a>
@@ -185,7 +185,7 @@
                             <td class="small">{{ $payment->recorder?->displayName() ?? '—' }}</td>
                             <td class="small text-muted">{{ $payment->note ?? $payment->reference ?? '—' }}</td>
                             <td class="text-end text-nowrap fw-semibold {{ $payment->kind->isCashOut() ? 'text-danger' : '' }}">
-                                {{ $payment->kind->isCashOut() ? '−' : '' }}{{ number_format($payment->amount, 0, ' ', ' ') }} F
+                                {{ $payment->kind->isCashOut() ? '−' : '' }}{{ app(\App\Services\SettingsService::class)->money($payment->amount) }}
                             </td>
                         </tr>
                     @empty

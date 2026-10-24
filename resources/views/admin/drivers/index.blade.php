@@ -15,7 +15,7 @@
     <div class="admin-info-strip mb-4">
         <i class="bi bi-info-circle-fill"></i>
         <span>
-            {{ __('admin.free_slots', ['count' => $freeSlots, 'price' => number_format($vehicleDailyPrice, 0, ' ', ' ')]) }}
+            {{ __('admin.free_slots', ['count' => $freeSlots, 'price' => app(\App\Services\SettingsService::class)->money($vehicleDailyPrice)]) }}
         </span>
     </div>
 

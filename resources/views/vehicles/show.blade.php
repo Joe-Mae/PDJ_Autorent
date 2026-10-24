@@ -71,7 +71,7 @@
                     <li>{{ __('vehicle.cond_km') }}</li>
                     <li>{{ __('vehicle.cond_fuel') }}</li>
                     <li>{{ __('vehicle.cond_speed') }}</li>
-                    <li>{{ __('vehicle.cond_insurance', ['amount' => number_format(app(\App\Services\SettingsService::class)->int('booking.insurance_deductible'), 0, ' ', ' ').' FCFA']) }}</li>
+                    <li>{{ __('vehicle.cond_insurance', ['amount' => app(\App\Services\SettingsService::class)->money(app(\App\Services\SettingsService::class)->int('booking.insurance_deductible'))]) }}</li>
                     <li>{{ __('vehicle.cond_cancellation') }}</li>
                 </ul>
             </div>
@@ -109,7 +109,7 @@
                                  class="rounded" width="72" height="52" style="object-fit: cover;" alt="" loading="lazy">
                             <span class="small">
                                 <strong>{{ $item->displayName() }}</strong><br>
-                                <span class="text-muted">{{ number_format($item->category->daily_price, 0, ' ', ' ') }} FCFA / {{ __('general.day_short') }}</span>
+                                <span class="text-muted">{{ app(\App\Services\SettingsService::class)->money($item->category->daily_price) }} / {{ __('general.day_short') }}</span>
                             </span>
                         </a>
                     @endforeach

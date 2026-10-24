@@ -209,7 +209,13 @@ la facture du client.
 Tout ce qui touche au métier est modifiable depuis `/admin/parametres`, sans
 redéploiement : horaires, battement, délai de grâce, tarif du bloc chauffeur,
 âge minimum, ancienneté du permis, vitesse maximale, cautions par catégorie,
-nombre de réservations actives, seuil de blocage pour absence.
+nombre de réservations actives, seuil de blocage pour absence, devise
+(`general.currency`).
+
+Aucun montant n'est écrit en dur : tout affichage passe par
+`SettingsService::money()`, qui lit la devise en cours. Changer la devise sur
+`/admin/parametres` suffit à faire basculer le site entier — prix, cautions,
+pénalités, reçus et tableaux de bord.
 
 ## Passer en production
 - [ ] `APP_ENV=production`, `APP_DEBUG=false`

@@ -162,7 +162,7 @@ class NotificationService
 
     public function formatAmount(int $amount): string
     {
-        return number_format($amount, 0, ' ', ' ').' FCFA';
+        return $this->settings->money($amount);
     }
 
     /**

@@ -49,7 +49,7 @@
         <div class="col-lg-6">
             <div class="pdj-card">
                 <h2 class="h6 fw-bold mb-2">{{ __('admin.deposits_held') }}</h2>
-                <p class="small text-muted">{{ __('admin.deductions_made') }} : {{ number_format($deducted, 0, ' ', ' ') }} FCFA</p>
+                <p class="small text-muted">{{ __('admin.deductions_made') }} : {{ app(\App\Services\SettingsService::class)->money($deducted) }}</p>
                 <table class="table admin-table mb-0">
                     <tbody>
                         @foreach ($payments as $payment)

@@ -239,8 +239,8 @@ class GuestBookingTest extends TestCase
             'token' => $token,
         ]))
             ->assertSee(__('quote.line.driver', ['days' => 4]))
-            ->assertSee('28 000 F CFA', false)
-            ->assertSee('100 000 F CFA', false);
+            ->assertSee('28 000 FCFA', false)
+            ->assertSee('100 000 FCFA', false);
     }
 
     public function test_une_reference_seule_ne_permet_pas_d_acceder_a_la_confirmation_guest(): void

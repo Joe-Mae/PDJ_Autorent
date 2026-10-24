@@ -117,7 +117,7 @@ class ReturnController extends Controller
 
         if ($deducted > $paid) {
             return back()->withErrors(['deducted_amount' => __('agent.deduction_above_deposit', [
-                'amount' => number_format($paid, 0, ' ', ' ').' F CFA',
+                'amount' => $this->settings->money($paid),
             ])]);
         }
 
@@ -150,7 +150,7 @@ class ReturnController extends Controller
             ->route('agent.return.index')
             ->with('status', __('agent.return_done', [
                 'ref' => $booking->reference,
-                'amount' => number_format($paid - $deducted, 0, ' ', ' ').' F CFA',
+                'amount' => $this->settings->money($paid - $deducted),
             ]));
     }
 }

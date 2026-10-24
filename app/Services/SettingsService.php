@@ -24,6 +24,8 @@ class SettingsService
         'agency.open_time' => '08:00',
         'agency.close_time' => '19:00',
 
+        'general.currency' => 'FCFA',
+
         'booking.turnaround_hours' => '2',
         'booking.grace_period_hours' => '2',
         'booking.max_active_bookings' => '2',
@@ -192,6 +194,26 @@ class SettingsService
     public function formattedPhone(): string
     {
         return $this->string('agency.phone');
+    }
+
+    /**
+     * Devise affichée. Un blanc-marque hors du Franc CFA change ce réglage,
+     * jamais le code.
+     */
+    public function currency(): string
+    {
+        return $this->string('general.currency');
+    }
+
+    /**
+     * Montant formaté pour l'écran : « 150 000 FCFA ».
+     *
+     * Séparateur de milliers insécable, jamais de décimale : les tarifs sont
+     * des entiers, du début à la fin.
+     */
+    public function money(int $amount): string
+    {
+        return number_format($amount, 0, '.', ' ').' '.$this->currency();
     }
 
     private function declaredType(string $key): string

@@ -44,10 +44,10 @@ return new class extends Migration
 
         foreach ([
             ['driver.block_hours', '4', 'Durée d’un bloc chauffeur (heures)'],
-            ['driver.block_price', '7000', 'Tarif chauffeur avec voiture (FCFA/jour)'],
+            ['driver.block_price', '7000', 'Tarif chauffeur avec voiture (:currency/jour)'],
             ['driver.auto_check_days', '5', 'Durée avant de proposer un chauffeur (jours)'],
-            ['driver.solo_daily_price', '15000', 'Chauffeur seul : tarif journalier (FCFA)'],
-            ['driver.solo_discount_daily_price', '13000', 'Chauffeur seul : tarif réduit (FCFA/jour)'],
+            ['driver.solo_daily_price', '15000', 'Chauffeur seul : tarif journalier (:currency)'],
+            ['driver.solo_discount_daily_price', '13000', 'Chauffeur seul : tarif réduit (:currency/jour)'],
             ['driver.solo_discount_after_days', '3', 'Durée avant tarif réduit (jours)'],
         ] as [$key, $value, $label]) {
             DB::table('settings')->insertOrIgnore([

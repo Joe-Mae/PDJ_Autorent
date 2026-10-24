@@ -6,6 +6,7 @@ use App\Enums\PaymentKind;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Payment;
+use App\Services\SettingsService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -66,7 +67,7 @@ class CashReportController extends Controller
 
         return back()->with('status', $gap === 0
             ? __('agent.cash_closed_ok')
-            : __('agent.cash_closed_gap', ['gap' => number_format(abs($gap), 0, ' ', ' ').' F CFA']));
+            : __('agent.cash_closed_gap', ['gap' => app(SettingsService::class)->money(abs($gap))]));
     }
 
     private function paymentsFor($date)

@@ -51,7 +51,7 @@
                 </div>
 
                 <div class="pdj-card mb-3">
-                    <label class="form-label" for="late_fee">{{ __('agent.late_fee_field') }}</label>
+                    <label class="form-label" for="late_fee">{{ __('agent.late_fee_field', ['currency' => app(\App\Services\SettingsService::class)->currency()]) }}</label>
                     <input type="number" class="form-control" id="late_fee" name="late_fee" min="0" step="500" value="0">
                     <div class="form-text">{{ __('agent.late_fee_hint') }}</div>
                 </div>

@@ -61,6 +61,7 @@ class DemoSeeder extends Seeder
             ['agency.whatsapp', '+22890123456', 'general', 'Numéro WhatsApp, format international', 'string'],
             ['agency.open_time', '08:00', 'general', "Heure d'ouverture", 'string'],
             ['agency.close_time', '19:00', 'general', 'Heure de fermeture', 'string'],
+            ['general.currency', 'FCFA', 'general', 'Devise affichée (code ou symbole)', 'string'],
 
             ['booking.turnaround_hours', '2', 'reservation', 'Battement entre deux locations (heures)', 'int'],
             ['booking.grace_period_hours', '2', 'reservation', 'Délai de grâce avant "non présenté" (heures)', 'int'],
@@ -71,13 +72,13 @@ class DemoSeeder extends Seeder
             ['booking.free_cancellation_before', '18:00', 'reservation', "Heure limite d'annulation gratuite (J-1)", 'string'],
             ['booking.min_days', '1', 'reservation', 'Durée minimum de location (jours)', 'int'],
             ['booking.late_fee_multiplier', '1', 'reservation', 'Pénalité de retard : 1 = un jour de location par jour commencé', 'int'],
-            ['booking.insurance_deductible', '150000', 'reservation', 'Franchise assurance (FCFA)', 'int'],
+            ['booking.insurance_deductible', '150000', 'reservation', 'Franchise assurance (:currency)', 'int'],
 
             ['driver.block_hours', '4', 'driver', 'Durée d\'un bloc chauffeur (heures)', 'int'],
-            ['driver.block_price', '7000', 'driver', 'Supplément chauffeur avec voiture (FCFA/jour)', 'int'],
+            ['driver.block_price', '7000', 'driver', 'Supplément chauffeur avec voiture (:currency/jour)', 'int'],
             ['driver.auto_check_days', '5', 'driver', 'Au-delà de N jours, proposer le chauffeur', 'int'],
-            ['driver.solo_daily_price', '15000', 'driver', 'Chauffeur seul : tarif journalier jusqu\'à 3 jours (FCFA)', 'int'],
-            ['driver.solo_discount_daily_price', '13000', 'driver', 'Chauffeur seul : tarif journalier réduit au-delà de 3 jours (FCFA)', 'int'],
+            ['driver.solo_daily_price', '15000', 'driver', 'Chauffeur seul : tarif journalier jusqu\'à 3 jours (:currency)', 'int'],
+            ['driver.solo_discount_daily_price', '13000', 'driver', 'Chauffeur seul : tarif journalier réduit au-delà de 3 jours (:currency)', 'int'],
             ['driver.solo_discount_after_days', '3', 'driver', 'Chauffeur seul : durée avant tarif réduit (jours)', 'int'],
             ['driver.with_car_mode', 'supplement', 'driver', 'Mode tarif chauffeur avec voiture: supplement ou package', 'string'],
 

@@ -227,7 +227,7 @@
                     <p class="small text-muted">
                         @if ($booking->driver_daily_price !== null)
                             {{ $booking->days }} {{ __('general.days') }} ×
-                            <strong>{{ number_format($booking->driver_daily_price, 0, ' ', ' ') }} FCFA</strong>
+                            <strong>{{ app(\App\Services\SettingsService::class)->money($booking->driver_daily_price) }}</strong>
                         @else
                             {{ __('booking.driver_blocks', ['hours' => 4]) }} :
                             <strong>{{ $booking->driver_blocks }}</strong>
@@ -265,7 +265,7 @@
                         <tr>
                             <td>
                                 @if ($booking->driver_daily_price !== null)
-                                    {{ __('driver.badge') }} ({{ $booking->days }} {{ __('general.days') }} × {{ number_format($booking->driver_daily_price, 0, ' ', ' ') }} FCFA)
+                                    {{ __('driver.badge') }} ({{ $booking->days }} {{ __('general.days') }} × {{ app(\App\Services\SettingsService::class)->money($booking->driver_daily_price) }})
                                 @else
                                     {{ __('driver.badge') }} ({{ $booking->driver_blocks }} blocs)
                                 @endif

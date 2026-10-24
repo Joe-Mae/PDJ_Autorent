@@ -46,7 +46,7 @@
             <div class="mt-1 @if (! $withDriver) d-none @endif" data-guest-driver-info>
                 <p class="hint mb-0">Le chauffeur est inclus dans cette demande et son tarif s'ajoute au prix de la location.</p>
                 <p class="small text-muted mb-0">
-                    {{ number_format($quote->driverDailyPrice, 0, ' ', ' ') }} FCFA par jour avec la voiture.
+                    {{ app(\App\Services\SettingsService::class)->money($quote->driverDailyPrice) }} par jour avec la voiture.
                 </p>
             </div>
         </div>
@@ -80,7 +80,7 @@
         <div class="border rounded p-3 mt-4" aria-live="polite">
             <div class="small text-muted">{{ __('booking.guest.daily_rate') }}</div>
             <div class="fw-semibold">
-                <span data-guest-daily-price>{{ number_format($quote->dailyPrice, 0, ' ', ' ') }}</span> FCFA
+                <span data-guest-daily-price>{{ number_format($quote->dailyPrice, 0, ' ', ' ') }}</span> {{ app(\App\Services\SettingsService::class)->currency() }}
             </div>
             <div class="small text-muted mt-2">
                 {{ __('booking.guest.days') }}:
@@ -89,19 +89,19 @@
             <div class="d-flex justify-content-between small mt-3">
                 <span>{{ __('quote.line.rental', ['days' => $quote->days]) }}</span>
                 <span class="text-nowrap">
-                    <span data-guest-rental-total>{{ number_format($quote->priceRental, 0, ' ', ' ') }}</span> FCFA
+                    <span data-guest-rental-total>{{ number_format($quote->priceRental, 0, ' ', ' ') }}</span> {{ app(\App\Services\SettingsService::class)->currency() }}
                 </span>
             </div>
             <div class="d-flex justify-content-between small mt-1 @if (! $withDriver) d-none @endif"
                  data-guest-driver-line>
                 <span>{{ __('quote.line.driver', ['days' => $quote->days]) }}</span>
                 <span class="text-nowrap">
-                    <span data-guest-driver-total>{{ number_format($quote->priceDriver, 0, ' ', ' ') }}</span> FCFA
+                    <span data-guest-driver-total>{{ number_format($quote->priceDriver, 0, ' ', ' ') }}</span> {{ app(\App\Services\SettingsService::class)->currency() }}
                 </span>
             </div>
             <div class="fw-bold mt-2">
                 {{ __('booking.guest.estimated_total') }}:
-                <span data-guest-total>{{ number_format($quote->priceTotal, 0, ' ', ' ') }}</span> FCFA
+                <span data-guest-total>{{ number_format($quote->priceTotal, 0, ' ', ' ') }}</span> {{ app(\App\Services\SettingsService::class)->currency() }}
             </div>
             <div class="small text-muted mt-1" data-guest-quote-error hidden></div>
         </div>

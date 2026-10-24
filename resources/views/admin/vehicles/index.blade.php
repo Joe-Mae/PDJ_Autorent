@@ -105,7 +105,7 @@
                                 <div class="text-muted">{{ $vehicle->fuelLabel() }}</div>
                             </td>
                             <td class="text-end text-nowrap">
-                                <span class="fw-semibold">{{ number_format($vehicle->category->daily_price, 0, ' ', ' ') }} F</span>
+                                <span class="fw-semibold">{{ app(\App\Services\SettingsService::class)->money($vehicle->category->daily_price) }}</span>
                                 <div class="small text-muted">{{ __('admin.per_day') }}</div>
                             </td>
                             <td>

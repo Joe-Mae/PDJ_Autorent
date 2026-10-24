@@ -5,7 +5,7 @@
      * dompdf ne comprend pas le CSS moderne : on ne compte que sur les
      * attributes inline, la police par défaut et des bordures en tirets.
      */
-    $money = fn (int $amount) => number_format($amount, 0, ' ', ' ').' FCFA';
+    $money = fn (int $amount) => $settings->money($amount);
     $line = 'border-bottom:1px dashed #999; padding:6px 0; font-size:11px;';
     $label = 'color:#555;';
     $agencyName = $settings->string('agency.name');
@@ -251,7 +251,7 @@
 
     {{-- ── Informations importantes ────────────────────────────────────────── --}}
     <p style="font-size:8px;margin:4px 0 0;" class="muted">
-        Valable uniquement pour la date et les horaires indiqués. Annulation : prévenir 24h à l'avance. Modification : {{ $agencyPhone }}. Assurance incluse : RC, vol, incendie, bris de vitres. Franchise : {{ number_format($settings->int('booking.insurance_deductible'), 0, ' ', ' ') }} FCFA.
+        Valable uniquement pour la date et les horaires indiqués. Annulation : prévenir 24h à l'avance. Modification : {{ $agencyPhone }}. Assurance incluse : RC, vol, incendie, bris de vitres. Franchise : {{ $settings->money($settings->int('booking.insurance_deductible')) }}.
     </p>
 
     <div class="dash"></div>
