@@ -37,6 +37,10 @@ class BookingReceiptController extends Controller
             'settings' => app(SettingsService::class),
         ])->setPaper('a5');
 
-        return $pdf->download("PDJ-{$booking->reference}.pdf");
+        // La référence porte déjà le préfixe de l'agence : c'est elle qui
+        // nomme le fichier. Écrire la marque ici ajouterait un nom codé en dur
+        // — et un second préfixe, puisque « PDJ-8F3K2A » devenait
+        // « PDJ-PDJ-8F3K2A.pdf ». Un changement de marque suit donc tout seul.
+        return $pdf->download($booking->reference.'.pdf');
     }
 }

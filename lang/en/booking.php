@@ -103,6 +103,10 @@ return [
     'confirmation_intro' => 'The agency checks availability and service requirements before confirming your booking.',
     'reference' => 'Reference',
     'download_receipt' => 'Download the booking receipt',
+    'receipt' => [
+        'license_notice' => 'Come with your driving licence: it is required at vehicle pickup.',
+        'driver_notice' => 'With a driver, no licence needed: show your identity document.',
+    ],
     'what_happens_next' => 'What happens next',
     'next_steps' => 'The agency will tell you once availability and service requirements have been checked. Before the vehicle handover, bring the original documents listed in your confirmation and pay at the agency.',
     'bring_with_you' => 'To show at pickup',

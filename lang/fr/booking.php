@@ -102,6 +102,10 @@ return [
     'confirmation_intro' => 'L’agence vérifie la disponibilité et les conditions de la prestation avant de vous confirmer la réservation.',
     'reference' => 'Référence',
     'download_receipt' => 'Télécharger le bon de réservation',
+    'receipt' => [
+        'license_notice' => 'Présentez-vous avec votre permis de conduire : il est demandé au retrait du véhicule.',
+        'driver_notice' => 'Avec chauffeur, pas besoin de permis : présentez votre pièce d\'identité.',
+    ],
     'what_happens_next' => 'La suite',
     'next_steps' => 'L’agence vous informe dès que la disponibilité et les conditions ont été vérifiées. Avant la remise du véhicule, présentez les documents originaux indiqués dans votre confirmation et réglez à l’agence.',
     'bring_with_you' => 'À présenter au retrait',

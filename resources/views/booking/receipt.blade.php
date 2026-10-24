@@ -86,6 +86,13 @@
         Merci de votre confiance ! Présentez ce bon au retrait.
     </div>
 
+    {{-- La pièce à apporter dépend de la prestation : annoncer le permis à un
+         client avec chauffeur le ferait courir pour rien, et l'oublier à un
+         client sans chauffeur se paie au guichet. --}}
+    <div class="center" style="font-size:8.5px;font-weight:bold;margin:2px 0 6px;padding:4px;border:1px solid #14201b;background:#f3f5f4;">
+        {{ $booking->with_driver ? __('booking.receipt.driver_notice') : __('booking.receipt.license_notice') }}
+    </div>
+
     <table>
         <tr>
             <td style="{{ $label }}">Date de réservation</td>
