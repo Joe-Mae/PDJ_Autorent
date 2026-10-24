@@ -105,6 +105,28 @@
                     </div>
                 </form>
             </div>
+
+            <div class="pdj-card mt-4">
+                <h2 class="h6 fw-bold mb-1">{{ __('admin.access_history') }}</h2>
+                <p class="small text-muted mb-3">{{ __('admin.access_history_hint') }}</p>
+
+                @if ($history->isEmpty())
+                    <p class="small text-muted mb-0">{{ __('admin.access_history_empty') }}</p>
+                @else
+                    <ul class="list-unstyled mb-0 small">
+                        @foreach ($history as $entry)
+                            <li class="d-flex justify-content-between gap-2 py-1 border-bottom border-light">
+                                <span>
+                                    <i class="bi bi-{{ $entry->event === 'document.reviewed' ? 'stamp' : 'eye' }} me-1 text-muted"></i>
+                                    {{ $entry->actor?->displayName() ?? __('admin.system') }}
+                                    {{ $entry->event === 'document.reviewed' ? __('admin.reviewed') : __('admin.accessed') }}
+                                </span>
+                                <span class="text-nowrap text-muted">{{ $entry->created_at->translatedFormat('d/m H:i') }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
         </div>
     </div>
 @endsection

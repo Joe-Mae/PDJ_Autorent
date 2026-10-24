@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Booking;
 use App\Models\CustomerDocument;
 use App\Services\NotificationService;
@@ -17,6 +18,10 @@ use Illuminate\Http\Request;
  * cher : un document validé à la légère laisse passer un permis expiré. D'où
  * trois verdicts seulement, dont un « je regarde plus tard » explicite, et un
  * accès direct à l'image en grand.
+ *
+ * Tout accès au fichier lui-même passe par show() — c'est là que naissent les
+ * URL signées — donc c'est là que le journal est écrit : qui a ouvert la pièce,
+ * quand, depuis quelle adresse.
  */
 class DocumentController extends Controller
 {
@@ -39,12 +44,26 @@ class DocumentController extends Controller
         ]);
     }
 
-    public function show(CustomerDocument $document): View
+    public function show(Request $request, CustomerDocument $document): View
     {
+        $this->audit($request, 'document.accessed', $document, [
+            'type' => $document->type->value,
+            'reservation' => $document->booking?->reference,
+        ]);
+
         return view('admin.documents.show', [
             'document' => $document->load([
                 'user', 'booking.vehicle.category', 'booking.documents', 'booking.user', 'driverOnlyBooking',
             ]),
+            // L'accès courant est écrit juste au-dessus : on le remonte avec les
+            // précédents pour que l'agent voie la ligne qu'il vient de créer.
+            'history' => AuditLog::query()
+                ->about($document)
+                ->whereIn('event', ['document.accessed', 'document.reviewed'])
+                ->with('actor')
+                ->latest()
+                ->limit(20)
+                ->get(),
         ]);
     }
 
@@ -63,6 +82,8 @@ class DocumentController extends Controller
             return back()->withErrors(['note' => __('admin.reason_required')]);
         }
 
+        $previous = $document->status;
+
         $document->update([
             'status' => $data['verdict'],
             'review_note' => $data['note'] ?? null,
@@ -70,6 +91,11 @@ class DocumentController extends Controller
             'reviewed_at' => now(),
             'expires_at' => $data['expires_at'] ?? null,
         ]);
+
+        $this->audit($request, 'document.reviewed', $document, [
+            'type' => $document->type->value,
+            'reservation' => $document->booking?->reference,
+        ], ['status' => $previous->value], ['status' => $document->status->value]);
 
         $booking = $document->booking;
 
@@ -81,6 +107,31 @@ class DocumentController extends Controller
             'type' => $document->type->label(),
             'verdict' => $document->status->label(),
         ]));
+    }
+
+    /**
+     * Écrit une ligne au journal. Une pièce d'identité se consulte pour un
+     * motif précis : sans trace de qui l'a ouverte, on ne peut ni répondre à
+     * un client qui demande qui a vu ses documents, ni repérer une ouverture
+     * sans raison.
+     *
+     * @param  array<string, mixed>  $context
+     * @param  array<string, mixed>  $old
+     * @param  array<string, mixed>  $new
+     */
+    private function audit(Request $request, string $event, CustomerDocument $document, array $context, array $old = [], array $new = []): void
+    {
+        AuditLog::query()->create([
+            'user_id' => $request->user()?->id,
+            'event' => $event,
+            'auditable_type' => CustomerDocument::class,
+            'auditable_id' => $document->getKey(),
+            'description' => json_encode($context, JSON_UNESCAPED_UNICODE),
+            'old_values' => $old ?: null,
+            'new_values' => $new ?: null,
+            'ip_address' => $request->ip(),
+            'user_agent' => mb_substr((string) $request->userAgent(), 0, 255),
+        ]);
     }
 
     private function notifyClient(Booking $booking, CustomerDocument $document): void

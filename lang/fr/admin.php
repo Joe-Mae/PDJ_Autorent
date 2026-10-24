@@ -228,6 +228,12 @@ return [
     'approve' => 'Conforme',
     'later' => 'À revoir plus tard',
     'reject' => 'Non conforme',
+    'access_history' => 'Accès à ce document',
+    'access_history_hint' => 'Qui a ouvert la pièce, et quand. Chaque ouverture de cette fiche laisse une ligne.',
+    'access_history_empty' => 'Aucun accès enregistré.',
+    'accessed' => 'a consulté',
+    'reviewed' => 'a donné un verdict',
+    'system' => 'Système',
 
     'cash' => 'Caisse',
     'daily_report' => 'Rapport du jour',

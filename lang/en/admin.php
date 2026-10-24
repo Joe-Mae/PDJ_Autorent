@@ -228,6 +228,12 @@ return [
     'approve' => 'Approved',
     'later' => 'Review later',
     'reject' => 'Rejected',
+    'access_history' => 'Access to this document',
+    'access_history_hint' => 'Who opened the document, and when. Every opening of this page leaves a line.',
+    'access_history_empty' => 'No access recorded.',
+    'accessed' => 'viewed',
+    'reviewed' => 'gave a verdict',
+    'system' => 'System',
 
     'cash' => 'Till',
     'daily_report' => 'Daily report',
