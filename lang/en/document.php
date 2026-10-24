@@ -46,5 +46,5 @@ return [
     'privacy_title' => 'Your documents, in plain terms',
     'privacy_storage' => 'Your files are stored outside the website, not reachable by a direct link.',
     'privacy_access' => 'Only our agents can open them, through a link valid for 15 minutes.',
-    'privacy_purge' => 'They are deleted 12 months after your rental, or whenever you ask.',
+    'privacy_purge' => 'They are deleted :months months after your rental, or whenever you ask.',
 ];

@@ -82,7 +82,8 @@ class DemoSeeder extends Seeder
             ['driver.with_car_mode', 'supplement', 'driver', 'Mode tarif chauffeur avec voiture: supplement ou package', 'string'],
 
             ['no_show.max_absences', '2', 'reservation', 'Absences avant blocage du compte', 'int'],
-            ['document.retention_months', '12', 'reservation', 'Conservation des documents (mois)', 'int'],
+            ['document.retention_months', '12', 'reservation', 'Conservation des documents courants (mois)', 'int'],
+            ['document.identity_retention_months', '60', 'reservation', 'Conservation des pièces d\'identité et du permis (mois)', 'int'],
             ['document.selfie_enabled', '1', 'reservation', 'Proposer le selfie facultatif', 'bool'],
             ['contact.email', 'contact@pdj-autorent.tg', 'general', 'E-mail de contact', 'string'],
         ];

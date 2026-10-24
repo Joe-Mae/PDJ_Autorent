@@ -46,5 +46,5 @@ return [
     'privacy_title' => 'Vos documents, en clair',
     'privacy_storage' => 'Vos fichiers sont stockés hors du site, inaccessibles par un lien direct.',
     'privacy_access' => 'Seuls nos agents les consultent, via un lien valable 15 minutes.',
-    'privacy_purge' => 'Ils sont supprimés 12 mois après votre location, ou quand vous le demandez.',
+    'privacy_purge' => 'Ils sont supprimés :months mois après votre location, ou quand vous le demandez.',
 ];

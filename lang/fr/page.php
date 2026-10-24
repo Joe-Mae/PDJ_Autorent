@@ -91,7 +91,7 @@ return [
     'privacy_why' => 'Pourquoi',
     'privacy_why_text' => 'Vérifier que vous pouvez conduire, éviter les réservations fantômes, et tenir la location. C\'est tout.',
     'privacy_docs' => 'Vos documents',
-    'privacy_docs_text' => 'Vos pièces sont stockées hors du site, sur un espace privé. Elles ne sont accessibles qu\'à nos agents, par un lien qui expire après 15 minutes. Elles sont supprimées 12 mois après la fin de votre location, ou immédiatement sur votre demande.',
+    'privacy_docs_text' => 'Vos pièces sont stockées hors du site, sur un espace privé. Elles ne sont accessibles qu\'à nos agents, par un lien qui expire après 15 minutes. Vos pièces d\'identité et votre permis sont supprimés :months_identity mois après la fin de votre location, les autres documents :months_common mois. Dans tous les cas, immédiatement sur votre demande.',
     'privacy_rights' => 'Vos droits',
     'privacy_rights_text' => 'Vous pouvez demander à voir, corriger ou supprimer vos données à tout moment. Il suffit d\'écrire à l\'agence : c\'est traité sous quinze jours.',
 

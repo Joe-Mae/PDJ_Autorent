@@ -91,7 +91,7 @@ return [
     'privacy_why' => 'Why',
     'privacy_why_text' => 'To check that you can drive, to prevent ghost bookings, and to run the rental. That is all.',
     'privacy_docs' => 'Your documents',
-    'privacy_docs_text' => 'Your documents are stored outside the website, in a private space. Only our agents can open them, through a link that expires after 15 minutes. They are deleted 12 months after the end of your rental, or immediately on your request.',
+    'privacy_docs_text' => 'Your documents are stored outside the website, in a private space. Only our agents can open them, through a link that expires after 15 minutes. Your ID card and driving licence are deleted :months_identity months after the end of your rental, other documents after :months_common months. In every case, immediately on your request.',
     'privacy_rights' => 'Your rights',
     'privacy_rights_text' => 'You can ask to see, correct or delete your data at any time. Just write to the agency: handled within fifteen days.',
 

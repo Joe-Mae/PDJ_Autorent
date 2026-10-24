@@ -16,6 +16,9 @@
         : route('booking.documents.destroy', ['locale' => $locale, 'booking' => $booking, 'document' => $document]);
 
     $identityCard = \App\Enums\DocumentType::IdentityCard;
+    // Cette page ne demande que la pièce d'identité : la purge annoncée doit
+    // parler de sa durée à elle, pas de celle des autres documents.
+    $identityRetentionMonths = $identityCard->retentionMonths();
     $missing = collect([$identityCard])
         ->reject(fn ($type) => $booking->documents->contains('type', $type));
 @endphp
@@ -167,7 +170,7 @@
                 <ul class="list-unstyled mb-0">
                     <li class="mb-2"><i class="bi bi-lock me-1"></i>{{ __('document.privacy_storage') }}</li>
                     <li class="mb-2"><i class="bi bi-eye-slash me-1"></i>{{ __('document.privacy_access') }}</li>
-                    <li class="mb-0"><i class="bi bi-trash me-1"></i>{{ __('document.privacy_purge') }}</li>
+                    <li class="mb-0"><i class="bi bi-trash me-1"></i>{{ __('document.privacy_purge', ['months' => $identityRetentionMonths]) }}</li>
                 </ul>
             </div>
         </div>

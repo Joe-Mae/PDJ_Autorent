@@ -69,6 +69,7 @@ class SettingsService
         'no_show.max_absences' => '2',
 
         'document.retention_months' => '12',
+        'document.identity_retention_months' => '60',
         'document.selfie_enabled' => '1',
 
         'contact.email' => 'contact@pdj-autorent.tg',
@@ -211,6 +212,7 @@ class SettingsService
             $key === 'driver.solo_discount_after_days' => 'int',
             $key === 'no_show.max_absences' => 'int',
             $key === 'document.retention_months' => 'int',
+            $key === 'document.identity_retention_months' => 'int',
             $key === 'document.selfie_enabled' => 'bool',
             default => 'string',
         };

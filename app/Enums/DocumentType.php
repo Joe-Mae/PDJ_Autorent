@@ -2,6 +2,8 @@
 
 namespace App\Enums;
 
+use App\Services\SettingsService;
+
 enum DocumentType: string
 {
     case IdentityCard = 'piece_identite';
@@ -35,13 +37,20 @@ enum DocumentType: string
         return in_array($this, self::acceptedOnline(), true);
     }
 
-    /** Durée de conservation en mois après la fin de la location. 0 = pas de purge. */
+    /**
+     * Durée de conservation en mois après la fin de la location. 0 = pas de purge.
+     *
+     * Les pièces d'état civil suivent une durée légale distincte des autres
+     * documents, d'où une clé de réglage à part : les confondre ferait purger
+     * un permis aussi vite qu'un selfie.
+     */
     public function retentionMonths(): int
     {
+        $settings = app(SettingsService::class);
+
         return match ($this) {
-            self::IdentityCard => 60,
-            self::DriverLicense => 60,
-            self::Selfie, self::Contract, self::VehiclePhoto => 12,
+            self::IdentityCard, self::DriverLicense => $settings->int('document.identity_retention_months'),
+            default => $settings->int('document.retention_months'),
         };
     }
 

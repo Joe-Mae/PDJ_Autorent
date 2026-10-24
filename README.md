@@ -156,7 +156,9 @@ coûteux ; il n'y a pas de cache d'invalidité à gérer.
 
 Stockés **hors de `public/`**, sur un disque privé, avec un nom de fichier
 aléatoire. Accès par URL signée valable 15 minutes. Suppression automatique
-12 mois après la location, ou sur demande.
+après une durée réglable par l'agence, ou sur demande : `document.retention_months`
+pour les documents courants, `document.identity_retention_months` pour la
+pièce d'identité et le permis, qui relèvent d'une conservation plus longue.
 
 Un agent vérifie chaque pièce : conforme, non conforme, ou à revoir plus tard.
 Un refus exige un motif, parce qu'un client à qui on dit non sans
