@@ -12,7 +12,8 @@ return new class extends Migration
             ['site.hero_vehicle_ids', '[]', 'json', 'Ordre des photos du bandeau accueil'],
             ['site.brand_color', '#0A6E4C', 'string', 'Couleur principale du site'],
             ['site.accent_color', '#FFC400', 'string', 'Couleur accent du site'],
-            ['site.brand_label', 'Autorent', 'string', 'Nom affiché dans le logo'],
+            ['site.brand_mark', 'PDJ', 'string', 'Monogramme affiché dans le logo'],
+            ['site.brand_label', 'AUTORENT', 'string', 'Nom affiché dans le logo'],
             ['site.hero_eyebrow.fr', 'Location de voitures à Lomé', 'string', 'Accroche du bandeau accueil (FR)'],
             ['site.hero_eyebrow.en', 'Car rental in Lomé', 'string', 'Accroche du bandeau accueil (EN)'],
             ['site.footer_tagline.fr', 'Une agence, un point à Lomé, des prix qui ne changent pas à la réservation.', 'string', 'Signature du pied de page (FR)'],
@@ -43,10 +44,10 @@ return new class extends Migration
 
         foreach ([
             ['driver.block_hours', '4', 'Durée d’un bloc chauffeur (heures)'],
-            ['driver.block_price', '5000', 'Tarif chauffeur avec voiture (FCFA/jour)'],
+            ['driver.block_price', '7000', 'Tarif chauffeur avec voiture (FCFA/jour)'],
             ['driver.auto_check_days', '5', 'Durée avant de proposer un chauffeur (jours)'],
-            ['driver.solo_daily_price', '8000', 'Chauffeur seul : tarif journalier (FCFA)'],
-            ['driver.solo_discount_daily_price', '6500', 'Chauffeur seul : tarif réduit (FCFA/jour)'],
+            ['driver.solo_daily_price', '15000', 'Chauffeur seul : tarif journalier (FCFA)'],
+            ['driver.solo_discount_daily_price', '13000', 'Chauffeur seul : tarif réduit (FCFA/jour)'],
             ['driver.solo_discount_after_days', '3', 'Durée avant tarif réduit (jours)'],
         ] as [$key, $value, $label]) {
             DB::table('settings')->insertOrIgnore([

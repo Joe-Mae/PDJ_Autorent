@@ -99,7 +99,9 @@ class Vehicle extends Model implements HasMedia
 
     public function mainPhotoUrl(): ?string
     {
-        $media = $this->getMedia(self::MEDIA_GALLERY)->sortByDesc('order_column')->first();
+        $media = $this->getMedia(self::MEDIA_GALLERY)
+            ->sortBy([['order_column', 'desc'], ['id', 'desc']])
+            ->first();
 
         return $media?->getUrl();
     }

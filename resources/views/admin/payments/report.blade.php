@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1 class="h4 fw-bold mb-0">{{ __('admin.daily_report') }} â€” {{ $date->translatedFormat('d F Y') }}</h1>
+        <h1 class="h4 fw-bold mb-0">{{ __('admin.daily_report') }} — {{ $date->translatedFormat('d F Y') }}</h1>
         <form method="GET" class="d-flex gap-2">
             <input type="date" class="form-control" name="jour" value="{{ $date->toDateString() }}">
             <button class="btn btn-outline-primary">{{ __('admin.filter') }}</button>
@@ -49,7 +49,7 @@
         <div class="col-lg-6">
             <div class="pdj-card">
                 <h2 class="h6 fw-bold mb-2">{{ __('admin.deposits_held') }}</h2>
-                <p class="small text-muted">{{ __('admin.deductions_made') }} : {{ number_format($deducted, 0, ' ', ' ') }} F CFA</p>
+                <p class="small text-muted">{{ __('admin.deductions_made') }} : {{ number_format($deducted, 0, ' ', ' ') }} FCFA</p>
                 <table class="table admin-table mb-0">
                     <tbody>
                         @foreach ($payments as $payment)

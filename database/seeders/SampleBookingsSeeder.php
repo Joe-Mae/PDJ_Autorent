@@ -14,12 +14,12 @@ use App\Models\Review;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * Un peu d'historique : sans réservations passées, le tableau de bord est vide
- * et on ne peut pas juger l'ergonomie de l'espace client ni de l'admin.
+ * et on ne peut pas juger l'ergonomie de l'admin ni des écrans du guichet.
  */
 class SampleBookingsSeeder extends Seeder
 {
@@ -44,12 +44,10 @@ class SampleBookingsSeeder extends Seeder
                 'email' => str($first.'.'.$last)->lower()->ascii().'@exemple.tg',
                 'phone' => $phone,
                 'birth_date' => now()->subYears($age)->subMonths(fake()->numberBetween(0, 11)),
-                'password' => Hash::make('motdepasse'),
+                'password' => Str::random(32),
                 'preferred_locale' => 'fr',
                 'no_show_count' => $noShows,
             ]);
-
-            $user->assignRole('client');
 
             for ($i = 0; $i < $pastRentals; $i++) {
                 $this->pastBooking($user, $vehicles->random(), $drivers, $city);

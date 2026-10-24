@@ -19,6 +19,16 @@ enum DriverOnlyBookingStatus: string
         return trans("driver.solo_status.{$this->value}");
     }
 
+    public function color(): string
+    {
+        return match ($this) {
+            self::EnAttente => 'warning',
+            self::Confirmee => 'success',
+            self::Refusee => 'danger',
+            self::Annulee => 'secondary',
+        };
+    }
+
     public static function values(): array
     {
         return array_column(self::cases(), 'value');

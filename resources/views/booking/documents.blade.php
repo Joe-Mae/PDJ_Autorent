@@ -2,11 +2,31 @@
 
 @section('title', __('booking.step.documents'))
 
+@php
+    $isGuest = $isGuest ?? false;
+    $guestToken = $guestToken ?? null;
+    $reusable = $reusable ?? [];
+
+    $storeUrl = $isGuest
+        ? route('booking.guest.documents.store', ['locale' => $locale, 'booking' => $booking, 'token' => $guestToken])
+        : route('booking.documents.store', ['locale' => $locale, 'booking' => $booking]);
+
+    $destroyUrl = fn ($document) => $isGuest
+        ? route('booking.guest.documents.destroy', ['locale' => $locale, 'booking' => $booking, 'token' => $guestToken, 'document' => $document])
+        : route('booking.documents.destroy', ['locale' => $locale, 'booking' => $booking, 'document' => $document]);
+
+    $identityCard = \App\Enums\DocumentType::IdentityCard;
+    $missing = collect([$identityCard])
+        ->reject(fn ($type) => $booking->documents->contains('type', $type));
+@endphp
+
 @section('content')
 
 <div class="container py-4" style="max-width: 860px;">
 
-    <x-steps :current="4" />
+    @unless ($isGuest)
+        <x-steps :current="4" />
+    @endunless
 
     <div class="row g-4">
         <div class="col-lg-7">
@@ -33,7 +53,7 @@
                                 <span class="badge bg-{{ $existing->status->color() }}">{{ $existing->status->label() }}</span>
                                 <div class="small text-muted mt-1">{{ $existing->humanSize() }}</div>
                             </div>
-                            <form action="{{ route('booking.documents.destroy', ['locale' => $locale, 'booking' => $booking, 'document' => $existing]) }}"
+                            <form action="{{ $destroyUrl($existing) }}"
                                   method="POST" onsubmit="return confirm('{{ __('document.delete_confirm') }}')">
                                 @csrf
                                 @method('DELETE')
@@ -48,7 +68,7 @@
                                 {{ __('document.upload_reuse', ['date' => $reusable[$type->value]->reviewed_at?->translatedFormat('d/m/Y') ?? '—']) }}
                             </span>
                         </div>
-                        <form action="{{ route('booking.documents.store', ['locale' => $locale, 'booking' => $booking]) }}"
+                        <form action="{{ $storeUrl }}"
                               method="POST" enctype="multipart/form-data" class="mt-2">
                             @csrf
                             <input type="hidden" name="type" value="{{ $type->value }}">
@@ -58,7 +78,7 @@
                             </button>
                         </form>
                     @else
-                        <form action="{{ route('booking.documents.store', ['locale' => $locale, 'booking' => $booking]) }}"
+                        <form action="{{ $storeUrl }}"
                               method="POST" enctype="multipart/form-data" data-upload-zone>
                             @csrf
                             <input type="hidden" name="type" value="{{ $type->value }}">
@@ -68,7 +88,9 @@
                                 <p class="small mb-2" data-upload-name>{{ __('document.upload_cta') }}</p>
                                 <label class="btn btn-outline-primary btn-sm">
                                     {{ __('document.upload_camera') }}
-                                    <input type="file" name="file" accept=".jpg,.jpeg,.png,.pdf"
+                                    <input type="file" name="file"
+                                          accept="{{ $type === \App\Enums\DocumentType::IdentityCard ? 'image/jpeg,image/png' : '.jpg,.jpeg,.png,.pdf' }}"
+                                          @if ($type === \App\Enums\DocumentType::IdentityCard) capture="environment" @endif
                                           data-upload class="d-none" required>
                                 </label>
                                 <p class="form-text mb-0 mt-2">{{ __('document.upload_hint') }}</p>
@@ -91,7 +113,7 @@
                 <details class="pdj-card">
                     <summary class="small fw-semibold">{{ __('document.selfie_title') }}</summary>
                     <p class="small text-muted mt-2 mb-3">{{ __('document.selfie_hint') }}</p>
-                    <form action="{{ route('booking.documents.store', ['locale' => $locale, 'booking' => $booking]) }}"
+                    <form action="{{ $storeUrl }}"
                           method="POST" enctype="multipart/form-data" data-upload-zone>
                         @csrf
                         <input type="hidden" name="type" value="selfie">
@@ -106,6 +128,33 @@
                         <button type="submit" class="btn btn-outline-primary w-100 mt-3">{{ __('document.upload') }}</button>
                     </form>
                 </details>
+            @endif
+
+            @if ($isGuest)
+                <div class="pdj-card mt-3 d-flex flex-wrap gap-3 justify-content-between align-items-center">
+                    <div class="small text-muted">
+                        @if ($missing->isEmpty())
+                            <i class="bi bi-check-circle-fill text-success me-1"></i>{{ __('booking.guest.documents_complete') }}
+                        @else
+                            <i class="bi bi-info-circle me-1"></i>{{ __('booking.guest.documents_required') }}
+                            <ul class="mb-0 mt-2 ps-4">
+                                @foreach ($missing as $type)
+                                    <li>{{ $type->label() }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
+                    @if ($missing->isEmpty())
+                        <a class="btn btn-primary"
+                           href="{{ route('booking.guest.confirmation', ['locale' => $locale, 'booking' => $booking, 'token' => $guestToken]) }}">
+                            {{ __('booking.guest.documents_finish') }}
+                        </a>
+                    @else
+                        <button type="button" class="btn btn-outline-primary" disabled>
+                            {{ __('booking.guest.documents_finish') }}
+                        </button>
+                    @endif
+                </div>
             @endif
         </div>
 

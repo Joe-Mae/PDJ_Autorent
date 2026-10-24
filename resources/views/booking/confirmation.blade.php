@@ -23,9 +23,6 @@
         <a class="btn btn-primary" href="{{ route('booking.receipt', ['locale' => $locale, 'booking' => $booking]) }}">
             <i class="bi bi-file-earmark-pdf me-1"></i>{{ __('booking.download_receipt') }}
         </a>
-        <a class="btn btn-outline-primary" href="{{ route('account.bookings.show', ['locale' => $locale, 'booking' => $booking]) }}">
-            {{ __('nav.my_account') }}
-        </a>
     </div>
 
     <div class="pdj-card mb-3">
@@ -44,7 +41,7 @@
             @endunless
             <li class="mb-0">
                 <i class="bi bi-cash-coin me-2"></i>
-                {{ number_format($booking->amountToCarry(), 0, ' ', ' ') }} F CFA
+                {{ number_format($booking->amountToCarry(), 0, ' ', ' ') }} FCFA
                 <span class="text-muted">({{ __('booking.amount_breakdown') }})</span>
             </li>
         </ul>

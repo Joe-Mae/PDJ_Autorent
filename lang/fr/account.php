@@ -1,25 +1,8 @@
 <?php
 
 return [
-    'hello' => 'Bonjour :name',
     'edit_profile' => 'Mon profil',
-    'my_bookings' => 'Mes réservations',
-    'my_documents' => 'Mes documents',
     'my_profile' => 'Mon profil',
-    'see_details' => 'Voir le détail',
-    'history' => 'Historique',
-    'see_all' => 'Tout voir',
-    'no_history' => 'Aucune location pour l\'instant.',
-    'no_upcoming' => 'Vous n\'avez pas de réservation à venir.',
-    'no_booking' => 'Aucune réservation.',
-    'no_document' => 'Aucun document.',
-    'documents_ok' => 'Vos documents sont là. Vous n\'avez rien à envoyer avant de venir.',
-    'outstanding' => 'Il reste :amount F CFA à régler à l\'agence.',
-    'in_days' => 'Dans :days jours',
-    'leave_review' => 'Laisser un avis',
-    'send_review' => 'Envoyer mon avis',
-    'documents_intro' => 'Vos pièces vérifiées sont réutilisées automatiquement : pas besoin de les renvoyer.',
-    'download' => 'Télécharger',
     'identity' => 'Mon identité',
     'current_password' => 'Mot de passe actuel',
 ];

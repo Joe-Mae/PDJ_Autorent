@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'reference', 'customer_name', 'phone', 'starts_at', 'ends_at', 'days',
@@ -40,6 +41,12 @@ class DriverOnlyBooking extends Model
     public function driver(): BelongsTo
     {
         return $this->belongsTo(Driver::class);
+    }
+
+    /** Pièces déposées par le client : identité, et rien d'autre en ligne. */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(CustomerDocument::class);
     }
 
     #[Scope]

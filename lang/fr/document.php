@@ -18,7 +18,15 @@ return [
         'expire' => 'Expiré',
     ],
 
-    'uploaded' => ':type envoyé. Un agent le vérifie avant de confirmer votre réservation.',
+    'verification_status' => [
+        'non_requis' => 'Non requis',
+        'en_attente' => 'En attente',
+        'conforme' => 'Conforme',
+        'non_conforme' => 'Non conforme',
+    ],
+
+    'uploaded' => ':type envoyé. Les originaux seront vérifiés à l’agence avant la remise du véhicule.',
+    'unreadable' => 'Ce fichier image n\'a pas pu être lu. Réessayez avec une photo plus nette ou un PDF.',
     'deleted' => 'Document supprimé.',
     'delete_confirm' => 'Supprimer ce document et en envoyer un autre ?',
     'replace' => 'Remplacer',

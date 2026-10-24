@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Services\SettingsService;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 #[Fillable([
     'key', 'value', 'type', 'group', 'label_fr', 'label_en', 'help_fr', 'updated_by',
@@ -21,6 +23,25 @@ class Setting extends Model
     protected function casts(): array
     {
         return ['updated_at' => 'datetime'];
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(function (Setting $setting) {
+            try {
+                app(SettingsService::class)->flush();
+            } catch (\Throwable $e) {
+                Cache::forget(SettingsService::CACHE_KEY);
+            }
+        });
+
+        static::deleted(function (Setting $setting) {
+            try {
+                app(SettingsService::class)->flush();
+            } catch (\Throwable $e) {
+                Cache::forget(SettingsService::CACHE_KEY);
+            }
+        });
     }
 
     #[Scope]

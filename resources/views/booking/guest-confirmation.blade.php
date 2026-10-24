@@ -30,6 +30,14 @@
                 {{ $booking->ends_at->translatedFormat('d/m/Y H:i') }}
             </dd>
 
+            <dt class="col-sm-5">{{ __('quote.line.rental', ['days' => $booking->days]) }}</dt>
+            <dd class="col-sm-7">{{ number_format($booking->price_rental, 0, ' ', ' ') }} F CFA</dd>
+
+            @if ($booking->with_driver)
+                <dt class="col-sm-5">{{ __('quote.line.driver', ['days' => $booking->days]) }}</dt>
+                <dd class="col-sm-7">{{ number_format($booking->price_driver, 0, ' ', ' ') }} F CFA</dd>
+            @endif
+
             <dt class="col-sm-5">{{ __('booking.guest.estimated_total') }}</dt>
             <dd class="col-sm-7 fw-bold">{{ number_format($booking->price_total, 0, ' ', ' ') }} F CFA</dd>
 
@@ -39,6 +47,24 @@
             </dd>
         </dl>
     </div>
+
+    @if ($booking->status->canStillUploadDocuments())
+        <div class="pdj-card mt-3 d-flex flex-wrap gap-3 justify-content-between align-items-center">
+            <div class="small text-muted">
+                <i class="bi bi-person-vcard me-1"></i>{{ __('booking.guest.confirmation_documents') }}
+                <ul class="mt-2 mb-0">
+                    <li>{{ __('document.type.piece_identite') }} — {{ __('booking.original') }}</li>
+                    @unless ($booking->with_driver)
+                        <li>{{ __('document.type.permis') }} — {{ __('booking.original') }}</li>
+                    @endunless
+                </ul>
+            </div>
+            <a class="btn btn-outline-primary"
+               href="{{ route('booking.guest.documents', ['locale' => $locale, 'booking' => $booking, 'token' => $token]) }}">
+                {{ __('booking.guest.documents_cta') }}
+            </a>
+        </div>
+    @endif
 
     <p class="small text-center text-muted mt-3">
         @if ($booking->status === \App\Enums\BookingStatus::EnAttente)

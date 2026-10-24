@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\BookingStatus;
+use App\Enums\DocumentVerificationStatus;
 use App\Enums\VehicleStatus;
 use App\Exceptions\BookingException;
 use App\Models\AuditLog;
@@ -80,6 +81,12 @@ class BookingService
                 ...$quote->toAmounts(),
                 'currency' => 'XOF',
                 'status' => BookingStatus::EnAttente,
+                'document_verification_status' => DocumentVerificationStatus::EnAttente,
+                'identity_original_verified' => false,
+                'identity_name_matches' => false,
+                'customer_age_eligible' => false,
+                'driver_license_original_verified' => false,
+                'driver_license_category_authorized' => false,
                 'phone_verified_at' => $data['phone_verified_at'] ?? null,
                 'customer_name' => $data['customer_name'] ?? null,
                 'customer_phone' => $data['customer_phone'] ?? null,
@@ -111,6 +118,10 @@ class BookingService
     public function reprice(Booking $booking, BookingPeriod $period, bool $withDriver): Booking
     {
         return DB::transaction(function () use ($booking, $period, $withDriver) {
+            $previousWithDriver = $booking->with_driver;
+            $verificationMustBeRepeated = $previousWithDriver !== $withDriver
+                || ! $booking->starts_at->equalTo($period->startsAt)
+                || ! $booking->ends_at->equalTo($period->endsAt);
             Vehicle::query()->whereKey($booking->vehicle_id)->lockForUpdate()->firstOrFail();
 
             $this->assertVehicleBookable($booking->vehicle, $period, $booking);
@@ -125,6 +136,33 @@ class BookingService
                 'pickup_hour' => $period->startsAtHour(),
                 'return_hour' => $period->endsAtHour(),
                 'with_driver' => $withDriver,
+                'document_verification_status' => $verificationMustBeRepeated
+                    ? DocumentVerificationStatus::EnAttente
+                    : $booking->document_verification_status,
+                'identity_original_verified' => $verificationMustBeRepeated
+                    ? false
+                    : $booking->identity_original_verified,
+                'identity_name_matches' => $verificationMustBeRepeated
+                    ? false
+                    : $booking->identity_name_matches,
+                'customer_age_eligible' => $verificationMustBeRepeated
+                    ? false
+                    : $booking->customer_age_eligible,
+                'driver_license_original_verified' => $verificationMustBeRepeated
+                    ? false
+                    : $booking->driver_license_original_verified,
+                'driver_license_category_authorized' => $verificationMustBeRepeated
+                    ? false
+                    : $booking->driver_license_category_authorized,
+                'documents_verified_at' => $verificationMustBeRepeated
+                    ? null
+                    : $booking->documents_verified_at,
+                'documents_verified_by' => $verificationMustBeRepeated
+                    ? null
+                    : $booking->documents_verified_by,
+                'document_verification_note' => $verificationMustBeRepeated
+                    ? null
+                    : $booking->document_verification_note,
                 'driver_blocks' => $quote->driverBlocks,
                 'driver_hours' => $quote->driverHours,
                 ...$quote->toAmounts(),
@@ -209,20 +247,38 @@ class BookingService
     /** Retrait effectif : la voiture part, la caution part au même moment. */
     public function start(Booking $booking, User $agent, ?int $mileage = null, ?string $fuelLevel = null): Booking
     {
-        $this->assertTransition($booking, BookingStatus::EnCours);
+        return DB::transaction(function () use ($booking, $agent, $mileage, $fuelLevel) {
+            $vehicle = Vehicle::query()
+                ->whereKey($booking->vehicle_id)
+                ->lockForUpdate()
+                ->firstOrFail();
+            $lockedBooking = Booking::query()
+                ->whereKey($booking->getKey())
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $booking->update([
-            'status' => BookingStatus::EnCours,
-            'started_at' => now(),
-            'mileage_at_pickup' => $mileage ?? $booking->vehicle->mileage,
-            'fuel_level_pickup' => $fuelLevel ?? $booking->vehicle->fuel_level,
-        ]);
+            $this->assertTransition($lockedBooking, BookingStatus::EnCours);
 
-        $booking->vehicle?->update(['status' => VehicleStatus::EnLocation, 'mileage' => $mileage ?? $booking->vehicle->mileage]);
+            if (! $lockedBooking->isReadyForHandover()) {
+                throw new BookingException(__('booking.error.documents_not_verified'));
+            }
 
-        $this->log('booking.started', $booking, [], $agent);
+            $lockedBooking->update([
+                'status' => BookingStatus::EnCours,
+                'started_at' => now(),
+                'mileage_at_pickup' => $mileage ?? $vehicle->mileage,
+                'fuel_level_pickup' => $fuelLevel ?? $vehicle->fuel_level,
+            ]);
 
-        return $booking->refresh();
+            $vehicle->update([
+                'status' => VehicleStatus::EnLocation,
+                'mileage' => $mileage ?? $vehicle->mileage,
+            ]);
+
+            $this->log('booking.started', $lockedBooking, [], $agent);
+
+            return $lockedBooking->refresh();
+        });
     }
 
     public function finish(Booking $booking, User $agent, ?int $mileage = null, ?string $fuelLevel = null): Booking

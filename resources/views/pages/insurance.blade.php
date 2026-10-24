@@ -35,7 +35,7 @@
 
     <div class="pdj-card mb-4" style="background: var(--pdj-green-light); border-color: rgba(10,110,76,.2);">
         <div class="section-title">{{ __('page.insurance_excess') }}</div>
-        <p class="small mb-0">{{ __('page.insurance_excess_text', ['amount' => '150 000 F CFA']) }}</p>
+        <p class="small mb-0">{{ __('page.insurance_excess_text', ['amount' => number_format(app(\App\Services\SettingsService::class)->int('booking.insurance_deductible'), 0, ' ', ' ').' FCFA']) }}</p>
     </div>
 
     <div class="pdj-card">

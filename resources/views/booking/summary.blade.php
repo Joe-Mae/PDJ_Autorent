@@ -63,7 +63,7 @@
                                 @if (! $quote->legacyDriverPricing || ! $booking->with_driver)
                                     <div class="hint mt-1">
                                         {{ __('driver.hint', [
-                                            'price' => number_format($quote->driverDailyPrice, 0, ' ', ' ').' F CFA',
+                                            'price' => number_format($quote->driverDailyPrice, 0, ' ', ' ').' FCFA',
                                         ]) }}
                                     </div>
                                 @endif
@@ -75,9 +75,9 @@
                                             {{ __('booking.line.driver', ['blocks' => $quote->driverBlocks]) }} —
                                         @else
                                             {{ $quote->days }} {{ __('general.days') }} ×
-                                            {{ number_format($quote->driverDailyPrice, 0, ' ', ' ') }} F CFA —
+                                            {{ number_format($quote->driverDailyPrice, 0, ' ', ' ') }} FCFA —
                                         @endif
-                                        {{ number_format($quote->priceDriver, 0, ' ', ' ') }} F CFA
+                                        {{ number_format($quote->priceDriver, 0, ' ', ' ') }} FCFA
                                     </div>
                                 @endif
                             @endif

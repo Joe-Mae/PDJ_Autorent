@@ -27,10 +27,11 @@ return [
     'gps' => 'GPS',
     'year' => 'Année',
     'plate' => 'Immatriculation',
-    'insurance_subtitle' => 'RC, vol, incendie, bris de vitres — franchise 150 000 F CFA',
+    'insurance_subtitle' => 'RC, vol, incendie, bris de vitres — franchise :amount',
 
     'conditions' => 'Conditions de location',
     'period' => 'Votre période',
+    'choose_dates_to_see_price' => 'Choisissez vos dates pour voir le prix et la disponibilité.',
     'similar' => 'Véhicules similaires',
     'not_free' => 'Ce véhicule n\'est pas libre sur ces dates. Choisissez une autre période, ou voyez la flotte complète.',
 
@@ -41,6 +42,6 @@ return [
     'cond_km' => 'Kilométrage illimité, dans un usage raisonnable.',
     'cond_fuel' => 'Carburant à votre charge. Le véhicule est rendu avec le même niveau qu\'au départ.',
     'cond_speed' => 'Vitesse maximale 120 km/h, pénalités en cas d\'infraction.',
-    'cond_insurance' => 'Assurance incluse : RC, vol, incendie, bris de vitres. Franchise 150 000 F CFA.',
+    'cond_insurance' => 'Assurance incluse : RC, vol, incendie, bris de vitres. Franchise :amount FCFA.',
     'cond_cancellation' => 'Annulation gratuite jusqu\'à la veille 18 h.',
 ];

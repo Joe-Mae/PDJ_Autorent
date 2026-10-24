@@ -15,7 +15,7 @@
                 <table class="table admin-table mb-0">
                     <tbody>
                         <tr><td>{{ __('booking.field_phone') }}</td><td class="text-end"><a href="tel:{{ $user->phone }}">{{ $user->phone }}</a></td></tr>
-                        <tr><td>{{ __('booking.field_email') }}</td><td class="text-end">{{ $user->email ?? 'â€”' }}</td></tr>
+                        <tr><td>{{ __('booking.field_email') }}</td><td class="text-end">{{ $user->email ?? '—' }}</td></tr>
                         <tr><td>{{ __('booking.field_birth_date') }}</td><td class="text-end">{{ $user->birth_date?->format('d/m/Y') }} ({{ $user->age() }})</td></tr>
                         <tr><td>{{ __('admin.absences') }}</td><td class="text-end">{{ $user->no_show_count }}</td></tr>
                         <tr><td>{{ __('admin.active_bookings') }}</td><td class="text-end">{{ $user->activeBookingsCount() }}</td></tr>

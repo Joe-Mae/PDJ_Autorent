@@ -1,25 +1,45 @@
 @extends('layouts.panel')
 
-@section('title', 'ParamÃ¨tres')
+@section('title', __('admin.settings'))
+@section('breadcrumb', __('admin.settings'))
 
 @section('content')
-    <div class="mb-3">
-        <h1 class="h4 fw-bold mb-0">{{ __('admin.settings') }}</h1>
-        <p class="text-muted small">{{ __('admin.settings_hint') }}</p>
-    </div>
+    <x-admin.page-header
+        :title="__('admin.settings')"
+        :subtitle="__('admin.settings_hint')">
+        <button class="btn btn-primary" type="submit" form="settings-form">
+            <i class="bi bi-check2 me-1"></i>{{ __('admin.save_settings') }}
+        </button>
+    </x-admin.page-header>
 
-    <form method="POST" action="{{ route('admin.settings.update') }}">
+    <form method="POST" action="{{ route('admin.settings.update') }}" id="settings-form">
         @csrf
 
         <div class="row g-4">
             @foreach ($groups as $group)
-                <div class="col-lg-4">
-                    <div class="pdj-card h-100">
-                        <h2 class="h6 fw-bold mb-3">{{ $group['label'] }}</h2>
+                @php
+                    $icons = ['general' => 'building', 'reservation' => 'calendar-check', 'driver' => 'person-badge'];
+                @endphp
+                <div class="col-12 col-xl-4">
+                    <section class="pdj-card h-100">
+                        <div class="admin-section-heading">
+                            <div>
+                                <span class="admin-eyebrow">{{ __('admin.settings') }}</span>
+                                <h2 class="h5 fw-bold mb-0">{{ $group['label'] }}</h2>
+                            </div>
+                            <span class="admin-stat-card__icon text-primary" style="width: 34px; height: 34px; margin: 0;">
+                                <i class="bi bi-{{ $icons[$group['key']] ?? 'gear' }}"></i>
+                            </span>
+                        </div>
 
                         @foreach ($group['settings'] as $setting)
+                            @php
+                                $label = app()->getLocale() === 'en' && $setting->label_en ? $setting->label_en : $setting->label_fr;
+                                $isTime = str_ends_with($setting->key, '_time') || $setting->key === 'booking.free_cancellation_before';
+                                $isMoney = str_contains($setting->key, 'price') || str_contains($setting->key, 'deposit');
+                            @endphp
                             <div class="mb-3">
-                                <label class="form-label" for="setting-{{ $setting->key }}">{{ $setting->label_fr }}</label>
+                                <label class="form-label" for="setting-{{ $setting->key }}">{{ $label }}</label>
 
                                 @if ($setting->type === 'bool')
                                     <div class="form-check form-switch">
@@ -27,13 +47,21 @@
                                                name="settings[{{ $setting->key }}]" value="1"
                                                id="setting-{{ $setting->key }}"
                                                @checked((bool) $setting->typedValue())>
+                                        <label class="form-check-label small text-muted" for="setting-{{ $setting->key }}">
+                                            {{ __('admin.enabled') }}
+                                        </label>
                                     </div>
+                                @elseif ($isTime)
+                                    <input type="time" class="form-control"
+                                           name="settings[{{ $setting->key }}]"
+                                           id="setting-{{ $setting->key }}"
+                                           value="{{ $setting->value }}">
                                 @elseif ($setting->type === 'int')
                                     <input type="number" class="form-control"
                                            name="settings[{{ $setting->key }}]"
                                            id="setting-{{ $setting->key }}"
                                            value="{{ $setting->value }}"
-                                           @if (str_contains($setting->key, 'price') || str_contains($setting->key, 'deposit')) step="500" @elseif (str_contains($setting->key, 'time')) @endif>
+                                           @if ($isMoney) step="500" min="0" @endif>
                                 @else
                                     <input type="text" class="form-control"
                                            name="settings[{{ $setting->key }}]"
@@ -44,16 +72,18 @@
                                 @if ($setting->help_fr)
                                     <div class="form-text">{{ $setting->help_fr }}</div>
                                 @endif
-                                <div class="form-text text-muted font-monospace" style="font-size: 0.7rem;">{{ $setting->key }}</div>
                             </div>
                         @endforeach
-                    </div>
+                    </section>
                 </div>
             @endforeach
         </div>
 
-        <div class="mt-3">
-            <button class="btn btn-primary btn-lg">{{ __('admin.save_settings') }}</button>
+        <div class="admin-settings-save">
+            <a class="btn btn-light border" href="{{ route('admin.dashboard') }}">{{ __('admin.cancel') }}</a>
+            <button class="btn btn-primary">
+                <i class="bi bi-check2 me-1"></i>{{ __('admin.save_settings') }}
+            </button>
         </div>
     </form>
 @endsection

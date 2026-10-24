@@ -42,6 +42,7 @@ class StaffTierTest extends TestCase
             'véhicules' => ['/admin/vehicules'],
             'catégories et tarifs' => ['/admin/categories'],
             'planning' => ['/admin/calendrier'],
+            'statistiques' => ['/admin/statistiques'],
             'chauffeurs' => ['/admin/chauffeurs'],
             'contenus du site' => ['/admin/contenus'],
         ];
@@ -239,7 +240,12 @@ class StaffTierTest extends TestCase
         $html = $this->actingAs($this->staff('super_admin'))->get('/admin')->assertOk()->getContent();
 
         $this->assertStringContainsString(route('admin.vehicles.index'), $html);
+        $this->assertStringContainsString(route('admin.calendar'), $html);
+        $this->assertStringContainsString(route('admin.customers.index'), $html);
+        $this->assertStringContainsString(route('admin.statistics.index'), $html);
         $this->assertStringContainsString(route('admin.settings.index'), $html);
+        $this->assertStringNotContainsString('class="admin-footer-link"', $html);
+        $this->assertStringContainsString(route('logout', ['locale' => 'fr']), $html);
     }
 
     public function test_le_menu_affiche_le_perimetre_de_la_personne(): void

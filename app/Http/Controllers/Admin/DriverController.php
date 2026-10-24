@@ -28,7 +28,7 @@ class DriverController extends Controller
         private readonly SettingsService $settings,
     ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
         $period = BookingPeriod::make(
             today()->toDateString(),
@@ -39,11 +39,24 @@ class DriverController extends Controller
 
         return view('admin.drivers.index', [
             'drivers' => Driver::query()
-                ->withCount(['bookings' => fn ($q) => $q->active()])
+                ->withCount([
+                    'bookings as active_bookings_count' => fn ($query) => $query->active(),
+                    'bookings as current_bookings_count' => fn ($query) => $query
+                        ->active()
+                        ->where('starts_at', '<=', now())
+                        ->where('ends_at', '>', now()),
+                ])
+                ->when($request->string('q')->toString(), function ($q, $term) {
+                    $q->where(fn ($sub) => $sub->where('first_name', 'like', "%{$term}%")
+                        ->orWhere('last_name', 'like', "%{$term}%")
+                        ->orWhere('phone', 'like', "%{$term}%"));
+                })
+                ->when($request->string('statut')->toString(), fn ($q, $s) => $q->where('status', $s))
                 ->orderBy('status')
                 ->orderBy('first_name')
                 ->get(),
             'statuses' => DriverStatus::cases(),
+            'status' => $request->string('statut')->toString(),
             'freeSlots' => $this->availability->freeDriverSlots($period),
             'vehicleDailyPrice' => $this->settings->int('driver.block_price'),
         ]);

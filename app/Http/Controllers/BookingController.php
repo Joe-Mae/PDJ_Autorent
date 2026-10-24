@@ -18,7 +18,6 @@ use App\Support\BookingPeriod;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -169,7 +168,7 @@ class BookingController extends Controller
         return view('booking.contact', [
             'booking' => $booking->load(['vehicle.category', 'user']),
             'period' => $this->periodOf($booking),
-            'documentsRequired' => DocumentType::requiredForClient($booking->with_driver),
+            'documentsRequired' => DocumentType::requiredForSubmission(),
         ]);
     }
 
@@ -185,7 +184,6 @@ class BookingController extends Controller
             'birth_date' => ['required', 'date', 'before:today'],
             'phone' => ['required', 'string', 'regex:/^\+?[0-9\s]{8,20}$/'],
             'email' => ['nullable', 'email', 'max:150'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ], [
             'birth_date.before' => __('validation.booking.age', ['age' => $this->settings->int('booking.min_age')]),
         ]);
@@ -288,7 +286,7 @@ class BookingController extends Controller
             'booking' => $booking->load(['vehicle.category', 'user', 'documents']),
             'period' => $this->periodOf($booking),
             'quote' => $this->pricing->quoteForBooking($booking),
-            'required' => DocumentType::requiredForClient($booking->with_driver),
+            'required' => DocumentType::requiredForSubmission(),
             'reusable' => $this->reusableDocuments($booking),
         ]);
     }
@@ -301,7 +299,7 @@ class BookingController extends Controller
 
         $this->guardBookingEligibility($request, $booking);
 
-        $required = DocumentType::requiredForClient($booking->with_driver);
+        $required = DocumentType::requiredForSubmission();
         $uploaded = $booking->documents()->ofType(...$required)->pluck('type')->all();
 
         $missing = array_values(array_diff(
@@ -326,7 +324,7 @@ class BookingController extends Controller
 
         $this->guardBookingEligibility($request, $booking);
 
-        $required = DocumentType::requiredForClient($booking->with_driver);
+        $required = DocumentType::requiredForSubmission();
         $uploaded = $booking->documents()->ofType(...$required)->pluck('type')->all();
         $missing = array_diff(array_map(fn (DocumentType $t) => $t->value, $required), $uploaded);
 
@@ -364,23 +362,6 @@ class BookingController extends Controller
             'whatsapp' => $this->settings->whatsappNumber(),
             'address' => $this->settings->string('agency.address'),
         ]);
-    }
-
-    /** Annulation en un clic, sans aller chercher le menu. */
-    public function cancel(Request $request, string $locale, Booking $booking): RedirectResponse
-    {
-        $this->guardOwnership($request, $booking);
-
-        try {
-            $this->bookings->cancel($booking, $request->user(), 'client');
-            $this->notifications->sendBookingCancelled($booking);
-        } catch (BookingException $e) {
-            return back()->with('error', $e->getMessage());
-        }
-
-        return redirect()
-            ->route('account.bookings')
-            ->with('status', __('booking.cancelled_ok'));
     }
 
     /**
@@ -476,12 +457,14 @@ class BookingController extends Controller
     }
 
     /**
-     * Compte créé à la volée si le client n'en a pas, sinon mis à jour.
-     * Le tunnel n'impose jamais de créer un compte avant d'avoir vu le prix.
+     * Fiche client créée à la volée si elle n'existe pas, sinon mise à jour.
+     * Le tunnel n'impose jamais de créer un compte avant d'avoir vu le prix :
+     * la fiche n'est qu'un moyen de retrouver le client (âge, historique,
+     * absence), pas un espace personnel — il n'y a pas d'espace client.
      *
      * Le téléphone est stocké normalisé (chiffres seuls, préfixe 228) : « +228
      * 90 12 34 99 » et « 90123499 » sont le même numéro, et le chercher deux
-     * fois donnerait deux comptes.
+     * fois donnerait deux fiches.
      *
      * @param  array<string, mixed>  $data
      */
@@ -499,12 +482,9 @@ class BookingController extends Controller
                 'email' => $data['email'] ?? null,
                 'phone' => $phone,
                 'birth_date' => $data['birth_date'],
-                'password' => $data['password'] ?? Str::random(32),
+                'password' => Str::random(32),
                 'preferred_locale' => app()->getLocale(),
             ]);
-
-            $user->assignRole('client');
-            Auth::login($user);
         } else {
             $user->update([
                 'first_name' => $data['first_name'],

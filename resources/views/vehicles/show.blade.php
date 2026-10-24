@@ -21,13 +21,13 @@
             <div data-gallery>
                 <div class="gallery-main">
                     <img data-gallery-main
-                         src="{{ $vehicle->media->first()?->getUrl() ?: asset('images/vehicle-placeholder.svg') }}"
+                         src="{{ $vehicle->mainPhotoUrl() ?: asset('images/vehicle-placeholder.svg') }}"
                          alt="{{ $vehicle->fullName() }}"
                          width="800" height="500">
                 </div>
                 @if ($vehicle->media->count() > 1)
                     <div class="gallery-thumbs">
-                        @foreach ($vehicle->media as $index => $media)
+                        @foreach ($vehicle->media->sortByDesc('order_column') as $index => $media)
                             <img src="{{ $media->getUrl() }}"
                                  data-gallery-thumb="{{ $media->getUrl() }}"
                                  class="{{ $index === 0 ? 'is-active' : '' }}"
@@ -54,7 +54,9 @@
                 <div class="spec"><i class="bi bi-calendar3"></i>{{ $vehicle->year }}</div>
             </div>
 
-            <x-price-ticket :quote="$quote" />
+            @if ($quote)
+                <x-price-ticket :quote="$quote" />
+            @endif
         </div>
     </div>
 
@@ -69,7 +71,7 @@
                     <li>{{ __('vehicle.cond_km') }}</li>
                     <li>{{ __('vehicle.cond_fuel') }}</li>
                     <li>{{ __('vehicle.cond_speed') }}</li>
-                    <li>{{ __('vehicle.cond_insurance') }}</li>
+                    <li>{{ __('vehicle.cond_insurance', ['amount' => number_format(app(\App\Services\SettingsService::class)->int('booking.insurance_deductible'), 0, ' ', ' ').' FCFA']) }}</li>
                     <li>{{ __('vehicle.cond_cancellation') }}</li>
                 </ul>
             </div>
@@ -107,7 +109,7 @@
                                  class="rounded" width="72" height="52" style="object-fit: cover;" alt="" loading="lazy">
                             <span class="small">
                                 <strong>{{ $item->displayName() }}</strong><br>
-                                <span class="text-muted">{{ number_format($item->category->daily_price, 0, ' ', ' ') }} F CFA / {{ __('general.day_short') }}</span>
+                                <span class="text-muted">{{ number_format($item->category->daily_price, 0, ' ', ' ') }} FCFA / {{ __('general.day_short') }}</span>
                             </span>
                         </a>
                     @endforeach

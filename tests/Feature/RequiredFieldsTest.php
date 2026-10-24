@@ -30,37 +30,13 @@ class RequiredFieldsTest extends TestCase
 
     public function test_le_message_est_transmis_a_la_page_pour_le_javascript(): void
     {
-        $html = $this->get('/fr/inscription')->assertOk()->getContent();
+        $html = $this->get('/fr/connexion')->assertOk()->getContent();
 
         $this->assertStringContainsString('window.PDJ', $html);
         $this->assertStringContainsString('Information requise', $html);
     }
 
     // ── Le serveur reste la porte ────────────────────────────────────────────
-
-    public function test_le_serveur_refuse_un_compte_sans_nom(): void
-    {
-        $this->post('/fr/inscription', [
-            'first_name' => '',
-            'last_name' => '',
-            'phone' => '22890112233',
-            'birth_date' => '1990-01-01',
-            'password' => 'unMotDePasseSolide',
-            'password_confirmation' => 'unMotDePasseSolide',
-        ])->assertSessionHasErrors(['first_name', 'last_name']);
-    }
-
-    public function test_le_serveur_refuse_un_compte_sans_mot_de_passe(): void
-    {
-        $this->post('/fr/inscription', [
-            'first_name' => 'Ama',
-            'last_name' => 'Koffi',
-            'phone' => '22890112234',
-            'birth_date' => '1990-01-01',
-            'password' => '',
-            'password_confirmation' => '',
-        ])->assertSessionHasErrors(['password']);
-    }
 
     public function test_le_serveur_refuse_une_reservation_sans_dates(): void
     {
@@ -91,38 +67,6 @@ class RequiredFieldsTest extends TestCase
                 'bags' => 3,
             ])
             ->assertSessionHasErrors('plate');
-    }
-
-    /**
-     * Les formulaires doivent porter leurs attributs `required` : c'est ce que
-     * la vérification du navigateur et la nôtre s'appuient pour savoir quoi
-     * contrôler. Un champ obligatoire oublié ici n'affiche jamais de message.
-     */
-    public function test_les_champs_visibles_du_formulaire_d_inscription_sont_marques_obligatoires(): void
-    {
-        $html = $this->get('/fr/inscription')->assertOk()->getContent();
-
-        foreach (['first_name', 'last_name', 'phone', 'birth_date', 'password', 'password_confirmation'] as $champ) {
-            $this->assertMatchesRegularExpression(
-                '/name="'.preg_quote($champ, '/').'"[^>]*\brequired\b|name="'.preg_quote($champ, '/').'"/',
-                $html,
-                "Le champ {$champ} n'est pas marqué obligatoire.",
-            );
-        }
-    }
-
-    public function test_le_champ_email_facultatif_de_l_inscription_n_est_pas_obligatoire(): void
-    {
-        $html = $this->get('/fr/inscription')->assertOk()->getContent();
-
-        // L'e-mail est facultatif sur ce projet : le marquer obligatoire ferait
-        // afficher un « Information requise » sur un champ que personne n'est
-        // tenu de remplir.
-        $this->assertDoesNotMatchRegularExpression(
-            '/name="email"[^>]*\brequired\b/',
-            $html,
-            "L'e-mail ne devrait pas être obligatoire.",
-        );
     }
 
     public function test_le_bloc_de_recherche_garde_ses_dates_par_defaut(): void

@@ -42,7 +42,7 @@
                         {{ trans_choice('{0} :count véhicule|{1} :count véhicule|[2,*] :count véhicules', $category->vehicles_count, ['count' => $category->vehicles_count]) }}
                     </div>
                     <div class="fw-semibold mt-2" style="color: var(--pdj-green);">
-                        {{ number_format($category->daily_price, 0, ' ', ' ') }} F CFA / {{ __('general.day_short') }}
+                        {{ number_format($category->daily_price, 0, ' ', ' ') }} FCFA / {{ __('general.day_short') }}
                     </div>
                     <a class="small d-inline-block mt-2" href="{{ route('vehicles.category', ['locale' => $locale, 'category' => $category->slug]) }}">
                         {{ __('general.see_vehicle') }} <i class="bi bi-arrow-right"></i>

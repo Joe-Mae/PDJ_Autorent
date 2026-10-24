@@ -9,9 +9,10 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Barrière de l'administration.
  *
- * Un compte client ne doit jamais atteindre /admin, même avec une URL devinée.
- * Le rôle est lu via spatie/laravel-permission : Super admin, Gestionnaire,
- * Agent d'accueil.
+ * Un compte qui n'est pas du personnel ne doit jamais atteindre /admin, même
+ * avec une URL devinée. Le rôle est lu via spatie/laravel-permission : Super
+ * admin, Gestionnaire, Agent d'accueil. Il n'y a pas d'espace client : hors
+ * de ces trois rôles, il n'existe aucun écran privé.
  */
 class EnsureStaff
 {

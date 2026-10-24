@@ -36,7 +36,6 @@ class PublicPagesTest extends TestCase
             'confidentialité' => ['/confidentialite'],
             'mentions légales' => ['/mentions-legales'],
             'connexion' => ['/connexion'],
-            'inscription' => ['/inscription'],
         ];
     }
 
@@ -66,6 +65,32 @@ class PublicPagesTest extends TestCase
         $this->get('/fr')
             ->assertDontSee('href="'.route('login', ['locale' => 'fr']).'"', escape: false)
             ->assertDontSee(__('nav.login'));
+    }
+
+    public function test_le_personnel_peut_ouvrir_l_administration_depuis_le_pied_de_page(): void
+    {
+        $this->actingAs($this->staff())
+            ->get('/fr')
+            ->assertOk()
+            ->assertSee('class="admin-footer-link"', escape: false)
+            ->assertSee('href="'.route('admin.dashboard').'"', escape: false)
+            ->assertSee('target="_blank"', escape: false)
+            ->assertSee('rel="noopener noreferrer"', escape: false)
+            ->assertSee('>Admin</a>', escape: false);
+    }
+
+    public function test_le_lien_admin_discret_est_visible_sur_le_site_public(): void
+    {
+        $this->get('/fr')
+            ->assertOk()
+            ->assertSee('class="admin-footer-link"', escape: false)
+            ->assertSee('href="'.route('admin.dashboard').'"', escape: false)
+            ->assertSee('>Admin</a>', escape: false);
+
+        $this->actingAs($this->customer())
+            ->get('/fr')
+            ->assertOk()
+            ->assertSee('class="admin-footer-link"', escape: false);
     }
 
     public function test_la_liste_garage_ne_propose_pas_de_bouton_voir_cette_voiture(): void
@@ -151,14 +176,9 @@ class PublicPagesTest extends TestCase
             ->assertSee('Questions fréquentes');
     }
 
-    public function test_les_pages_flotte_et_espace_client_conservent_leur_mise_en_page(): void
+    public function test_la_page_flotte_conserve_sa_mise_en_page(): void
     {
         $this->get('/fr/vehicules')
-            ->assertOk()
-            ->assertDontSee('class="structured-pages"', escape: false);
-
-        $this->actingAs($this->customer())
-            ->get('/fr/mon-espace')
             ->assertOk()
             ->assertDontSee('class="structured-pages"', escape: false);
     }

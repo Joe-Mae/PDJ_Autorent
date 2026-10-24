@@ -5,15 +5,17 @@
 
 @section('content')
 
-<div class="container py-4">
-
+<section class="garage-search">
     <x-search-panel
+        class="search-panel--wide"
         :action="request()->routeIs('vehicles.category') && $category
             ? route('vehicles.category', ['locale' => $locale, 'category' => $category->slug])
             : route('vehicles.index', ['locale' => $locale])"
         :period="$period"
         :with-driver="(bool) ($filters['with_driver'] ?? false)" />
+</section>
 
+<div class="container py-3">
     {{-- Le contrôleur fournit toujours une période : sans dates, c'est le
          créneau par défaut (demain, 3 jours). La flotte affichée est donc
          toujours celle qui est réellement libre, et la période est écrite

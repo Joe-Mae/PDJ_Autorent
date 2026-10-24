@@ -38,7 +38,16 @@ class VehicleController extends Controller
     {
         return view('admin.vehicles.index', [
             'vehicles' => Vehicle::query()
-                ->with('category')
+                ->with(['category', 'media'])
+                ->withCount([
+                    'bookings as current_bookings_count' => fn ($query) => $query
+                        ->active()
+                        ->where('starts_at', '<=', now())
+                        ->where('ends_at', '>', now()),
+                    'blocks as current_blocks_count' => fn ($query) => $query
+                        ->where('starts_at', '<=', now())
+                        ->where('ends_at', '>', now()),
+                ])
                 ->when($request->string('statut')->toString(), fn ($q, $s) => $q->where('status', $s))
                 ->when($request->string('q')->toString(), function ($q, $term) {
                     $q->where(fn ($sub) => $sub->where('brand', 'like', "%{$term}%")
@@ -72,7 +81,9 @@ class VehicleController extends Controller
             'status' => VehicleStatus::Disponible,
         ]);
 
-        $this->attachPhotos($request, $vehicle);
+        $newMedia = $this->attachPhotos($request, $vehicle);
+
+        $this->setMainPhoto($vehicle, $request->input('main_photo_id'), $newMedia, $request->input('main_photo_index'));
 
         return redirect()
             ->route('admin.vehicles.show', $vehicle)
@@ -105,7 +116,9 @@ class VehicleController extends Controller
             'features' => array_values(array_filter($request->input('features', []))),
         ]);
 
-        $this->attachPhotos($request, $vehicle);
+        $newMedia = $this->attachPhotos($request, $vehicle);
+
+        $this->setMainPhoto($vehicle, $request->input('main_photo_id'), $newMedia, $request->input('main_photo_index'));
 
         return redirect()
             ->route('admin.vehicles.show', $vehicle)
@@ -129,6 +142,40 @@ class VehicleController extends Controller
         return redirect()
             ->route('admin.vehicles.index')
             ->with('status', __('admin.vehicle_deleted'));
+    }
+
+    /** Suppression (ou archivage) en masse des véhicules sélectionnés. */
+    public function destroyMany(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:vehicles,id'],
+        ]);
+
+        $archived = 0;
+        $deleted = 0;
+
+        foreach (Vehicle::query()->whereIn('id', $data['ids'])->get() as $vehicle) {
+            if ($vehicle->bookings()->exists()) {
+                $vehicle->update(['status' => VehicleStatus::HorsService, 'is_active' => false]);
+                $archived++;
+            } else {
+                $vehicle->delete();
+                $deleted++;
+            }
+        }
+
+        $message = [];
+        if ($deleted > 0) {
+            $message[] = __('admin.vehicle_deleted').' ('.$deleted.')';
+        }
+        if ($archived > 0) {
+            $message[] = __('admin.vehicle_archived').' ('.$archived.')';
+        }
+
+        return redirect()
+            ->route('admin.vehicles.index')
+            ->with('status', implode(' ', $message));
     }
 
     /** Passage rapide de statut depuis la liste (disponible / maintenance / hors service). */
@@ -174,6 +221,8 @@ class VehicleController extends Controller
                 'mimes:jpg,jpeg,png,webp',
                 'max:'.self::MAX_PHOTO_KILOS,
             ],
+            'main_photo_id' => ['nullable', 'integer'],
+            'main_photo_index' => ['nullable', 'integer', 'min:0'],
         ], [
             'plate.unique' => __('admin.plate_taken'),
             'photos.max' => __('admin.photos_too_many', ['max' => self::MAX_PHOTOS]),
@@ -196,13 +245,57 @@ class VehicleController extends Controller
         ]);
     }
 
-    private function attachPhotos(Request $request, Vehicle $vehicle): void
+    /**
+     * Désigne la photo principale (« grand plan ») du véhicule.
+     *
+     * La photo principale est celle dont l'order_column est le plus élevé :
+     * mainPhotoUrl() trie par order_column décroissant. On la place donc au
+     * au-dessus des autres. Si aucune photo n'est choisie mais que des photos
+     * viennent d'être ajoutées, la première nouvelle devient principale.
+     */
+    private function setMainPhoto(Vehicle $vehicle, mixed $mainPhotoId, array $newMedia, ?int $mainPhotoIndex = null): void
     {
+        $media = $vehicle->getMedia(Vehicle::MEDIA_GALLERY);
+
+        $chosen = null;
+
+        if ($mainPhotoId !== null && $mainPhotoId !== '') {
+            $chosen = $media->firstWhere('id', (int) $mainPhotoId);
+        } elseif ($mainPhotoIndex !== null && isset($newMedia[$mainPhotoIndex])) {
+            $chosen = $newMedia[$mainPhotoIndex];
+        }
+
+        if ($chosen !== null) {
+            $maxOrder = (int) $vehicle->getMedia(Vehicle::MEDIA_GALLERY)->max('order_column');
+            $chosen->order_column = $maxOrder + 1;
+            $chosen->save();
+
+            return;
+        }
+
+        // Aucun choix explicite : la première photo nouvellement ajoutée devient
+        // la principale, pour que le véhicule ne reste pas sans image à l'affiche.
+        if ($newMedia !== []) {
+            $chosen = $newMedia[0];
+            $maxOrder = (int) $vehicle->getMedia(Vehicle::MEDIA_GALLERY)->max('order_column');
+            $chosen->order_column = $maxOrder + 1;
+            $chosen->save();
+        }
+    }
+
+    private function attachPhotos(Request $request, Vehicle $vehicle): array
+    {
+        $newMedia = [];
+
         foreach ($request->file('photos', []) as $index => $photo) {
-            $vehicle->addMedia($photo)
+            $media = $vehicle->addMedia($photo)
                 ->preservingOriginal()
                 ->usingFileName(Str::slug($vehicle->brand.'-'.$vehicle->model).'-'.$index.'.'.$photo->getClientOriginalExtension())
                 ->toMediaCollection(Vehicle::MEDIA_GALLERY, 'fleet');
+
+            $newMedia[] = $media;
         }
+
+        return $newMedia;
     }
 }

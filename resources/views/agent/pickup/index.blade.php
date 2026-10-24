@@ -23,8 +23,9 @@
                     <h3 class="h6 fw-bold">{{ __('admin.overdue') }}</h3>
                     @foreach ($late as $booking)
                         <div class="small mb-1">
-                            <a href="tel:{{ $booking->user?->phone }}">{{ $booking->user?->phone }}</a>
-                            â€” {{ $booking->reference }} ({{ $booking->starts_at->diffForHumans() }})
+                            @php($clientPhone = $booking->user?->phone ?? $booking->customer_phone)
+                            <a href="tel:{{ $clientPhone }}">{{ $clientPhone }}</a>
+                            — {{ $booking->reference }} ({{ $booking->starts_at->diffForHumans() }})
                         </div>
                     @endforeach
                 </div>
@@ -43,12 +44,18 @@
                        href="{{ route('agent.pickup.documents', $booking) }}">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="fw-semibold">{{ sprintf('%02dh00', $booking->pickup_hour) }} â€” {{ $booking->vehicle->displayName() }}</div>
+                                <div class="fw-semibold">{{ sprintf('%02dh00', $booking->pickup_hour) }} — {{ $booking->vehicle->displayName() }}</div>
                                 <div class="small text-muted">
-                                    {{ $booking->user?->displayName() }} w {{ $booking->user?->phone }}
+                                    {{ $booking->user?->displayName() ?? $booking->customer_name ?? '—' }}
+                                    — {{ $booking->user?->phone ?? $booking->customer_phone }}
                                 </div>
                                 <div class="small text-muted">
-                                    {{ $booking->driver_id?->displayName() ?? ($booking->with_driver ? __('agent.driver_to_assign') : 'â€”') }}
+                                    {{ $booking->driver_id?->displayName() ?? ($booking->with_driver ? __('agent.driver_to_assign') : '—') }}
+                                </div>
+                                <div class="small mt-1">
+                                    <span class="badge rounded-pill bg-{{ $booking->document_verification_status->color() }}">
+                                        {{ $booking->document_verification_status->label() }}
+                                    </span>
                                 </div>
                             </div>
                             <i class="bi bi-chevron-right text-muted"></i>

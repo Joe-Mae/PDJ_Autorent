@@ -7,6 +7,7 @@ use App\Services\DriverOnlyBookingService;
 use App\Services\SettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 
 class DriverOnlyBookingController extends Controller
 {
@@ -22,10 +23,18 @@ class DriverOnlyBookingController extends Controller
             'phone' => ['required', 'string', 'regex:/^\+?[0-9\s]{8,30}$/'],
             'du' => ['required', 'date_format:Y-m-d', 'after_or_equal:today'],
             'au' => ['required', 'date_format:Y-m-d', 'after_or_equal:du'],
+            'identity_document' => [
+                'required', 'file', 'max:5120',
+                'mimes:jpg,jpeg,png,pdf',
+                'mimetypes:image/jpeg,image/png,application/pdf',
+            ],
         ]);
 
+        /** @var UploadedFile $identityDocument */
+        $identityDocument = $request->file('identity_document');
+
         try {
-            $booking = $this->bookings->create($data);
+            $booking = $this->bookings->create($data, $identityDocument);
         } catch (BookingException $exception) {
             return back()->with('error', $exception->getMessage());
         }

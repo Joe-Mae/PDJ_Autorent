@@ -60,7 +60,7 @@ enum BookingStatus: string
     {
         return match ($this) {
             self::EnAttente => 'warning',
-            self::Confirmee => 'info',
+            self::Confirmee => 'success',
             self::EnCours => 'primary',
             self::Terminee => 'success',
             self::Annulee => 'secondary',

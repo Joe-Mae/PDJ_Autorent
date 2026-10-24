@@ -28,6 +28,9 @@
                     'daily_price' => number_format(session('driver_only_booking_daily_price'), 0, ' ', ' '),
                     'total' => number_format(session('driver_only_booking_total'), 0, ' ', ' '),
                 ]) }}
+                <div class="mt-1 small">
+                    <a href="{{ route('booking.lookup', ['locale' => $locale]) }}">{{ __('booking.lookup.title') }}</a>
+                </div>
             </div>
         @endif
 
@@ -141,7 +144,7 @@
                             data-daily-rate="{{ $vehicleDailyPrice }}"
                             data-daily-label="{{ __('driver.price_calculation', ['days' => '__DAYS__', 'daily_price' => '__DAILY__']) }}"
                             data-empty-label="{{ __('driver.price_select_dates') }}"
-                            data-currency="F CFA"
+                            data-currency="FCFA"
                             aria-live="polite"
                         >
                             <span class="driver-page__price-empty" data-price-empty>{{ __('driver.price_select_dates') }}</span>
@@ -172,6 +175,7 @@
                     <p class="small text-muted mb-3">
                         {{ __('driver.solo_intro', [
                             'days' => $soloDiscountAfterDays,
+                            'price' => number_format($soloDailyPrice, 0, ' ', ' '),
                             'discount' => number_format($soloDiscountDailyPrice, 0, ' ', ' '),
                         ]) }}
                     </p>
@@ -187,7 +191,7 @@
                         ]) }}</span>
                     </div>
 
-                    <form action="{{ route('driver-only-bookings.store', ['locale' => $locale]) }}" method="POST" class="row g-3" data-driver-price-form>
+                    <form action="{{ route('driver-only-bookings.store', ['locale' => $locale]) }}" method="POST" class="row g-3" enctype="multipart/form-data" data-driver-price-form>
                         @csrf
                         <div class="col-12">
                             <label class="form-label" for="solo-name">{{ __('driver.solo_name') }}</label>
@@ -215,6 +219,14 @@
                                    min="{{ old('du', today()->toDateString()) }}" required>
                             @error('au') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
+                        <div class="col-12">
+                            <label class="form-label" for="solo-identity">{{ __('driver.solo_identity') }}</label>
+                            <input class="form-control @error('identity_document') is-invalid @enderror" id="solo-identity"
+                                   name="identity_document" type="file"
+                                   accept="image/jpeg,image/png,application/pdf" required>
+                            <div class="form-text">{{ __('driver.solo_identity_hint') }}</div>
+                            @error('identity_document') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
                         <div
                             class="col-12 driver-page__price-preview"
                             data-driver-price-preview
@@ -223,7 +235,7 @@
                             data-discount-after-days="{{ $soloDiscountAfterDays }}"
                             data-daily-label="{{ __('driver.price_calculation', ['days' => '__DAYS__', 'daily_price' => '__DAILY__']) }}"
                             data-empty-label="{{ __('driver.price_select_dates') }}"
-                            data-currency="F CFA"
+                            data-currency="FCFA"
                             aria-live="polite"
                         >
                             <span class="driver-page__price-empty" data-price-empty>{{ __('driver.price_select_dates') }}</span>

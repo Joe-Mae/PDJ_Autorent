@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\BookingStatus;
 use App\Enums\PaymentKind;
 use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;
@@ -24,6 +25,29 @@ class PaymentController extends Controller
 {
     public function index(Request $request): View
     {
+        $day = $request->date('jour') ?? today();
+
+        // Le reste à encaisser ne concerne que les réservations qui immobilisent
+        // encore un véhicule : une annulation ne doit pas gonfler l'impayé.
+        $unpaid = Booking::query()
+            ->whereIn('status', [
+                BookingStatus::EnAttente->value,
+                BookingStatus::Confirmee->value,
+                BookingStatus::EnCours->value,
+            ])
+            ->withSum(
+                ['payments as rental_paid' => fn ($query) => $query->where('kind', PaymentKind::Rental->value)],
+                'amount'
+            )
+            ->get(['id', 'reference', 'price_total'])
+            ->map(fn (Booking $booking): array => [
+                'booking' => $booking,
+                'remaining' => max(0, (int) $booking->price_total - (int) $booking->rental_paid),
+            ])
+            ->filter(fn (array $line): bool => $line['remaining'] > 0)
+            ->sortByDesc('remaining')
+            ->values();
+
         return view('admin.payments.index', [
             'payments' => Payment::query()
                 ->with(['booking.vehicle', 'recorder'])
@@ -34,6 +58,23 @@ class PaymentController extends Controller
                 ->withQueryString(),
             'kinds' => PaymentKind::cases(),
             'methods' => PaymentMethod::cases(),
+            'day' => $day,
+            'dayTotals' => [
+                'rental' => Payment::query()
+                    ->whereDate('recorded_at', $day)
+                    ->where('kind', PaymentKind::Rental->value)
+                    ->sum('amount'),
+                'deposits' => Payment::query()
+                    ->whereDate('recorded_at', $day)
+                    ->where('kind', PaymentKind::Deposit->value)
+                    ->sum('amount'),
+                'refunds' => Payment::query()
+                    ->whereDate('recorded_at', $day)
+                    ->where('kind', PaymentKind::DepositRefund->value)
+                    ->sum('amount'),
+            ],
+            'outstanding' => $unpaid->sum('remaining'),
+            'unpaidBookings' => $unpaid->take(5),
         ]);
     }
 

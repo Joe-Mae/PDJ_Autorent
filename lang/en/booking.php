@@ -47,6 +47,7 @@ return [
         'invalid_transition' => 'Cannot move from “:from” to “:to”.',
         'cannot_cancel' => 'This booking is “:status”: it can no longer be cancelled online.',
         'documents_missing' => 'A document is missing. Go back to the previous step to upload it.',
+        'documents_not_verified' => 'Vehicle handover is blocked: the identity and driving licence checks must be approved.',
         'outside_opening_hours' => 'The agency is open from :open to :close. Please pick a time within that range.',
         'code_expired' => 'The code has expired. Request a new one.',
         'code_invalid' => 'Wrong code. :left attempt(s) left.',
@@ -54,8 +55,6 @@ return [
         'no_account' => 'Your account could not be found. Please redo the previous step.',
         'min_license' => 'Your licence must be at least :years year(s) old.',
     ],
-
-    'cancelled_ok' => 'Booking cancelled. No charge.',
 
     'summary_title' => 'Your booking',
     'cost_summary' => 'Cost summary',
@@ -74,9 +73,7 @@ return [
     'field_email' => 'Email',
     'field_email_hint' => 'Useful if you want a written receipt. Optional.',
     'field_password' => 'Password',
-    'field_password_hint' => '8 characters minimum. You can set it later too.',
     'field_password_confirm' => 'Confirm password',
-    'password_intro' => 'No account yet? Choose a password to follow your bookings.',
     'optional' => 'optional',
 
     'verify_title' => 'Let us check your number',
@@ -90,7 +87,7 @@ return [
     'phone_verified' => 'Verified number',
 
     'documents_title' => 'Your documents',
-    'documents_intro' => 'A photo or a scan, just to save time at the counter. Originals are still required.',
+    'documents_intro' => 'Upload a photo of your ID for your request. Your original driving licence will be checked at the agency before the vehicle is handed over.',
     'missing_documents' => 'Still missing:',
     'back_to_documents' => 'Back to documents',
 
@@ -99,15 +96,15 @@ return [
     'to_pay' => 'to pay at the agency',
 
     'confirm_cta' => 'Confirm my booking',
-    'confirm_note' => 'No payment now. An agent checks your documents and confirms within 2 hours.',
+    'confirm_note' => 'No payment now. The agency checks availability and service requirements, then confirms your booking.',
 
     'confirmation_title' => 'Your booking is recorded',
-    'confirmation_meta' => 'Booking recorded — PDJ Autorent Lomé',
-    'confirmation_intro' => 'An agent is checking your documents. You will know within 2 hours if it is confirmed.',
+    'confirmation_meta' => 'Booking recorded — Car rental in Lomé',
+    'confirmation_intro' => 'The agency checks availability and service requirements before confirming your booking.',
     'reference' => 'Reference',
     'download_receipt' => 'Download the booking receipt',
     'what_happens_next' => 'What happens next',
-    'next_steps' => 'You get an SMS and a WhatsApp message as soon as the agent has checked your papers. The day before, a reminder asks you to confirm you are coming. On pickup morning, you show your originals and pay at the agency.',
+    'next_steps' => 'The agency will tell you once availability and service requirements have been checked. Before the vehicle handover, bring the original documents listed in your confirmation and pay at the agency.',
     'bring_with_you' => 'To show at pickup',
     'original' => '(original)',
     'amount_breakdown' => 'rental + deposit',
@@ -115,6 +112,24 @@ return [
     'open_maps' => 'Open in Google Maps',
 
     'presence_confirmed' => 'Thanks, your attendance is recorded. See you soon!',
+
+    'lookup' => [
+        'title' => 'Check my booking',
+        'intro' => 'Enter your request reference (PDJ-XXXXXX or driver-only) to see its status.',
+        'reference' => 'Reference',
+        'reference_label' => 'Booking reference',
+        'submit' => 'Check',
+        'not_found' => 'No booking matches this reference.',
+        'service' => 'Service',
+        'document_verification' => 'Document verification',
+        'total' => 'Total amount',
+        'driver_only_received' => 'Your identity document has been received. The agency will contact you to confirm the request.',
+    ],
+
+    'documents_for_pickup' => [
+        'self_drive' => 'Bring your original ID and a valid driving licence to the agency. The licence will be checked before the keys are handed over.',
+        'with_driver' => 'Bring your original ID to the agency. A driving licence is not required when you have a chauffeur.',
+    ],
 
     'guest' => [
         'title' => 'Request a booking',
@@ -126,7 +141,9 @@ return [
         'return_hour' => 'Return time',
         'daily_rate' => 'Estimated daily rate',
         'days' => 'Estimated duration (days)',
-        'estimated_total' => 'Estimated rental amount',
+        'estimated_total' => 'Estimated booking total',
+        'driver_request_title' => 'Car and chauffeur request',
+        'driver_request_intro' => 'A chauffeur is included in this request, and the chauffeur fee is added to the rental price.',
         'contact' => 'Your contact details',
         'name' => 'Full name',
         'comment' => 'Comment (optional)',
@@ -138,6 +155,11 @@ return [
         'confirmation_approved' => 'The agency accepted your request: your booking is confirmed.',
         'confirmation_refused' => 'The agency could not accept your request. Contact them if you would like to discuss it.',
         'confirmation_updated' => 'Your request status has been updated: :status.',
+        'confirmation_documents' => 'Before pickup, present the original documents listed below. Your driving licence will be checked at the agency, not during booking.',
+        'documents_cta' => 'Upload my documents',
+        'documents_complete' => 'Your ID photo has been received. Also bring the original document to the agency.',
+        'documents_required' => 'Upload a photo of your ID to view your request.',
+        'documents_finish' => 'View my request',
         'vehicle' => 'Vehicle',
         'status' => 'Status',
         'quote_error' => 'Unable to update this estimate. Check the dates and times.',
@@ -152,6 +174,4 @@ return [
     ],
 
     'driver_blocks' => 'blocks of :hours h',
-    'cancel_confirm' => 'Cancel this booking? Cancellation is free, you will not be charged.',
-    'cancel_free' => 'Cancel free of charge',
 ];

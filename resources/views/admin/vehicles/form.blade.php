@@ -1,6 +1,6 @@
 @extends('layouts.panel')
 
-@section('title', $vehicle->exists ? 'Modifier le vÃ©hicule' : 'Nouveau vÃ©hicule')
+@section('title', $vehicle->exists ? 'Modifier le véhicule' : 'Nouveau véhicule')
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -44,7 +44,7 @@
                             <select class="form-select" id="category_id" name="category_id" required>
                                 @foreach ($categories as $category)
                                     <option value="{{ $category->id }}" @selected(old('category_id', $vehicle->category_id) === $category->id)>
-                                        {{ $category->name('fr') }} â€” {{ number_format($category->daily_price, 0, ' ', ' ') }} F CFA/j
+                                        {{ $category->name('fr') }} — {{ number_format($category->daily_price, 0, ' ', ' ') }} F CFA/j
                                     </option>
                                 @endforeach
                             </select>
@@ -104,9 +104,37 @@
 
                 <div class="pdj-card">
                     <h2 class="h6 fw-bold mb-3">{{ __('admin.photos') }}</h2>
-                    <input type="file" class="form-control" name="photos[]" accept=".jpg,.jpeg,.png,.webp" multiple>
+                    <input type="file" class="form-control" name="photos[]" accept=".jpg,.jpeg,.png,.webp" multiple id="photosInput">
                     <div class="form-text">{{ __('admin.photos_hint') }}</div>
                     <div class="form-text text-muted"><i class="bi bi-info-circle me-1"></i>{{ __('admin.photos_max_hint') }}</div>
+
+                    <div id="photoPreview" class="row g-2 mt-2"></div>
+
+                    @if ($vehicle->exists && $vehicle->getMedia(\App\Models\Vehicle::MEDIA_GALLERY)->isNotEmpty())
+                        @php
+                            $existingPhotos = $vehicle->getMedia(\App\Models\Vehicle::MEDIA_GALLERY)
+                                ->sortBy([['order_column', 'desc'], ['id', 'desc']]);
+                            $mainPhotoId = $existingPhotos->first()?->id;
+                        @endphp
+                        <div class="row g-2 mt-3">
+                            @foreach ($existingPhotos as $photo)
+                                <div class="col-6 col-md-3">
+                                    <div class="admin-photo-thumb">
+                                        <img src="{{ $photo->getUrl() }}" alt="" loading="lazy">
+                                        <div class="form-check mt-1">
+                                            <input class="form-check-input" type="radio" name="main_photo_id"
+                                                   value="{{ $photo->id }}" id="main-photo-{{ $photo->id }}"
+                                                   @checked($photo->id === $mainPhotoId)>
+                                            <label class="form-check-label small" for="main-photo-{{ $photo->id }}">
+                                                {{ __('admin.main_photo') }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="form-text mt-2">{{ __('admin.main_photo_hint') }}</div>
+                    @endif
                 </div>
             </div>
 
@@ -124,4 +152,51 @@
             </div>
         </div>
     </form>
+
+    <script>
+        (function () {
+            const input = document.getElementById('photosInput');
+            const preview = document.getElementById('photoPreview');
+            if (!input || !preview) return;
+
+            input.addEventListener('change', function () {
+                preview.innerHTML = '';
+                const files = Array.from(input.files || []);
+                files.forEach(function (file, index) {
+                    const col = document.createElement('div');
+                    col.className = 'col-6 col-md-3';
+
+                    const thumb = document.createElement('div');
+                    thumb.className = 'admin-photo-thumb';
+
+                    const img = document.createElement('img');
+                    img.alt = '';
+                    img.loading = 'lazy';
+                    const url = URL.createObjectURL(file);
+                    img.src = url;
+                    thumb.appendChild(img);
+
+                    const check = document.createElement('div');
+                    check.className = 'form-check mt-1';
+                    const radio = document.createElement('input');
+                    radio.className = 'form-check-input';
+                    radio.type = 'radio';
+                    radio.name = 'main_photo_index';
+                    radio.value = String(index);
+                    radio.id = 'main-photo-new-' + index;
+                    if (index === 0) radio.checked = true;
+                    const label = document.createElement('label');
+                    label.className = 'form-check-label small';
+                    label.htmlFor = radio.id;
+                    label.textContent = '{{ __('admin.main_photo') }}';
+                    check.appendChild(radio);
+                    check.appendChild(label);
+                    thumb.appendChild(check);
+
+                    col.appendChild(thumb);
+                    preview.appendChild(col);
+                });
+            });
+        })();
+    </script>
 @endsection

@@ -6,9 +6,9 @@
     <div class="row justify-content-center">
         <div class="col-lg-6">
             <div class="text-center mb-4">
-                <div class="small text-muted">{{ __('agent.step') }} 4/5</div>
+                <div class="small text-muted">{{ __('agent.step') }} 4/6</div>
                 <h1 class="h4 fw-bold">{{ __('agent.collect_deposit') }}</h1>
-                <p class="text-muted">{{ $booking->reference }} w {{ $booking->user?->displayName() }}</p>
+                <p class="text-muted">{{ $booking->reference }} — {{ $booking->user?->displayName() ?? $booking->customer_name ?? '—' }}</p>
             </div>
 
             <div class="alert alert-info d-flex gap-2">
@@ -19,7 +19,7 @@
             <form method="POST" action="{{ route('agent.pickup.deposit.store', $booking) }}">
                 @csrf
                 <div class="pdj-card mb-3">
-                    <label class="form-label" for="amount">{{ __('page.deposit_title') }} â€” {{ $booking->vehicle->category->name('fr') }}</label>
+                    <label class="form-label" for="amount">{{ __('page.deposit_title') }} — {{ $booking->vehicle->category->name('fr') }}</label>
                     <input type="number" class="form-control form-control-lg" id="amount" name="amount"
                            value="{{ $booking->deposit_amount }}" min="0" step="10000" required>
                 </div>

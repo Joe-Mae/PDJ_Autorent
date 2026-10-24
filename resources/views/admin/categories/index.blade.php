@@ -1,6 +1,6 @@
 @extends('layouts.panel')
 
-@section('title', 'CatÃ©gories et tarifs')
+@section('title', 'Catégories et tarifs')
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -31,7 +31,7 @@
                         <td class="text-end">{{ number_format($category->deposit_amount, 0, ' ', ' ') }}</td>
                         <td class="text-end">{{ $category->seats }}</td>
                         <td class="text-end">{{ $category->vehicles_count }}</td>
-                        <td class="small text-muted">{{ $category->pricingRules->count() ?: 'â€”' }}</td>
+                        <td class="small text-muted">{{ $category->pricingRules->count() ?: '—' }}</td>
                         <td class="text-end">
                             <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.categories.edit', $category) }}">
                                 <i class="bi bi-pencil"></i>

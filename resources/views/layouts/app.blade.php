@@ -50,7 +50,8 @@
 </head>
 <body @class([
     'public-site' => ! request()->routeIs('account.*', 'admin.*'),
-    'structured-pages' => ! request()->routeIs('account.dashboard', 'vehicles.index'),
+    'structured-pages' => ! request()->routeIs('vehicles.index'),
+    'home-page' => request()->routeIs('home'),
 ]) @if (! request()->routeIs('account.*', 'admin.*')) style="--pdj-site-brand: {{ $siteBrandColor }}; --pdj-site-accent: {{ $siteAccentColor }};" @endif>
 
 @include('partials.header')

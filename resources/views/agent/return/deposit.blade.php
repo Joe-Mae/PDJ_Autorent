@@ -58,7 +58,7 @@
                 const input = document.getElementById('deducted_amount');
                 const out = document.getElementById('aRendre');
                 const total = {{ (int) $paid }};
-                const fmt = (n) => new Intl.NumberFormat('fr-FR').format(n) + ' F CFA';
+                const fmt = (n) => new Intl.NumberFormat('fr-FR').format(n) + ' FCFA';
                 const refresh = () => { out.textContent = fmt(Math.max(0, total - (Number(input.value) || 0))); };
                 input.addEventListener('input', refresh);
                 refresh();

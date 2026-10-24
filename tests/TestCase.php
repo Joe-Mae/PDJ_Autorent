@@ -25,7 +25,7 @@ use Spatie\Permission\PermissionRegistrar;
  * de la suite et serait partagé entre tests.
  *
  * Le barème de référence est volontairement lisible : 18 000 F CFA le jour,
- * 60 000 F CFA de caution, 5 000 F CFA le bloc de chauffeur de 4 h.
+ * 60 000 F CFA de caution, 7 000 F CFA le bloc de chauffeur de 4 h.
  */
 abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
 {
@@ -40,7 +40,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
 
     protected const DEPOSIT = 60000;
 
-    protected const DRIVER_BLOCK_PRICE = 5000;
+    protected const DRIVER_BLOCK_PRICE = 7000;
 
     protected const DRIVER_BLOCK_HOURS = 4;
 
@@ -141,7 +141,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
     // ── Configuration ────────────────────────────────────────────────────────
 
     /**
-     * Les quatre rôles de l'application. Les permissions ne sont pas
+     * Les trois rôles de l'application. Les permissions ne sont pas
      * utilisées : l'accès au back-office passe par EnsureStaff et le rôle,
      * testés séparément.
      */
@@ -149,7 +149,7 @@ abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        foreach (['super_admin', 'gestionnaire', 'agent_accueil', 'client'] as $role) {
+        foreach (['super_admin', 'gestionnaire', 'agent_accueil'] as $role) {
             Role::findOrCreate($role, 'web');
         }
     }

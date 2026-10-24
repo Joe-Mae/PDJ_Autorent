@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'yes' => 'Yes',
+    'no' => 'No',
     'app_name' => 'Car rental',
 
     'tagline' => 'Car rental in :city',
@@ -92,5 +94,6 @@ return [
     'footer_help' => 'Help',
     'footer_legal' => 'Legal',
     'footer_rights' => 'All rights reserved.',
+    'admin_access' => 'Admin',
     'opening_hours' => 'Open Monday to Saturday, 8am to 7pm',
 ];

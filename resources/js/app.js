@@ -16,6 +16,8 @@ document.querySelectorAll('[data-guest-booking-form]').forEach((form) => {
     const pickup = form.elements.namedItem('heure_depart');
     const returnHour = form.elements.namedItem('heure_retour');
     const dailyPrice = form.querySelector('[data-guest-daily-price]');
+    const rentalTotal = form.querySelector('[data-guest-rental-total]');
+    const driverTotal = form.querySelector('[data-guest-driver-total]');
     const days = form.querySelector('[data-guest-days]');
     const total = form.querySelector('[data-guest-total]');
     const error = form.querySelector('[data-guest-quote-error]');
@@ -32,7 +34,8 @@ document.querySelectorAll('[data-guest-booking-form]').forEach((form) => {
         params.set('heure_retour', returnHour.value);
 
         const driver = form.elements.namedItem('avec_chauffeur');
-        if (driver?.value) params.set('avec_chauffeur', driver.value);
+        const driverChecked = driver?.type === 'checkbox' ? driver.checked : !!driver?.value;
+        if (driverChecked) params.set('avec_chauffeur', '1');
 
         try {
             const response = await fetch(`${form.dataset.quoteUrl}?${params}`, {
@@ -45,6 +48,8 @@ document.querySelectorAll('[data-guest-booking-form]').forEach((form) => {
 
             const formatter = new Intl.NumberFormat(document.documentElement.lang || 'fr-FR');
             dailyPrice.textContent = formatter.format(data.daily_price);
+            rentalTotal.textContent = formatter.format(data.price_rental);
+            if (driverTotal) driverTotal.textContent = formatter.format(data.price_driver);
             days.textContent = formatter.format(data.days);
             total.textContent = formatter.format(data.price_total);
             error.hidden = true;
@@ -56,6 +61,18 @@ document.querySelectorAll('[data-guest-booking-form]').forEach((form) => {
         }
     };
 
+    const driverInput = form.elements.namedItem('avec_chauffeur');
+    const driverCheckbox = driverInput?.type === 'checkbox' ? driverInput : null;
+    const driverLine = form.querySelector('[data-guest-driver-line]');
+    const driverInfo = form.querySelector('[data-guest-driver-info]');
+
+    const toggleDriverUI = () => {
+        const on = driverChecked();
+        if (driverLine) driverLine.classList.toggle('d-none', !on);
+        if (driverInfo) driverInfo.classList.toggle('d-none', !on);
+    };
+    const driverChecked = () => driverCheckbox ? driverCheckbox.checked : !!driverInput?.value;
+
     [start, end, pickup, returnHour].forEach((input) => {
         input.addEventListener('change', () => {
             if (input === start) end.min = start.value || end.min;
@@ -64,6 +81,14 @@ document.querySelectorAll('[data-guest-booking-form]').forEach((form) => {
             timer = setTimeout(refreshQuote, 180);
         });
     });
+
+    if (driverCheckbox) {
+        driverCheckbox.addEventListener('change', () => {
+            toggleDriverUI();
+            clearTimeout(timer);
+            timer = setTimeout(refreshQuote, 180);
+        });
+    }
 
     end.min = start.value || end.min;
     refreshQuote();
@@ -555,3 +580,55 @@ if (heroCarousel) {
         startRotation();
     }
 }
+
+// ─── Repli de la barre latérale de l'administration ──────────────────────────
+// Le choix est mémorisé : un agent qui replie le menu sur son 13 pouces ne
+// veut pas le replier à chaque chargement de page.
+const adminApp = document.getElementById('adminApp');
+const adminSidebarToggle = document.querySelector('[data-admin-sidebar-toggle]');
+
+if (adminApp && adminSidebarToggle) {
+    const storageKey = 'pdj.admin.sidebar';
+
+    const appliquerRepli = (replie) => {
+        adminApp.classList.toggle('is-sidebar-collapsed', replie);
+        adminSidebarToggle.setAttribute('aria-expanded', String(!replie));
+
+        const libelle = replie
+            ? adminSidebarToggle.dataset.expandLabel
+            : adminSidebarToggle.dataset.collapseLabel;
+
+        adminSidebarToggle.setAttribute('aria-label', libelle);
+        adminSidebarToggle.title = libelle;
+    };
+
+    let replie = false;
+
+    try {
+        replie = window.localStorage.getItem(storageKey) === '1';
+    } catch {
+        // Mode privé : le repli reste valable pour la page en cours seulement.
+    }
+
+    appliquerRepli(replie);
+
+    // Le lien actif peut être hors de l'écran visible de la barre latérale
+    // (écran court, menu replié). On le ramène dans le champ sans forcer un
+    // défilement si déjà visible.
+    const lienActif = document.querySelector('.admin-nav .nav-link.active');
+    if (lienActif) {
+        lienActif.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+
+    adminSidebarToggle.addEventListener('click', () => {
+        replie = !adminApp.classList.contains('is-sidebar-collapsed');
+        appliquerRepli(replie);
+
+        try {
+            window.localStorage.setItem(storageKey, replie ? '1' : '0');
+        } catch {
+            // Rien à mémoriser.
+        }
+    });
+}
+

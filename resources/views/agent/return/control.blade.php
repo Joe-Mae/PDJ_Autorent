@@ -1,6 +1,6 @@
 @extends('layouts.panel', ['section' => 'agent', 'singleAction' => true])
 
-@section('title', 'ContrÃ´le de retour')
+@section('title', 'Contrôle de retour')
 
 @section('content')
     <div class="row justify-content-center">
@@ -19,7 +19,7 @@
                     <input type="number" class="form-control form-control-lg" id="mileage" name="mileage"
                            value="{{ $booking->mileage_at_pickup ?? 0 }}" min="{{ $booking->mileage_at_pickup ?? 0 }}" required>
                     <div class="form-text">
-                        DÃ©part : {{ number_format($booking->mileage_at_pickup ?? 0, 0, ' ', ' ') }} km â€”
+                        Départ : {{ number_format($booking->mileage_at_pickup ?? 0, 0, ' ', ' ') }} km —
                         parcouru : <span id="kmPar" class="fw-semibold">0</span> km
                     </div>
                 </div>

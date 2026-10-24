@@ -53,7 +53,7 @@
                     <div class="pdj-card">
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label" for="category_fr">CatÃ©gorie (FR)</label>
+                                <label class="form-label" for="category_fr">Catégorie (FR)</label>
                                 <input type="text" class="form-control" id="category_fr" name="category_fr" value="{{ old('category_fr', $item->category_fr) }}" required>
                             </div>
                             <div class="col-md-6">
@@ -69,7 +69,7 @@
                                 <input type="text" class="form-control" id="question_en" name="question_en" value="{{ old('question_en', $item->question_en) }}" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label" for="answer_fr">RÃ©ponse (FR)</label>
+                                <label class="form-label" for="answer_fr">Réponse (FR)</label>
                                 <textarea class="form-control" id="answer_fr" name="answer_fr" rows="5" required>{{ old('answer_fr', $item->answer_fr) }}</textarea>
                             </div>
                             <div class="col-md-6">
@@ -97,7 +97,7 @@
                                 <input type="date" class="form-control" id="date" name="date" value="{{ old('date', $item->date?->toDateString()) }}" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label" for="label_fr">LibellÃ© (FR)</label>
+                                <label class="form-label" for="label_fr">Libellé (FR)</label>
                                 <input type="text" class="form-control" id="label_fr" name="label_fr" value="{{ old('label_fr', $item->label_fr) }}" required>
                             </div>
                             <div class="col-md-4">

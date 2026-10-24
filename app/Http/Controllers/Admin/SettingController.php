@@ -22,9 +22,9 @@ class SettingController extends Controller
 {
     /** Les groupes, dans l'ordre où l'agent les lit. */
     private const GROUPS = [
-        'general' => 'Agence',
-        'reservation' => 'Réservation',
-        'driver' => 'Chauffeur',
+        'general',
+        'reservation',
+        'driver',
     ];
 
     public function __construct(private readonly SettingsService $settings) {}
@@ -34,9 +34,9 @@ class SettingController extends Controller
         $this->settings->flush();
 
         return view('admin.settings.index', [
-            'groups' => collect(self::GROUPS)->map(fn ($label, $key) => [
+            'groups' => collect(self::GROUPS)->map(fn ($key) => [
                 'key' => $key,
-                'label' => $label,
+                'label' => __('admin.settings_group.'.$key),
                 'settings' => Setting::query()->inGroup($key)->get(),
             ]),
         ]);

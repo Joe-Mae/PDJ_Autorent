@@ -59,17 +59,17 @@ class VehicleController extends Controller
         abort_unless($vehicle->isBookable(), 404);
 
         $validated = $this->validateSearch($request);
-        $period = $validated ? $this->periodFrom($validated) : $this->defaultPeriod();
-        $isFree = $this->availability->isVehicleFree($vehicle, $period);
-
-        $quote = $this->pricing->quote($vehicle->category, $period, (bool) ($validated['with_driver'] ?? false));
+        $hasDates = $validated !== null && ! empty($validated['du']) && ! empty($validated['au']);
+        $period = $hasDates ? $this->periodFrom($validated) : null;
+        $isFree = $period ? $this->availability->isVehicleFree($vehicle, $period) : null;
+        $quote = $period ? $this->pricing->quote($vehicle->category, $period, (bool) ($validated['with_driver'] ?? false)) : null;
 
         return view('vehicles.show', [
             'vehicle' => $vehicle->load(['category', 'media']),
             'period' => $period,
             'quote' => $quote,
             'isFree' => $isFree,
-            'driverAvailable' => $this->availability->canOfferDriver($period),
+            'driverAvailable' => $period ? $this->availability->canOfferDriver($period) : false,
             'filters' => $validated ?? [],
             'reviews' => Review::query()
                 ->published()

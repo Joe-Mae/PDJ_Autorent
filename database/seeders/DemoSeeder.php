@@ -45,7 +45,6 @@ class DemoSeeder extends Seeder
             'super_admin' => ['Tout voir, tout faire, gérer les comptes et les paramètres.'],
             'gestionnaire' => ['Gère la flotte, les tarifs, le planning et les contenus.'],
             'agent_accueil' => ['Traite les réservations, les documents, la caisse, le retrait et le retour.'],
-            'client' => ['Espace client du public.'],
         ];
 
         foreach ($roles as $name => $description) {
@@ -56,7 +55,7 @@ class DemoSeeder extends Seeder
     private function seedSettings(): void
     {
         $rows = [
-            ['agency.name', 'PDJ Autorent', 'general', "Nom de l'agence", 'string'],
+            ['agency.name', 'PDJ-AUTORENT', 'general', "Nom de l'agence", 'string'],
             ['agency.address', 'Bd du Mono, Lomé', 'general', "Adresse de l'agence", 'string'],
             ['agency.phone', '+228 90 12 34 56', 'general', 'Téléphone affiché', 'string'],
             ['agency.whatsapp', '+22890123456', 'general', 'Numéro WhatsApp, format international', 'string'],
@@ -72,13 +71,15 @@ class DemoSeeder extends Seeder
             ['booking.free_cancellation_before', '18:00', 'reservation', "Heure limite d'annulation gratuite (J-1)", 'string'],
             ['booking.min_days', '1', 'reservation', 'Durée minimum de location (jours)', 'int'],
             ['booking.late_fee_multiplier', '1', 'reservation', 'Pénalité de retard : 1 = un jour de location par jour commencé', 'int'],
+            ['booking.insurance_deductible', '150000', 'reservation', 'Franchise assurance (FCFA)', 'int'],
 
             ['driver.block_hours', '4', 'driver', 'Durée d\'un bloc chauffeur (heures)', 'int'],
-            ['driver.block_price', '5000', 'driver', 'Supplément chauffeur avec voiture (FCFA/jour)', 'int'],
+            ['driver.block_price', '7000', 'driver', 'Supplément chauffeur avec voiture (FCFA/jour)', 'int'],
             ['driver.auto_check_days', '5', 'driver', 'Au-delà de N jours, proposer le chauffeur', 'int'],
-            ['driver.solo_daily_price', '8000', 'driver', 'Chauffeur seul : tarif journalier (FCFA)', 'int'],
-            ['driver.solo_discount_daily_price', '6500', 'driver', 'Chauffeur seul : tarif journalier réduit (FCFA)', 'int'],
+            ['driver.solo_daily_price', '15000', 'driver', 'Chauffeur seul : tarif journalier jusqu\'à 3 jours (FCFA)', 'int'],
+            ['driver.solo_discount_daily_price', '13000', 'driver', 'Chauffeur seul : tarif journalier réduit au-delà de 3 jours (FCFA)', 'int'],
             ['driver.solo_discount_after_days', '3', 'driver', 'Chauffeur seul : durée avant tarif réduit (jours)', 'int'],
+            ['driver.with_car_mode', 'supplement', 'driver', 'Mode tarif chauffeur avec voiture: supplement ou package', 'string'],
 
             ['no_show.max_absences', '2', 'reservation', 'Absences avant blocage du compte', 'int'],
             ['document.retention_months', '12', 'reservation', 'Conservation des documents (mois)', 'int'],
@@ -98,7 +99,8 @@ class DemoSeeder extends Seeder
             ['site.hero_uploaded_images', '[]', 'json', 'Photos importées du diaporama accueil'],
             ['site.brand_color', '#0A6E4C', 'string', 'Couleur principale du site'],
             ['site.accent_color', '#FFC400', 'string', 'Couleur accent du site'],
-            ['site.brand_label', 'Autorent', 'string', 'Nom affiché dans le logo'],
+            ['site.brand_mark', 'PDJ', 'string', 'Monogramme affiché dans le logo'],
+            ['site.brand_label', 'AUTORENT', 'string', 'Nom affiché dans le logo'],
             ['site.hero_eyebrow.fr', 'Location de voitures à Lomé', 'string', 'Accroche du bandeau accueil (FR)'],
             ['site.hero_eyebrow.en', 'Car rental in Lomé', 'string', 'Accroche du bandeau accueil (EN)'],
             ['site.footer_tagline.fr', 'Une agence, un point à Lomé, des prix qui ne changent pas à la réservation.', 'string', 'Signature du pied de page (FR)'],
@@ -113,10 +115,12 @@ class DemoSeeder extends Seeder
             ['nav.faq.en', 'Frequently asked questions', 'string', 'Navigation: FAQ (EN)'],
             ['nav.contact.fr', 'Contact', 'string', 'Navigation : contact (FR)'],
             ['nav.contact.en', 'Contact', 'string', 'Navigation: contact (EN)'],
+            ['nav.lookup.fr', 'Consulter ma réservation', 'string', 'Navigation : consulter ma réservation (FR)'],
+            ['nav.lookup.en', 'Check my booking', 'string', 'Navigation: check my booking (EN)'],
         ];
 
         foreach ($websiteSettings as [$key, $value, $type, $label]) {
-            Setting::query()->firstOrCreate(
+            Setting::query()->updateOrCreate(
                 ['key' => $key],
                 ['value' => $value, 'type' => $type, 'group' => 'website', 'label_fr' => $label],
             );
@@ -338,8 +342,8 @@ class DemoSeeder extends Seeder
                 'category_fr' => 'Chauffeur', 'category_en' => 'Chauffeur',
                 'question_fr' => 'Comment le chauffeur est-il facturé ?',
                 'question_en' => 'How is the chauffeur charged?',
-                'answer_fr' => "Avec une voiture de l'agence, le chauffeur coûte 5 000 F CFA par jour. Pour une réservation de chauffeur seul, le tarif est de 8 000 F CFA par jour jusqu'à 3 jours, puis 6 500 F CFA par jour pour toute la réservation.",
-                'answer_en' => 'With a car rented from the agency, a chauffeur costs 5,000 F CFA per day. For a chauffeur-only booking, the rate is 8,000 F CFA per day for up to 3 days, then 6,500 F CFA per day for the whole booking.',
+                'answer_fr' => "Avec une voiture de l'agence, le chauffeur coûte 7 000 FCFA par jour (supplément). Pour une réservation de chauffeur seul, le tarif est de 15 000 FCFA par jour jusqu'à 3 jours, puis 13 000 FCFA par jour appliqué à toute la durée au-delà de 3 jours.",
+                'answer_en' => 'With a car rented from the agency, a chauffeur costs 7,000 FCFA per day (supplement). For a chauffeur-only booking, the rate is 15,000 FCFA per day for up to 3 days, then 13,000 FCFA per day applied to the whole duration beyond 3 days.',
                 'sort_order' => 1,
             ],
         ];

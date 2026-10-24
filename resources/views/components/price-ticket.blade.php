@@ -11,7 +11,7 @@
      * @var \App\Support\PriceQuote $quote
      */
     $locale = app()->getLocale();
-    $money = fn (int $amount) => number_format($amount, 0, ' ', ' ').' F CFA';
+    $money = fn (int $amount) => number_format($amount, 0, ' ', ' ').' FCFA';
 @endphp
 
 <div class="price-ticket">

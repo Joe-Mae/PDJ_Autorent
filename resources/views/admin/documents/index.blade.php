@@ -1,6 +1,6 @@
 @extends('layouts.panel')
 
-@section('title', 'VÃ©rification des documents')
+@section('title', 'Vérification des documents')
 
 @section('content')
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
@@ -27,24 +27,37 @@
             </thead>
             <tbody>
                 @forelse ($documents as $document)
+                    @php
+                        $scheduledAt = $document->booking?->starts_at ?? $document->driverOnlyBooking?->starts_at;
+                        $clientName = $document->user?->displayName()
+                            ?? $document->booking?->customer_name
+                            ?? $document->driverOnlyBooking?->customer_name;
+                        $clientPhone = $document->user?->phone
+                            ?? $document->booking?->customer_phone
+                            ?? $document->driverOnlyBooking?->phone;
+                    @endphp
                     <tr>
                         <td class="small">
-                            @if ($document->booking)
-                                {{ $document->booking->starts_at->translatedFormat('D d M') }}
-                            @else
-                                <span class="text-muted">â€”</span>
-                            @endif
+                            {{ $scheduledAt?->translatedFormat('D d M') ?? '—' }}
                         </td>
                         <td class="small">
-                            {{ $document->user?->displayName() }}<br>
-                            <a class="text-muted" href="tel:{{ $document->user?->phone }}">{{ $document->user?->phone }}</a>
+                            {{ $clientName ?? '—' }}<br>
+                            @if ($clientPhone)
+                                <a class="text-muted" href="tel:{{ $clientPhone }}">{{ $clientPhone }}</a>
+                            @endif
                         </td>
                         <td class="small fw-semibold">{{ $document->type->label() }}</td>
                         <td class="small">
                             @if ($document->booking)
                                 <a href="{{ route('admin.bookings.show', $document->booking) }}">{{ $document->booking->reference }}</a>
+                            @elseif ($document->driverOnlyBooking)
+                                <a class="font-monospace"
+                                   href="{{ route('admin.driver-only-bookings.index', ['q' => $document->driverOnlyBooking->reference]) }}">
+                                    {{ $document->driverOnlyBooking->reference }}
+                                </a>
+                                <span class="badge bg-secondary ms-1">{{ __('driver.solo_title') }}</span>
                             @else
-                                <span class="text-muted">â€”</span>
+                                <span class="text-muted">—</span>
                             @endif
                         </td>
                         <td class="small text-muted">{{ $document->created_at->diffForHumans() }}</td>

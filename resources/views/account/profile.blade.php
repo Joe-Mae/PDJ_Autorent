@@ -38,7 +38,7 @@
                     <div class="col-12">
                         <label class="form-label" for="preferred_locale">{{ __('nav.language') }}</label>
                         <select class="form-select" id="preferred_locale" name="preferred_locale">
-                            <option value="fr" @selected($user->preferred_locale === 'fr')>FranÃ§ais</option>
+                            <option value="fr" @selected($user->preferred_locale === 'fr')>Français</option>
                             <option value="en" @selected($user->preferred_locale === 'en')>English</option>
                         </select>
                     </div>

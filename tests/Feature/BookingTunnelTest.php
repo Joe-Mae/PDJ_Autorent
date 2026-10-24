@@ -54,8 +54,8 @@ class BookingTunnelTest extends TestCase
 
         $this->assertTrue($booking->with_driver);
         $this->assertSame(12, $booking->driver_blocks);
-        $this->assertSame(5000, $booking->driver_daily_price);
-        $this->assertSame(92000, $booking->price_total);
+        $this->assertSame(7000, $booking->driver_daily_price);
+        $this->assertSame(100000, $booking->price_total);
     }
 
     public function test_page_de_reservation_conserve_le_tarif_chauffeur_deja_enregistre(): void
@@ -76,11 +76,11 @@ class BookingTunnelTest extends TestCase
 
         $this->actingAs($customer)
             ->get(route('booking.show', ['locale' => 'fr', 'booking' => $booking]))
-            ->assertSee('20 000 F CFA', false)
-            ->assertSee('92 000 F CFA', false);
+            ->assertSee('28 000 FCFA', false)
+            ->assertSee('100 000 FCFA', false);
     }
 
-    public function test_account_displays_legacy_chauffeur_block_pricing(): void
+    public function test_le_recapitulatif_affiche_l_ancien_tarif_chauffeur_par_blocs(): void
     {
         $customer = $this->customer();
         $this->driver();
@@ -99,9 +99,9 @@ class BookingTunnelTest extends TestCase
         ]);
 
         $this->actingAs($customer)
-            ->get(route('account.bookings.show', ['locale' => 'fr', 'booking' => $booking]))
+            ->get(route('booking.show', ['locale' => 'fr', 'booking' => $booking]))
             ->assertSee(__('booking.line.driver', ['blocks' => 12]))
-            ->assertSee('60 000 F CFA', false)
+            ->assertSee('60 000 FCFA', false)
             ->assertDontSee(__('quote.line.driver', ['days' => 4]));
     }
 

@@ -30,10 +30,23 @@ class PricingService
 
         $priceRental = $dailyPrice * $days;
 
+        $driverMode = $this->settings->string('driver.with_car_mode');
         $blockHours = max(1, $this->settings->int('driver.block_hours'));
         $driverDailyPrice = $this->settings->int('driver.block_price');
         $blocks = $withDriver ? $period->totalDriverBlocks($blockHours) : 0;
-        $priceDriver = $withDriver ? $days * $driverDailyPrice : 0;
+
+        if ($withDriver) {
+            if ($driverMode === 'package') {
+                // Le tarif chauffeur remplace le prix de la voiture
+                $priceDriver = $days * $driverDailyPrice;
+                $priceRental = 0;
+            } else {
+                // Mode supplement (défaut) : chauffeur s'ajoute au prix de la voiture
+                $priceDriver = $days * $driverDailyPrice;
+            }
+        } else {
+            $priceDriver = 0;
+        }
 
         return new PriceQuote(
             days: $days,

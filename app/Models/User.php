@@ -59,11 +59,6 @@ class User extends Authenticatable
         return $this->hasAnyRole(['super_admin', 'gestionnaire', 'agent_accueil']);
     }
 
-    public function isCustomer(): bool
-    {
-        return ! $this->isStaff();
-    }
-
     public function displayName(): string
     {
         return trim("{$this->first_name} {$this->last_name}") ?: ($this->name ?: (string) $this->email);

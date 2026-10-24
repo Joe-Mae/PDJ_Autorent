@@ -10,17 +10,29 @@ enum DocumentType: string
     case Contract = 'contrat';
     case VehiclePhoto = 'photo_vehicule';
 
-    /** Document que le client doit fournir avant le retrait, selon qu'il est chauffeur ou non. */
-    public static function requiredForClient(bool $withDriver): array
+    /** Documents que le client fournit en ligne pendant la réservation. */
+    public static function requiredForSubmission(): array
+    {
+        return [self::IdentityCard];
+    }
+
+    /** Types that may be uploaded online; the driving licence is checked at pickup. */
+    public static function acceptedOnline(): array
+    {
+        return [self::IdentityCard, self::Selfie];
+    }
+
+    /** Originaux vérifiés par le personnel avant la remise des clés. */
+    public static function requiredAtPickup(bool $withDriver): array
     {
         return $withDriver
             ? [self::IdentityCard]
             : [self::IdentityCard, self::DriverLicense];
     }
 
-    public function isRequiredOnline(): bool
+    public function isAcceptedOnline(): bool
     {
-        return in_array($this, [self::IdentityCard, self::DriverLicense, self::Selfie], true);
+        return in_array($this, self::acceptedOnline(), true);
     }
 
     /** Durée de conservation en mois après la fin de la location. 0 = pas de purge. */

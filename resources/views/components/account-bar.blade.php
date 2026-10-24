@@ -1,37 +1,24 @@
 {{--
-    Barre de session de l'espace client.
+    Barre de la page de profil, réservée au personnel connecté.
 
     Deux fonctions, volontairement réunies :
 
-      1. se déplacer entre Mon espace, Réservations, Documents et Profil — sans
-         elle, on ne revient qu'en passant par l'en-tête, ce qui oblige à
-         remonter la page ;
-      2. se déconnecter, pour changer d'utilisateur sur un téléphone partagé.
-         Au guichet comme à la maison, un même appareil sert souvent à deux
-         personnes : sans ce bouton visible, le second client doit deviner
-         qu'il faut passer par « Modifier mon profil ».
+      1. revenir au profil depuis le formulaire de mot de passe, sans remonter
+         la page ;
+      2. se déconnecter, pour changer d'utilisateur sur une tablette de
+         guichet partagée. Sans ce bouton visible, le second employé doit
+         deviner qu'il faut passer par « Modifier mon profil ».
 
-    La déconnexion est un POST et non un lien : un GET permettrait à un tiers de
-    déconnecter le client par une simple image glissée dans une page.
+    La déconnexion est un POST et non un lien : un GET permettrait à un tiers
+    de déconnecter un employé par une simple image glissée dans une page.
 --}}
-@php
-    $onglets = [
-        ['route' => 'account.dashboard', 'label' => __('nav.my_account'), 'icon' => 'person'],
-        ['route' => 'account.bookings', 'label' => __('account.my_bookings'), 'icon' => 'calendar-check'],
-        ['route' => 'account.documents', 'label' => __('account.my_documents'), 'icon' => 'file-earmark-text'],
-        ['route' => 'account.profile', 'label' => __('account.edit_profile'), 'icon' => 'gear'],
-    ];
-@endphp
-
 <div class="account-bar mb-4">
-    <nav class="account-bar__links" aria-label="{{ __('nav.my_account') }}">
-        @foreach ($onglets as $onglet)
-            <a class="account-bar__link {{ request()->routeIs($onglet['route']) ? 'is-active' : '' }}"
-               href="{{ route($onglet['route'], ['locale' => $locale]) }}"
-               @if (request()->routeIs($onglet['route'])) aria-current="page" @endif>
-                <i class="bi bi-{{ $onglet['icon'] }}"></i>{{ $onglet['label'] }}
-            </a>
-        @endforeach
+    <nav class="account-bar__links" aria-label="{{ __('account.my_profile') }}">
+        <a class="account-bar__link {{ request()->routeIs('account.profile') ? 'is-active' : '' }}"
+           href="{{ route('account.profile', ['locale' => $locale]) }}"
+           @if (request()->routeIs('account.profile')) aria-current="page" @endif>
+            <i class="bi bi-gear"></i>{{ __('account.edit_profile') }}
+        </a>
     </nav>
 
     {{-- La déconnexion vit dans son propre formulaire : un POST avec jeton,

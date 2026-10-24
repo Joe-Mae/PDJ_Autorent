@@ -53,7 +53,7 @@ return new class extends Migration
             $table->string('status_reason', 255)->nullable();
             $table->timestamp('confirmed_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();
-            $table->timestamp('cancelled_by')->nullable()->comment('client | agence');
+            $table->string('cancelled_by', 20)->nullable()->comment('client | agence | admin');
             $table->timestamp('started_at')->nullable();
             $table->timestamp('ended_at')->nullable();
 

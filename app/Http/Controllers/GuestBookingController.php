@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\BookingStatus;
+use App\Enums\DocumentType;
 use App\Exceptions\BookingException;
 use App\Models\Booking;
+use App\Models\DriverOnlyBooking;
 use App\Models\Vehicle;
 use App\Services\BookingService;
 use App\Services\PricingService;
@@ -80,6 +83,8 @@ class GuestBookingController extends Controller
         return response()->json([
             'days' => $quote->days,
             'daily_price' => $quote->dailyPrice,
+            'price_rental' => $quote->priceRental,
+            'price_driver' => $quote->priceDriver,
             'price_total' => $quote->priceTotal,
         ]);
     }
@@ -121,14 +126,109 @@ class GuestBookingController extends Controller
             return back()->withInput()->with('error', $exception->getMessage());
         }
 
-        return redirect()->route('booking.guest.confirmation', [
+        return redirect()->route('booking.guest.documents', [
             'locale' => $locale,
             'booking' => $booking,
             'token' => $token,
         ]);
     }
 
-    public function confirmation(string $locale, Booking $booking, string $token): View
+    /**
+     * Étape documents de la demande invitée : juste après l'envoi du formulaire,
+     * le client dépose sa pièce d'identité et son permis. Aucun compte requis :
+     * le jeton du lien fait office de preuve de possession.
+     */
+    public function documents(string $locale, Booking $booking, string $token): View|RedirectResponse
+    {
+        $this->guardToken($booking, $token);
+
+        if (! $booking->status->canStillUploadDocuments()) {
+            return redirect()->route('booking.guest.confirmation', [
+                'locale' => $locale,
+                'booking' => $booking,
+                'token' => $token,
+            ]);
+        }
+
+        return view('booking.documents', [
+            'booking' => $booking->load(['vehicle.category', 'documents']),
+            'quote' => $this->pricing->quoteForBooking($booking),
+            'required' => DocumentType::requiredForSubmission(),
+            'reusable' => [],
+            'isGuest' => true,
+            'guestToken' => $token,
+        ]);
+    }
+
+    public function confirmation(string $locale, Booking $booking, string $token): View|RedirectResponse
+    {
+        $this->guardToken($booking, $token);
+
+        // La pièce d'identité est demandée en ligne ; le permis, lui, est
+        // contrôlé par le personnel au retrait.
+        if ($booking->status === BookingStatus::EnAttente && ! $this->hasRequiredIdentityCard($booking)) {
+            return redirect()->route('booking.guest.documents', [
+                'locale' => $locale,
+                'booking' => $booking,
+                'token' => $token,
+            ]);
+        }
+
+        return view('booking.guest-confirmation', [
+            'booking' => $booking->load(['vehicle.category']),
+            'token' => $token,
+        ]);
+    }
+
+    private function hasRequiredIdentityCard(Booking $booking): bool
+    {
+        return $booking->documents()
+            ->where('type', DocumentType::IdentityCard->value)
+            ->exists();
+    }
+
+    /**
+     * Vérifie que le jeton du lien correspond bien à cette demande invitée.
+     * On refuse aussi les réservations rattachées à un compte : elles passent
+     * par le tunnel authentifié, pas par ce lien public.
+     */
+    public function lookup(string $locale): View
+    {
+        return view('booking.lookup', [
+            'locale' => $locale,
+            'booking' => null,
+            'driverOnlyBooking' => null,
+            'reference' => '',
+            'error' => null,
+        ]);
+    }
+
+    public function lookupStore(Request $request, string $locale): View
+    {
+        $data = $request->validate([
+            'reference' => ['required', 'string', 'max:20'],
+        ]);
+
+        $reference = strtoupper(trim($data['reference']));
+        $booking = Booking::query()
+            ->whereRaw('UPPER(reference) = ?', [$reference])
+            ->first();
+
+        // Une demande de chauffeur seul a sa propre table et sa propre référence.
+        $driverOnlyBooking = $booking === null
+            ? DriverOnlyBooking::query()->whereRaw('UPPER(reference) = ?', [$reference])->first()
+            : null;
+
+        return view('booking.lookup', [
+            'locale' => $locale,
+            'booking' => $booking,
+            'driverOnlyBooking' => $driverOnlyBooking,
+            'reference' => $reference,
+            'error' => $booking || $driverOnlyBooking ? null : __('booking.lookup.not_found'),
+        ]);
+    }
+
+    private function guardToken(Booking $booking, string $token): void
     {
         abort_unless(
             $booking->user_id === null
@@ -136,10 +236,6 @@ class GuestBookingController extends Controller
                 && hash_equals($booking->guest_access_token_hash, hash('sha256', $token)),
             404,
         );
-
-        return view('booking.guest-confirmation', [
-            'booking' => $booking->load(['vehicle.category']),
-        ]);
     }
 
     /**

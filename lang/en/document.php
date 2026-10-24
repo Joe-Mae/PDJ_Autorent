@@ -18,7 +18,15 @@ return [
         'expire' => 'Expired',
     ],
 
-    'uploaded' => ':type uploaded. An agent checks it before confirming your booking.',
+    'verification_status' => [
+        'non_requis' => 'Not required',
+        'en_attente' => 'Pending',
+        'conforme' => 'Compliant',
+        'non_conforme' => 'Non-compliant',
+    ],
+
+    'uploaded' => ':type uploaded. The original documents will be checked at the agency before vehicle handover.',
+    'unreadable' => 'This image could not be read. Try a sharper photo or a PDF.',
     'deleted' => 'Document deleted.',
     'delete_confirm' => 'Delete this document and upload another one?',
     'replace' => 'Replace',

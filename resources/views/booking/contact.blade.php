@@ -68,27 +68,6 @@
                     <div class="form-text">{{ __('booking.field_email_hint') }}</div>
                     @error('email') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
-
-                @unless ($booking->user)
-                    <div class="col-12">
-                        <hr>
-                        <p class="small text-muted mb-3">{{ __('booking.password_intro') }}</p>
-
-                        <div class="row g-3">
-                            <div class="col-sm-6">
-                                <label class="form-label" for="password">{{ __('booking.field_password') }}</label>
-                                <input type="password" class="form-control" id="password" name="password"
-                                       autocomplete="new-password" minlength="8">
-                                <div class="form-text">{{ __('booking.field_password_hint') }}</div>
-                            </div>
-                            <div class="col-sm-6">
-                                <label class="form-label" for="password_confirmation">{{ __('booking.field_password_confirm') }}</label>
-                                <input type="password" class="form-control" id="password_confirmation"
-                                       name="password_confirmation" autocomplete="new-password">
-                            </div>
-                        </div>
-                    </div>
-                @endunless
             </div>
 
             <button type="submit" class="btn btn-primary btn-lg w-100 mt-4">

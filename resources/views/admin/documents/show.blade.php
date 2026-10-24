@@ -1,6 +1,6 @@
 @extends('layouts.panel')
 
-@section('title', 'VÃ©rifier : '.$document->type->label())
+@section('title', 'Vérifier : '.$document->type->label())
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -15,10 +15,20 @@
         <div class="col-lg-7">
             <div class="pdj-card">
                 <h2 class="h6 fw-bold mb-3">{{ __('admin.document') }}</h2>
-                <a href="{{ $document->temporaryUrl() }}" target="_blank" rel="noopener">
-                    <img src="{{ $document->temporaryUrl() }}" alt="{{ $document->type->label() }}"
-                         class="img-fluid rounded" style="max-height: 70vh;">
-                </a>
+                @if ($document->mime_type === 'application/pdf')
+                    <div class="border rounded p-4 text-center">
+                        <i class="bi bi-file-earmark-pdf fs-1 text-danger"></i>
+                        <div class="mt-3">
+                            <a class="btn btn-outline-primary" href="{{ $document->temporaryUrl() }}"
+                               target="_blank" rel="noopener">{{ __('admin.open_document') }}</a>
+                        </div>
+                    </div>
+                @else
+                    <a href="{{ $document->temporaryUrl() }}" target="_blank" rel="noopener">
+                        <img src="{{ $document->temporaryUrl() }}" alt="{{ $document->type->label() }}"
+                             class="img-fluid rounded" style="max-height: 70vh;">
+                    </a>
+                @endif
                 <p class="small text-muted mt-2 mb-0">
                     {{ $document->original_filename }} w {{ $document->humanSize() }} w
                     {{ $document->created_at->translatedFormat('d/m/Y H:i') }}
@@ -31,15 +41,35 @@
                 <h2 class="h6 fw-bold mb-3">{{ __('admin.check_against') }}</h2>
                 <table class="table admin-table mb-0">
                     <tbody>
-                        <tr><td>{{ __('booking.field_first_name') }}</td><td class="text-end fw-semibold">{{ $document->user?->first_name }}</td></tr>
-                        <tr><td>{{ __('booking.field_last_name') }}</td><td class="text-end fw-semibold">{{ $document->user?->last_name }}</td></tr>
-                        <tr><td>{{ __('booking.field_birth_date') }}</td><td class="text-end">{{ $document->user?->birth_date?->format('d/m/Y') }}</td></tr>
-                        <tr><td>{{ __('booking.field_phone') }}</td><td class="text-end">{{ $document->user?->phone }}</td></tr>
+                        @if ($document->user)
+                            <tr><td>{{ __('booking.field_first_name') }}</td><td class="text-end fw-semibold">{{ $document->user->first_name }}</td></tr>
+                            <tr><td>{{ __('booking.field_last_name') }}</td><td class="text-end fw-semibold">{{ $document->user->last_name }}</td></tr>
+                            <tr><td>{{ __('booking.field_birth_date') }}</td><td class="text-end">{{ $document->user->birth_date?->format('d/m/Y') }}</td></tr>
+                            <tr><td>{{ __('booking.field_phone') }}</td><td class="text-end">{{ $document->user->phone }}</td></tr>
+                        @elseif ($document->booking)
+                            <tr><td>{{ __('admin.client') }}</td><td class="text-end fw-semibold">{{ $document->booking->customer_name }}</td></tr>
+                            <tr><td>{{ __('booking.field_phone') }}</td><td class="text-end">{{ $document->booking->customer_phone }}</td></tr>
+                            <tr><td>{{ __('booking.field_email') }}</td><td class="text-end">{{ $document->booking->customer_email }}</td></tr>
+                        @elseif ($document->driverOnlyBooking)
+                            <tr><td>{{ __('admin.client') }}</td><td class="text-end fw-semibold">{{ $document->driverOnlyBooking->customer_name }}</td></tr>
+                            <tr><td>{{ __('booking.field_phone') }}</td><td class="text-end">{{ $document->driverOnlyBooking->phone }}</td></tr>
+                            <tr><td>{{ __('booking.guest.period') }}</td><td class="text-end">
+                                {{ $document->driverOnlyBooking->starts_at->translatedFormat('d/m/Y') }} →
+                                {{ $document->driverOnlyBooking->ends_at->translatedFormat('d/m/Y') }}
+                            </td></tr>
+                        @endif
                         @if ($document->booking)
                             <tr><td>{{ __('admin.reservation') }}</td><td class="text-end">
                                 <a href="{{ route('admin.bookings.show', $document->booking) }}">{{ $document->booking->reference }}</a>
                             </td></tr>
                             <tr><td>{{ __('admin.vehicle') }}</td><td class="text-end">{{ $document->booking->vehicle->displayName() }}</td></tr>
+                        @elseif ($document->driverOnlyBooking)
+                            <tr><td>{{ __('admin.reservation') }}</td><td class="text-end">
+                                <a href="{{ route('admin.driver-only-bookings.index', ['q' => $document->driverOnlyBooking->reference]) }}">
+                                    {{ $document->driverOnlyBooking->reference }}
+                                </a><br>
+                                <span class="badge bg-secondary">{{ __('driver.solo_title') }}</span>
+                            </td></tr>
                         @endif
                     </tbody>
                 </table>

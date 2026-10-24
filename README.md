@@ -64,8 +64,8 @@ DB_PASSWORD=...
 | Agent d'accueil | `agent@pdj-autorent.tg` | `pdjautorent` |
 
 Cinq clients, quinze véhicules répartis sur six catégories, trois chauffeurs,
-une vingtaine de réservations passées pour que l'espace client et l'admin
-ne soient pas vides.
+une vingtaine de réservations passées pour que l'admin et les écrans du
+guichet ne soient pas vides.
 
 ## Organisation du code
 
@@ -89,7 +89,7 @@ app/
 ├── Http/Controllers/
 │   ├── *                 le public et le tunnel de réservation
 │   ├── Admin/            l'administration
-│   ├── Account/          l'espace client
+│   ├── Account/          le profil du personnel (nom, mot de passe)
 │   └── Agent/            les écrans du guichet (tablette)
 └── Console/Commands/
     ├── MarkNoShows         passe en « non présenté » après le délai de grâce
@@ -188,7 +188,9 @@ Toutes les pages publiques en français et en anglais, avec préfixe d'URL
 (`/fr/...`, `/en/...`). Un lien envoyé par WhatsApp s'ouvre dans la langue
 du lien, pas dans celle du destinataire.
 
-L'espace client reste en français pour la V1, avec un bandeau qui le dit.
+Le tunnel de réservation et l'administration suivent la langue de l'URL. Il
+n'y a pas d'espace client : le public réserve en mode invité, sans compte, et
+la seule page personnelle — le profil du personnel — reste en français.
 
 ## Tests
 

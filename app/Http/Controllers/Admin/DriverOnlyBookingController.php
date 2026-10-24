@@ -21,15 +21,41 @@ class DriverOnlyBookingController extends Controller
         private readonly SettingsService $settings,
     ) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
         return view('admin.driver-only-bookings.index', [
             'bookings' => DriverOnlyBooking::query()
                 ->with('driver')
+                ->when($request->string('statut')->toString(), fn ($q, $status) => $q->where('status', $status))
+                ->when($request->integer('chauffeur'), fn ($q, $driverId) => $q->where('driver_id', $driverId))
+                ->when($request->string('q')->toString(), function ($q, $term) {
+                    $q->where(fn ($sub) => $sub->where('reference', 'like', "%{$term}%")
+                        ->orWhere('customer_name', 'like', "%{$term}%")
+                        ->orWhere('phone', 'like', "%{$term}%"));
+                })
                 ->orderByRaw("CASE status WHEN 'en_attente' THEN 0 WHEN 'confirmee' THEN 1 WHEN 'refusee' THEN 2 ELSE 3 END")
                 ->orderBy('starts_at')
-                ->paginate(20),
+                ->paginate(20)
+                ->withQueryString(),
             'drivers' => Driver::query()->available()->orderBy('first_name')->orderBy('last_name')->get(),
+            'allDrivers' => Driver::query()->orderBy('first_name')->orderBy('last_name')->get(),
+            'statuses' => DriverOnlyBookingStatus::cases(),
+            'status' => $request->string('statut')->toString(),
+            'counts' => [
+                'pending' => DriverOnlyBooking::query()
+                    ->where('status', DriverOnlyBookingStatus::EnAttente->value)
+                    ->count(),
+                'confirmed' => DriverOnlyBooking::query()
+                    ->where('status', DriverOnlyBookingStatus::Confirmee->value)
+                    ->count(),
+                'today' => DriverOnlyBooking::query()
+                    ->whereDate('starts_at', today())
+                    ->whereIn('status', [
+                        DriverOnlyBookingStatus::EnAttente->value,
+                        DriverOnlyBookingStatus::Confirmee->value,
+                    ])
+                    ->count(),
+            ],
         ]);
     }
 

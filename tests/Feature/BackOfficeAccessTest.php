@@ -132,22 +132,22 @@ class BackOfficeAccessTest extends TestCase
 
     public function test_une_connexion_avec_le_bon_telephone_et_le_bon_mot_de_passe_reussit(): void
     {
-        $customer = $this->customer();
+        $staff = $this->staff('agent_accueil');
 
         $this->post('/fr/connexion', [
-            'login' => $customer->phone,
+            'login' => $staff->phone,
             'password' => 'password',
-        ])->assertRedirect();
+        ])->assertRedirect(route('admin.dashboard'));
 
-        $this->assertAuthenticatedAs($customer);
+        $this->assertAuthenticatedAs($staff);
     }
 
     public function test_une_connexion_avec_un_mot_de_passe_faux_echoue(): void
     {
-        $customer = $this->customer();
+        $staff = $this->staff('agent_accueil');
 
         $this->post('/fr/connexion', [
-            'login' => $customer->phone,
+            'login' => $staff->phone,
             'password' => 'mauvais-mot-de-passe',
         ])->assertSessionHasErrors('login');
 
@@ -164,21 +164,38 @@ class BackOfficeAccessTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_l_adresse_email_sert_egalement_a_se_connecter(): void
+    /**
+     * Il n'y a pas d'espace client : un compte sans rôle du personnel ne peut
+     * pas se connecter, et le refus est indistinguable d'un mot de passe
+     * faux pour ne pas révéler qu'une fiche existe.
+     */
+    public function test_un_compte_sans_role_ne_peut_pas_se_connecter(): void
     {
         $customer = $this->customer();
 
         $this->post('/fr/connexion', [
-            'login' => $customer->email,
+            'login' => $customer->phone,
             'password' => 'password',
-        ])->assertRedirect();
+        ])->assertSessionHasErrors('login');
 
-        $this->assertAuthenticatedAs($customer);
+        $this->assertGuest();
+    }
+
+    public function test_l_adresse_email_sert_egalement_a_se_connecter(): void
+    {
+        $staff = $this->staff('gestionnaire');
+
+        $this->post('/fr/connexion', [
+            'login' => $staff->email,
+            'password' => 'password',
+        ])->assertRedirect(route('admin.dashboard'));
+
+        $this->assertAuthenticatedAs($staff);
     }
 
     public function test_se_deconnecter_ferme_la_session(): void
     {
-        $this->actingAs($this->customer())
+        $this->actingAs($this->staff('agent_accueil'))
             ->post('/fr/deconnexion')
             ->assertRedirect();
 

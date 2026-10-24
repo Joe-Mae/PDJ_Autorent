@@ -18,7 +18,7 @@ class DriverOnlyBookingFactory extends Factory
     public function definition(): array
     {
         $days = 1;
-        $dailyPrice = 8000;
+        $dailyPrice = 15000;
 
         return [
             'reference' => fake()->unique()->bothify('SOLO######'),

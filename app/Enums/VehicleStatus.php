@@ -53,10 +53,10 @@ enum VehicleStatus: string
     {
         return match ($this) {
             self::Disponible => 'success',
-            self::Reserve => 'info',
+            self::Reserve => 'warning',
             self::EnLocation => 'primary',
-            self::EnMaintenance => 'warning',
-            self::HorsService => 'secondary',
+            self::EnMaintenance => 'secondary',
+            self::HorsService => 'dark',
         };
     }
 }

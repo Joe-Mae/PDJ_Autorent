@@ -25,7 +25,7 @@
             @foreach ($categories as $category)
                 <tr>
                     <td>{{ $category->name($locale) }}</td>
-                    <td class="text-end fw-semibold">{{ number_format($category->deposit_amount, 0, ' ', ' ') }} F CFA</td>
+                    <td class="text-end fw-semibold">{{ number_format($category->deposit_amount, 0, ' ', ' ') }} FCFA</td>
                 </tr>
             @endforeach
         </tbody>

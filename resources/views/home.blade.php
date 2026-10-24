@@ -44,7 +44,7 @@
                         <i class="bi bi-shield-check fs-3"></i>
                         <div>
                             <div class="fw-bold">{{ __('general.reassurance.insurance') }}</div>
-                            <div class="small text-muted">{{ __('vehicle.insurance_subtitle') }}</div>
+                            <div class="small text-muted">{{ __('vehicle.insurance_subtitle', ['amount' => number_format(app(\App\Services\SettingsService::class)->int('booking.insurance_deductible'), 0, ' ', ' ').' FCFA']) }}</div>
                         </div>
                     </div>
                     <div class="d-flex align-items-start gap-3">
@@ -88,8 +88,8 @@
 </section>
 
 {{-- ── Recherche ──────────────────────────────────────────────────────────── --}}
-<section class="container home-search">
-    <x-search-panel />
+<section class="home-search">
+    <x-search-panel class="search-panel--wide" />
 
     <div class="reassurance-strip mt-3 justify-content-center">
         <span><i class="bi bi-shield-check"></i>{{ __('general.reassurance.insurance') }}</span>
@@ -134,7 +134,7 @@
                             {{ trans_choice('{0} :count voiture|{1} :count voiture|[2,*] :count voitures', $category->vehicles_count, ['count' => $category->vehicles_count]) }}
                         </div>
                         <div class="small fw-semibold mt-2" style="color: var(--pdj-green);">
-                            {{ number_format($category->daily_price, 0, ' ', ' ') }} F CFA / {{ __('general.day_short') }}
+                            {{ number_format($category->daily_price, 0, ' ', ' ') }} FCFA / {{ __('general.day_short') }}
                         </div>
                     </a>
                 </div>
@@ -170,10 +170,10 @@
                             {{ $vehicle->transmissionLabel() }} · {{ $vehicle->fuelLabel() }} · {{ $vehicle->seats }} {{ __('vehicle.seats') }}
                         </div>
                         <div class="fw-bold mt-2" style="color: var(--pdj-green);">
-                            {{ number_format($vehicle->category->daily_price, 0, ' ', ' ') }} F CFA / {{ __('general.day_short') }}
+                            {{ number_format($vehicle->category->daily_price, 0, ' ', ' ') }} FCFA / {{ __('general.day_short') }}
                         </div>
                         <div class="small text-muted">
-                            {{ __('general.deposit', ['price' => number_format($vehicle->category->deposit_amount, 0, ' ', ' ').' F CFA']) }}
+                            {{ __('general.deposit', ['price' => number_format($vehicle->category->deposit_amount, 0, ' ', ' ').' FCFA']) }}
                         </div>
                     </a>
                 </div>

@@ -22,7 +22,7 @@
                 <h2 class="h5 fw-bold mb-1">{{ $vehicle->fullName() }}</h2>
                 <div class="small text-muted">{{ $vehicle->category->name(app()->getLocale()) }}</div>
                 @if ($withDriver)
-                    <div class="small text-muted">{{ __('driver.badge') }}</div>
+                    <div class="small text-muted">{{ __('booking.guest.driver_request_title') }}</div>
                 @endif
             </div>
         </div>
@@ -35,9 +35,21 @@
           data-quote-url="{{ route('booking.guest.quote', ['locale' => app()->getLocale(), 'vehicle' => $vehicle]) }}"
           data-quote-error="{{ __('booking.guest.quote_error') }}">
         @csrf
-        @if ($withDriver)
-            <input type="hidden" name="avec_chauffeur" value="1">
-        @endif
+        <div class="driver-option mb-3">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="avec_chauffeur" value="1"
+                       id="avec_chauffeur" data-guest-driver-toggle @checked($withDriver)>
+                <label class="form-check-label fw-bold" for="avec_chauffeur">
+                    Avec un chauffeur ?
+                </label>
+            </div>
+            <div class="mt-1 @if (! $withDriver) d-none @endif" data-guest-driver-info>
+                <p class="hint mb-0">Le chauffeur est inclus dans cette demande et son tarif s'ajoute au prix de la location.</p>
+                <p class="small text-muted mb-0">
+                    {{ number_format($quote->driverDailyPrice, 0, ' ', ' ') }} FCFA par jour avec la voiture.
+                </p>
+            </div>
+        </div>
 
         <h2 class="h5 fw-bold mb-3">{{ __('booking.guest.period') }}</h2>
         <div class="row g-3">
@@ -68,15 +80,28 @@
         <div class="border rounded p-3 mt-4" aria-live="polite">
             <div class="small text-muted">{{ __('booking.guest.daily_rate') }}</div>
             <div class="fw-semibold">
-                <span data-guest-daily-price>{{ number_format($quote->dailyPrice, 0, ' ', ' ') }}</span> F CFA
+                <span data-guest-daily-price>{{ number_format($quote->dailyPrice, 0, ' ', ' ') }}</span> FCFA
             </div>
             <div class="small text-muted mt-2">
                 {{ __('booking.guest.days') }}:
                 <span data-guest-days>{{ $quote->days }}</span>
             </div>
+            <div class="d-flex justify-content-between small mt-3">
+                <span>{{ __('quote.line.rental', ['days' => $quote->days]) }}</span>
+                <span class="text-nowrap">
+                    <span data-guest-rental-total>{{ number_format($quote->priceRental, 0, ' ', ' ') }}</span> FCFA
+                </span>
+            </div>
+            <div class="d-flex justify-content-between small mt-1 @if (! $withDriver) d-none @endif"
+                 data-guest-driver-line>
+                <span>{{ __('quote.line.driver', ['days' => $quote->days]) }}</span>
+                <span class="text-nowrap">
+                    <span data-guest-driver-total>{{ number_format($quote->priceDriver, 0, ' ', ' ') }}</span> FCFA
+                </span>
+            </div>
             <div class="fw-bold mt-2">
                 {{ __('booking.guest.estimated_total') }}:
-                <span data-guest-total>{{ number_format($quote->priceTotal, 0, ' ', ' ') }}</span> F CFA
+                <span data-guest-total>{{ number_format($quote->priceTotal, 0, ' ', ' ') }}</span> FCFA
             </div>
             <div class="small text-muted mt-1" data-guest-quote-error hidden></div>
         </div>

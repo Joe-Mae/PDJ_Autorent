@@ -6,9 +6,9 @@
     <div class="row justify-content-center">
         <div class="col-lg-7">
             <div class="text-center mb-4">
-                <div class="small text-muted">{{ __('agent.step') }} 5/5</div>
+                <div class="small text-muted">{{ __('agent.step') }} 5/6</div>
                 <h1 class="h4 fw-bold">{{ __('agent.contract') }}</h1>
-                <p class="text-muted">{{ $booking->reference }} w {{ $booking->user?->displayName() }}</p>
+                <p class="text-muted">{{ $booking->reference }} — {{ $booking->user?->displayName() ?? $booking->customer_name ?? '—' }}</p>
             </div>
 
             <div class="pdj-card mb-3" style="max-height: 40vh; overflow-y: auto;">
@@ -21,7 +21,7 @@
                     <li>{{ __('agent.condition_drivers') }}</li>
                     <li>{{ __('agent.condition_border') }}</li>
                     <li>{{ __('agent.condition_animals') }}</li>
-                    <li>{{ __('agent.condition_insurance') }}</li>
+                    <li>{{ __('agent.condition_insurance', ['amount' => number_format(app(\App\Services\SettingsService::class)->int('booking.insurance_deductible'), 0, ' ', ' ').' FCFA']) }}</li>
                 </ul>
             </div>
 

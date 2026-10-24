@@ -11,7 +11,7 @@
      * @var bool $withDriver
      */
     $locale = app()->getLocale();
-    $money = fn (int $amount) => number_format($amount, 0, ' ', ' ').' F CFA';
+    $money = fn (int $amount) => number_format($amount, 0, ' ', ' ').' FCFA';
     $quote = app(\App\Services\PricingService::class)->quote($vehicle->category, $period, $withDriver);
     $params = request()->query();
     $bookingParams = [
@@ -62,6 +62,12 @@
 
     <div class="vehicle-row__price">
         <div class="amount">{{ $money($quote->priceTotal) }}</div>
+        @if ($withDriver)
+            <div class="small text-muted">
+                {{ __('quote.line.rental', ['days' => $quote->days]) }} : {{ $money($quote->priceRental) }}<br>
+                {{ __('quote.line.driver', ['days' => $quote->days]) }} : {{ $money($quote->priceDriver) }}
+            </div>
+        @endif
         <div class="per-day">
             {{ __('general.per_day', ['price' => $money($quote->dailyPrice)]) }}<br>
             {{ __('general.for_period', ['days' => $quote->days]) }}

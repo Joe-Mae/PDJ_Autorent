@@ -40,6 +40,7 @@ class SiteAppearanceController extends Controller
                 ->values(),
             'brandColor' => $this->safeColor('site.brand_color', '#0A6E4C'),
             'accentColor' => $this->safeColor('site.accent_color', '#FFC400'),
+            'brandMark' => $this->settings->string('site.brand_mark'),
             'brandLabel' => $this->settings->string('site.brand_label'),
             'heroEyebrowFr' => $this->settings->string('site.hero_eyebrow.fr'),
             'heroEyebrowEn' => $this->settings->string('site.hero_eyebrow.en'),
@@ -65,6 +66,10 @@ class SiteAppearanceController extends Controller
                 'contact' => [
                     'fr' => $this->settings->string('nav.contact.fr'),
                     'en' => $this->settings->string('nav.contact.en'),
+                ],
+                'lookup' => [
+                    'fr' => $this->settings->string('nav.lookup.fr'),
+                    'en' => $this->settings->string('nav.lookup.en'),
                 ],
             ],
         ]);
@@ -101,6 +106,7 @@ class SiteAppearanceController extends Controller
             'remove_hero_images.*' => ['string', 'distinct'],
             'brand_color' => ['required', 'regex:/\A#[0-9A-Fa-f]{6}\z/'],
             'accent_color' => ['required', 'regex:/\A#[0-9A-Fa-f]{6}\z/'],
+            'brand_mark' => ['nullable', 'string', 'max:8'],
             'brand_label' => ['required', 'string', 'max:40'],
             'hero_eyebrow_fr' => ['required', 'string', 'max:100'],
             'hero_eyebrow_en' => ['required', 'string', 'max:100'],
@@ -116,6 +122,8 @@ class SiteAppearanceController extends Controller
             'nav_faq_en' => ['required', 'string', 'max:50'],
             'nav_contact_fr' => ['required', 'string', 'max:40'],
             'nav_contact_en' => ['required', 'string', 'max:40'],
+            'nav_lookup_fr' => ['required', 'string', 'max:40'],
+            'nav_lookup_en' => ['required', 'string', 'max:40'],
         ], [
             'hero_images.max' => 'Vous pouvez importer quatre photos au maximum à la fois.',
             'hero_images.*.image' => 'Chaque fichier du diaporama doit être une image valide.',
@@ -175,6 +183,7 @@ class SiteAppearanceController extends Controller
             ],
             'site.brand_color' => $data['brand_color'],
             'site.accent_color' => $data['accent_color'],
+            'site.brand_mark' => $data['brand_mark'] ?? $this->settings->string('site.brand_mark'),
             'site.brand_label' => $data['brand_label'],
             'site.hero_eyebrow.fr' => $data['hero_eyebrow_fr'],
             'site.hero_eyebrow.en' => $data['hero_eyebrow_en'],
@@ -190,6 +199,8 @@ class SiteAppearanceController extends Controller
             'nav.faq.en' => $data['nav_faq_en'],
             'nav.contact.fr' => $data['nav_contact_fr'],
             'nav.contact.en' => $data['nav_contact_en'],
+            'nav.lookup.fr' => $data['nav_lookup_fr'],
+            'nav.lookup.en' => $data['nav_lookup_en'],
         ];
 
         DB::transaction(function () use ($request, $values): void {

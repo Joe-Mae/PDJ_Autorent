@@ -1,12 +1,12 @@
 @extends('layouts.panel', ['section' => 'agent', 'singleAction' => true])
 
-@section('title', 'Ã‰tat des lieux')
+@section('title', 'État des lieux')
 
 @section('content')
     <div class="row justify-content-center">
         <div class="col-lg-7">
             <div class="text-center mb-4">
-                <div class="small text-muted">{{ __('agent.step') }} 2/5</div>
+                <div class="small text-muted">{{ __('agent.step') }} 2/6</div>
                 <h1 class="h4 fw-bold">{{ __('agent.condition_report') }}</h1>
                 <p class="text-muted">{{ $booking->reference }} w {{ $booking->vehicle->fullName() }}</p>
             </div>

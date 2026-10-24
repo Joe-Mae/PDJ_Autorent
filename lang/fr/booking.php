@@ -46,6 +46,7 @@ return [
         'invalid_transition' => 'On ne peut pas passer de « :from » à « :to ».',
         'cannot_cancel' => 'Cette réservation est « :status » : elle ne peut plus être annulée en ligne.',
         'documents_missing' => 'Il manque un document. Returnnez à l\'étape précédente pour le déposer.',
+        'documents_not_verified' => 'La remise du véhicule est bloquée : le contrôle d’identité et du permis doit être conforme.',
         'outside_opening_hours' => 'L\'agence est ouverte de :open à :close. Choisissez une heure dans cette plage.',
         'code_expired' => 'Le code a expiré. Demandez-en un nouveau.',
         'code_invalid' => 'Code incorrect. Il vous reste :left tentative(s).',
@@ -53,8 +54,6 @@ return [
         'no_account' => 'Votre compte est introuvable. Recommencer l\'étape précédente.',
         'min_license' => 'Votre permis doit avoir au moins :years an(s) d\'ancienneté.',
     ],
-
-    'cancelled_ok' => 'Réservation annulée. Aucun frais ne vous est facturé.',
 
     'summary_title' => 'Votre réservation',
     'cost_summary' => 'Résumé du coût',
@@ -73,9 +72,7 @@ return [
     'field_email' => 'E-mail',
     'field_email_hint' => 'Utile si vous voulez un justificatif écrit. Facultatif.',
     'field_password' => 'Mot de passe',
-    'field_password_hint' => '8 caractères minimum. Vous pourrez aussi le définir plus tard.',
     'field_password_confirm' => 'Confirmation',
-    'password_intro' => 'Vous n\'avez pas encore de compte ? Choisissez un mot de passe pour suivre vos réservations.',
     'optional' => 'facultatif',
 
     'verify_title' => 'Vérifions votre numéro',
@@ -89,7 +86,7 @@ return [
     'phone_verified' => 'Numéro vérifié',
 
     'documents_title' => 'Vos documents',
-    'documents_intro' => 'Photo ou scan, c\'est juste pour gagner du temps au comptoir. Les originaux restent obligatoires.',
+    'documents_intro' => 'Envoyez une photo de votre pièce d’identité pour votre demande. Le permis original sera vérifié à l’agence avant la remise du véhicule.',
     'missing_documents' => 'Il manque encore :',
     'back_to_documents' => 'Retour aux documents',
 
@@ -98,15 +95,15 @@ return [
     'to_pay' => 'à payer à l\'agence',
 
     'confirm_cta' => 'Confirmer ma réservation',
-    'confirm_note' => 'Aucun paiement maintenant. Un agent vérifie vos documents et confirme dans les 2 heures.',
+    'confirm_note' => 'Aucun paiement maintenant. L’agence vérifie la disponibilité et les conditions, puis vous confirme votre réservation.',
 
     'confirmation_title' => 'Votre réservation est enregistrée',
-    'confirmation_meta' => 'Réservation enregistrée — PDJ Autorent Lomé',
-    'confirmation_intro' => 'Un agent vérifie vos documents. Vous savez dans les 2 heures si c\'est confirmé.',
+    'confirmation_meta' => 'Réservation enregistrée — Location de voitures à Lomé',
+    'confirmation_intro' => 'L’agence vérifie la disponibilité et les conditions de la prestation avant de vous confirmer la réservation.',
     'reference' => 'Référence',
     'download_receipt' => 'Télécharger le bon de réservation',
     'what_happens_next' => 'La suite',
-    'next_steps' => 'Vous recevez un SMS et un WhatsApp dès que l\'agent a vérifié vos papiers. La veille, un rappel vous demande de confirmer votre venue. Le matin du retrait, vous présentez vos originaux et vous réglez à l\'agence.',
+    'next_steps' => 'L’agence vous informe dès que la disponibilité et les conditions ont été vérifiées. Avant la remise du véhicule, présentez les documents originaux indiqués dans votre confirmation et réglez à l’agence.',
     'bring_with_you' => 'À présenter au retrait',
     'original' => '(original)',
     'amount_breakdown' => 'location + caution',
@@ -114,10 +111,26 @@ return [
     'open_maps' => 'Ouvrir dans Google Maps',
 
     'driver_blocks' => 'blocs de :hours h',
-    'cancel_confirm' => 'Annuler cette réservation ? L\'annulation est gratuite, aucun frais ne vous sera facturé.',
-    'cancel_free' => 'Annuler gratuitement',
 
     'presence_confirmed' => 'Merci, votre venue est enregistrée. À bientôt !',
+
+    'lookup' => [
+        'title' => 'Consulter ma réservation',
+        'intro' => 'Saisissez la référence de votre demande (PDJ-XXXXXX ou chauffeur seul) pour voir son statut.',
+        'reference' => 'Référence',
+        'reference_label' => 'Référence de la réservation',
+        'submit' => 'Consulter',
+        'not_found' => 'Aucune réservation ne correspond à cette référence.',
+        'service' => 'Prestation',
+        'document_verification' => 'Vérification des documents',
+        'total' => 'Montant total',
+        'driver_only_received' => 'Votre pièce d’identité a bien été reçue. L’agence vous contactera pour confirmer la demande.',
+    ],
+
+    'documents_for_pickup' => [
+        'self_drive' => 'Pièce d’identité et permis de conduire originaux valides à présenter à l’agence. Le permis sera contrôlé avant la remise des clés.',
+        'with_driver' => 'Pièce d’identité originale à présenter à l’agence. Le permis de conduire n’est pas requis avec chauffeur.',
+    ],
 
     'guest' => [
         'title' => 'Demander une réservation',
@@ -129,7 +142,9 @@ return [
         'return_hour' => 'Heure de retour',
         'daily_rate' => 'Prix journalier estimé',
         'days' => 'Durée estimée (jours)',
-        'estimated_total' => 'Montant estimé de la location',
+        'estimated_total' => 'Montant total estimé',
+        'driver_request_title' => 'Demande de voiture avec chauffeur',
+        'driver_request_intro' => 'Le chauffeur est inclus dans cette demande et son tarif s’ajoute au prix de la location.',
         'contact' => 'Vos coordonnées',
         'name' => 'Nom complet',
         'comment' => 'Commentaire (facultatif)',
@@ -141,6 +156,11 @@ return [
         'confirmation_approved' => 'L’agence a accepté votre demande : votre réservation est confirmée.',
         'confirmation_refused' => 'L’agence n’a pas pu accepter votre demande. Contactez-la si vous souhaitez en discuter.',
         'confirmation_updated' => 'Le statut de votre demande a été mis à jour : :status.',
+        'confirmation_documents' => 'Avant la prise en charge, présentez les documents originaux demandés ci-dessous. Le permis sera vérifié à l’agence, pas lors de la réservation.',
+        'documents_cta' => 'Déposer mes documents',
+        'documents_complete' => 'La photo de votre pièce d’identité est reçue. Présentez également l’original à l’agence.',
+        'documents_required' => 'Ajoutez la photo de votre pièce d’identité pour consulter votre demande.',
+        'documents_finish' => 'Voir ma demande',
         'vehicle' => 'Véhicule',
         'status' => 'Statut',
         'quote_error' => 'Impossible de mettre à jour cette estimation. Vérifiez les dates et heures.',

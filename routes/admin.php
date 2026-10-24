@@ -33,8 +33,14 @@ Route::prefix('admin')
         // ── Périmètre gestionnaire : le parc et les tarifs ───────────────────
         Route::middleware('tier:gestionnaire')->group(function () {
 
+            Route::get('/statistiques', [Admin\StatisticsController::class, 'index'])->name('statistics.index');
+
             // Véhicules et catalogue. L'URL reste au pluriel (c'est ce que voit
             // l'agent), le nom de route est au singulier (c'est ce qu'on écrit).
+            Route::delete('vehicules/bulk', [Admin\VehicleController::class, 'destroyMany'])
+                ->name('vehicles.destroyMany');
+            Route::post('vehicules/{vehicle}/statut', [Admin\VehicleController::class, 'setStatus'])
+                ->name('vehicles.setStatus');
             Route::resource('vehicules', Admin\VehicleController::class)
                 ->parameters(['vehicules' => 'vehicle'])
                 ->names([
@@ -46,9 +52,6 @@ Route::prefix('admin')
                     'update' => 'vehicles.update',
                     'destroy' => 'vehicles.destroy',
                 ]);
-
-            Route::post('vehicules/{vehicle}/statut', [Admin\VehicleController::class, 'setStatus'])
-                ->name('vehicles.setStatus');
 
             Route::resource('categories', Admin\CategoryController::class)
                 ->parameters(['categories' => 'category'])
@@ -117,6 +120,7 @@ Route::prefix('admin')
         // Clients : voir, bloquer, demander un acompte. Rouvrir un compte bloqué
         // est une décision de la direction, pas du guichet.
         Route::get('/clients', [Admin\CustomerController::class, 'index'])->name('customers.index');
+        Route::get('/clients/invites/{bookingId}', [Admin\CustomerController::class, 'showGuest'])->name('customers.guest.show');
         Route::get('/clients/{user}', [Admin\CustomerController::class, 'show'])->name('customers.show');
         Route::middleware('tier:gestionnaire')->group(function () {
             Route::post('/clients/{user}/debloquer', [Admin\CustomerController::class, 'unblock'])->name('customers.unblock');

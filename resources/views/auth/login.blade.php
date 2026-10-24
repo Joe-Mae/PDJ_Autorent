@@ -33,10 +33,6 @@
         </form>
     </div>
 
-    <p class="text-center text-muted small mt-3 mb-0">
-        {{ __('auth.no_account') }}
-        <a href="{{ route('register', ['locale' => $locale]) }}">{{ __('nav.register') }}</a>
-    </p>
 </div>
 
 @endsection

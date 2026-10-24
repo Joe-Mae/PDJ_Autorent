@@ -28,7 +28,6 @@ class CalendrierController extends Controller
     {
         $month = $this->monthFrom($request->string('mois')->toString());
         $vehicles = Vehicle::query()
-            ->bookable()
             ->with('category')
             ->orderBy('category_id')
             ->get();
@@ -94,6 +93,7 @@ class CalendrierController extends Controller
     {
         return Booking::query()
             ->whereIn('vehicle_id', $vehicleIds)
+            ->whereIn('status', ['en_attente', 'confirmee', 'en_cours'])
             ->where('starts_at', '<', $month->copy()->endOfMonth()->addDay())
             ->where('ends_at', '>', $month->copy()->startOfMonth()->subDay())
             ->orderBy('starts_at')

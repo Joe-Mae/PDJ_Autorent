@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
-    'user_id', 'booking_id', 'type', 'status', 'disk', 'path',
+    'user_id', 'booking_id', 'driver_only_booking_id', 'type', 'status', 'disk', 'path',
     'original_filename', 'mime_type', 'size_kb',
     'review_note', 'reviewed_by', 'reviewed_at', 'expires_at', 'purge_after',
 ])]
@@ -51,6 +51,12 @@ class CustomerDocument extends Model
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
+    }
+
+    /** Une demande de chauffeur seul ne passe pas par la table `bookings`. */
+    public function driverOnlyBooking(): BelongsTo
+    {
+        return $this->belongsTo(DriverOnlyBooking::class);
     }
 
     public function reviewer(): BelongsTo

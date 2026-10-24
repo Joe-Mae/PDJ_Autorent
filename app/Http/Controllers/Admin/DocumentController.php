@@ -25,8 +25,12 @@ class DocumentController extends Controller
         return view('admin.documents.index', [
             'documents' => CustomerDocument::query()
                 ->pending()
-                ->with(['user', 'booking.vehicle'])
-                ->orderByRaw('COALESCE((SELECT starts_at FROM bookings WHERE bookings.id = documents.booking_id), created_at) ASC')
+                ->with(['user', 'booking.vehicle', 'driverOnlyBooking'])
+                ->orderByRaw('COALESCE(
+                    (SELECT starts_at FROM bookings WHERE bookings.id = documents.booking_id),
+                    (SELECT starts_at FROM driver_only_bookings WHERE driver_only_bookings.id = documents.driver_only_booking_id),
+                    documents.created_at
+                ) ASC')
                 ->paginate(20),
             'stats' => [
                 'pending' => CustomerDocument::query()->pending()->count(),
@@ -38,7 +42,9 @@ class DocumentController extends Controller
     public function show(CustomerDocument $document): View
     {
         return view('admin.documents.show', [
-            'document' => $document->load(['user', 'booking.vehicle.category', 'booking.documents', 'booking.user']),
+            'document' => $document->load([
+                'user', 'booking.vehicle.category', 'booking.documents', 'booking.user', 'driverOnlyBooking',
+            ]),
         ]);
     }
 

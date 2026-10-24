@@ -6,12 +6,20 @@
      * @var bool $sticky
      */
     $sticky = $sticky ?? false;
-    $money = fn (int $amount) => number_format($amount, 0, ' ', ' ').' F CFA';
-    $query = array_filter([
+    $money = fn (int $amount) => number_format($amount, 0, ' ', ' ').' FCFA';
+    $query = $quote ? array_filter([
         'avec_chauffeur' => $quote->withDriver ? 1 : null,
-    ], fn ($value) => $value !== null);
+    ], fn ($value) => $value !== null) : [];
 @endphp
 
+@if (! $period)
+    <div class="{{ $sticky ?? false ? 'sticky-book' : 'pdj-card' }}">
+        <a class="btn btn-primary {{ $sticky ?? false ? 'w-100' : 'btn-lg w-100' }}"
+           href="{{ route('booking.guest.create', ['locale' => $locale, 'vehicle' => $vehicle]) }}">
+            {{ __('general.book') }}
+        </a>
+    </div>
+@else
 @if (! $isFree)
     <div class="alert alert-warning">
         <i class="bi bi-calendar-x me-1"></i>{{ __('vehicle.not_free') }}
@@ -50,8 +58,8 @@
                 </div>
                 <div class="hint mt-1">
                     {{ $quote->days }} {{ __('general.days') }} ×
-                    {{ number_format($quote->driverDailyPrice, 0, ' ', ' ') }} F CFA —
-                    {{ number_format($quote->priceDriver, 0, ' ', ' ') }} F CFA
+                    {{ number_format($quote->driverDailyPrice, 0, ' ', ' ') }} FCFA —
+                    {{ number_format($quote->priceDriver, 0, ' ', ' ') }} FCFA
                 </div>
             </div>
         @endif
@@ -69,4 +77,5 @@
 
         <p class="small text-muted text-center mt-2 mb-0">{{ __('general.no_online_payment') }}</p>
     </div>
+@endif
 @endif

@@ -57,9 +57,8 @@ class HomeController extends Controller
             'banners' => Banner::query()->live('home_hero')->get(),
             'featured' => Vehicle::query()
                 ->bookable()
-                ->whereHas('category', fn ($q) => $q->where('is_featured', true))
                 ->with(['category', 'media'])
-                ->limit(6)
+                ->limit(8)
                 ->get(),
             'heroImages' => $uploadedHeroImages
                 ->concat($heroVehicles

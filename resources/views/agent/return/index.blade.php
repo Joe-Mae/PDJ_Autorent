@@ -16,7 +16,7 @@
             @foreach ($late as $booking)
                 <div class="small mb-1">
                     <a href="tel:{{ $booking->user?->phone }}">{{ $booking->user?->phone }}</a>
-                    â€” {{ $booking->vehicle->displayName() }} w {{ $booking->ends_at->diffForHumans() }}
+                    — {{ $booking->vehicle->displayName() }} · {{ $booking->ends_at->diffForHumans() }}
                 </div>
             @endforeach
         </div>

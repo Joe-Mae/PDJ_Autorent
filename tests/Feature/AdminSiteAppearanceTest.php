@@ -44,6 +44,11 @@ class AdminSiteAppearanceTest extends TestCase
             'value' => 'Découvrir',
             'updated_by' => auth()->id(),
         ]);
+        $this->assertDatabaseHas('settings', [
+            'key' => 'site.brand_mark',
+            'value' => 'NP',
+            'updated_by' => auth()->id(),
+        ]);
 
         $html = $this->get('/fr')
             ->assertOk()
@@ -236,6 +241,7 @@ class AdminSiteAppearanceTest extends TestCase
             'hero_vehicle_ids' => $heroVehicleIds,
             'brand_color' => '#123456',
             'accent_color' => '#ABCDEF',
+            'brand_mark' => 'NP',
             'brand_label' => 'Nom public',
             'hero_eyebrow_fr' => 'Location à Lomé',
             'hero_eyebrow_en' => 'Car rental in Lome',
@@ -251,6 +257,8 @@ class AdminSiteAppearanceTest extends TestCase
             'nav_faq_en' => 'FAQ',
             'nav_contact_fr' => 'Contact',
             'nav_contact_en' => 'Contact',
+            'nav_lookup_fr' => 'Consulter ma réservation',
+            'nav_lookup_en' => 'Check my booking',
         ];
     }
 }

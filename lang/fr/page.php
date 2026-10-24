@@ -81,7 +81,7 @@ return [
     'terms_cancellation' => 'Annulation',
     'terms_cancellation_text' => 'L\'annulation est gratuite tant que la location n\'a pas commencé. Il n\'y a aucun frais d\'annulation.',
     'terms_driver' => 'Chauffeur',
-    'terms_driver_text' => 'Avec une voiture louée à l\'agence, le chauffeur coûte 5 000 F CFA par jour. Pour un chauffeur seul, le tarif est de 8 000 F CFA par jour jusqu\'à 3 jours, puis 6 500 F CFA par jour pour toute la réservation dès 4 jours. Avec un chauffeur, le permis du client n\'est pas exigé.',
+    'terms_driver_text' => 'Avec une voiture louée à l\'agence, le chauffeur coûte 7 000 FCFA par jour (supplément). Pour un chauffeur seul, le tarif est de 15 000 FCFA par jour jusqu\'à 3 jours, puis 13 000 FCFA par jour appliqué à toute la durée au-delà de 3 jours. Avec un chauffeur, le permis du client n\'est pas exigé.',
 
     'privacy_title' => 'Vos données',
     'privacy_intro' => 'Ce que nous collectons, pourquoi, et combien de temps.',
@@ -97,9 +97,9 @@ return [
 
     'legal_title' => 'Mentions légales',
     'legal_publisher' => 'Éditeur du site',
-    'legal_publisher_text' => 'Ce site est édité et exploité par PDJ Autorent, agence de location de véhicules basée à Lomé, République du Togo.',
+    'legal_publisher_text' => 'Ce site est édité et exploité par l\'agence de location de véhicules, basée à Lomé, République du Togo. Ses coordonnées complètes figurent sur la page Contact.',
     'legal_hosting' => 'Hébergement',
     'legal_hosting_text' => 'Les données sont hébergées sur des serveurs situés dans l\'Union européenne. Aucune donnée n\'est transférée à des pays tiers sans votre accord.',
     'legal_property' => 'Propriété intellectuelle',
-    'legal_property_text' => 'Les photographies de la flotte, les textes et la charte graphique de ce site appartiennent à PDJ Autorent. Toute reproduction sans autorisation écrite est interdite.',
+    'legal_property_text' => 'Les photographies de la flotte, les textes et la charte graphique de ce site appartiennent à l\'agence. Toute reproduction sans autorisation écrite est interdite.',
 ];

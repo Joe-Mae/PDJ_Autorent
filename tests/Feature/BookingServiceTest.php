@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\BookingStatus;
+use App\Enums\DocumentVerificationStatus;
 use App\Enums\DriverStatus;
 use App\Exceptions\BookingException;
 use App\Models\Booking;
@@ -58,13 +59,13 @@ class BookingServiceTest extends TestCase
             'with_driver' => true,
         ]);
 
-        // Le tarif voiture + chauffeur est de 5 000 F CFA par jour, quel que
+        // Le tarif voiture + chauffeur est de 7 000 F CFA par jour, quel que
         // soit le nombre d'heures conduites dans la journée.
         $this->assertSame(12, $booking->driver_blocks);
         $this->assertSame(44, $booking->driver_hours);
-        $this->assertSame(5000, $booking->driver_daily_price);
-        $this->assertSame(4 * 5000, $booking->price_driver);
-        $this->assertSame(72000 + 20000, $booking->price_total);
+        $this->assertSame(7000, $booking->driver_daily_price);
+        $this->assertSame(4 * 7000, $booking->price_driver);
+        $this->assertSame(72000 + 28000, $booking->price_total);
     }
 
     public function test_le_prix_ne_bouge_pas_quand_le_tarif_change_apres_la_creation(): void
@@ -413,6 +414,14 @@ class BookingServiceTest extends TestCase
         $this->assertSame(BookingStatus::Confirmee, $confirmed->status);
         $this->assertNotNull($confirmed->confirmed_at);
 
+        $confirmed->update([
+            'document_verification_status' => DocumentVerificationStatus::Conforme,
+            'identity_original_verified' => true,
+            'identity_name_matches' => true,
+            'customer_age_eligible' => true,
+            'driver_license_original_verified' => true,
+        ]);
+
         $started = $this->bookings()->start($confirmed, $agent, 42_000, 'full');
         $this->assertSame(BookingStatus::EnCours, $started->status);
         $this->assertSame(42_000, $started->mileage_at_pickup);
@@ -421,6 +430,39 @@ class BookingServiceTest extends TestCase
         $finished = $this->bookings()->finish($started, $agent, 43_250, 'full');
         $this->assertSame(BookingStatus::Terminee, $finished->status);
         $this->assertSame(43_250, $finished->mileage_at_return);
+    }
+
+    public function test_refuse_de_demarrer_sans_controle_documentaire_conforme(): void
+    {
+        $agent = $this->staff();
+        $booking = $this->bookings()->confirm($this->pendingBooking(), $agent);
+
+        try {
+            $this->bookings()->start($booking, $agent);
+            $this->fail('La remise doit être bloquée sans contrôle documentaire conforme.');
+        } catch (BookingException $exception) {
+            $this->assertSame(__('booking.error.documents_not_verified'), $exception->getMessage());
+        }
+
+        $this->assertSame(BookingStatus::Confirmee, $booking->refresh()->status);
+    }
+
+    public function test_demarre_avec_chauffeur_apres_controle_identite_sans_permis(): void
+    {
+        $this->driver();
+        $agent = $this->staff();
+        $booking = Booking::factory()->withDriver()->confirmed()->create();
+        $booking->update([
+            'document_verification_status' => DocumentVerificationStatus::NonRequis,
+            'identity_original_verified' => true,
+            'identity_name_matches' => true,
+            'customer_age_eligible' => true,
+        ]);
+
+        $started = $this->bookings()->start($booking, $agent);
+
+        $this->assertSame(BookingStatus::EnCours, $started->status);
+        $this->assertFalse($started->driver_license_original_verified);
     }
 
     public function test_refuse_de_confirmer_si_le_vehicule_est_devenu_indisponible(): void
@@ -529,6 +571,27 @@ class BookingServiceTest extends TestCase
         $this->assertSame(4, $reprice->days);
     }
 
+    public function test_changement_de_periode_invalide_le_controle_documentaire_precedent(): void
+    {
+        $booking = $this->pendingBooking();
+        $booking->update([
+            'document_verification_status' => DocumentVerificationStatus::Conforme,
+            'identity_original_verified' => true,
+            'identity_name_matches' => true,
+            'customer_age_eligible' => true,
+            'driver_license_original_verified' => true,
+            'documents_verified_at' => now(),
+            'documents_verified_by' => $this->staff()->id,
+        ]);
+
+        $repriced = $this->bookings()->reprice($booking, $this->period(5), false);
+
+        $this->assertSame(DocumentVerificationStatus::EnAttente, $repriced->document_verification_status);
+        $this->assertFalse($repriced->identity_original_verified);
+        $this->assertNull($repriced->documents_verified_at);
+        $this->assertFalse($repriced->isReadyForHandover());
+    }
+
     public function test_redater_vers_un_creneau_occupe_par_un_autre_client_est_refuse(): void
     {
         $vehicle = $this->vehicle();
@@ -575,8 +638,8 @@ class BookingServiceTest extends TestCase
             'with_driver' => true,
         ]);
 
-        // 72 000 de location + 20 000 de chauffeur + 60 000 de caution.
-        $this->assertSame(152000, $booking->amountToCarry());
+        // 72 000 de location + 28 000 de chauffeur + 60 000 de caution.
+        $this->assertSame(160000, $booking->amountToCarry());
     }
 
     // ── Transitions interdites ───────────────────────────────────────────────

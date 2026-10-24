@@ -27,10 +27,11 @@ return [
     'gps' => 'GPS',
     'year' => 'Year',
     'plate' => 'Registration',
-    'insurance_subtitle' => 'Third party, theft, fire, glass — 150,000 F CFA excess',
+    'insurance_subtitle' => 'Third party, theft, fire, glass — :amount excess',
 
     'conditions' => 'Rental conditions',
     'period' => 'Your period',
+    'choose_dates_to_see_price' => 'Choose your dates to see the price and availability.',
     'similar' => 'Similar cars',
     'not_free' => 'This vehicle is not free on those dates. Pick another period, or see the whole fleet.',
 
@@ -41,6 +42,6 @@ return [
     'cond_km' => 'Unlimited mileage, with reasonable use.',
     'cond_fuel' => 'Fuel is at your expense. The vehicle is returned with the same level as at pickup.',
     'cond_speed' => 'Speed limit 120 km/h, penalties for speeding.',
-    'cond_insurance' => 'Insurance included: third party, theft, fire, glass. 150,000 F CFA excess.',
+    'cond_insurance' => 'Insurance included: third party, theft, fire, glass. :amount FCFA excess.',
     'cond_cancellation' => 'Free cancellation until 6pm the day before.',
 ];

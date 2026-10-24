@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ContactMessage;
 use App\Models\Faq;
+use App\Models\Page;
 use App\Models\Review;
 use App\Models\VehicleCategory;
 use App\Services\AvailabilityService;
@@ -59,6 +61,11 @@ class PageController extends Controller
             'email' => ['nullable', 'email', 'max:150'],
             'message' => ['required', 'string', 'max:1500'],
         ]);
+
+        // Le message est conservé en base : un visiteur qui écrit un dimanche
+        // doit retrouver sa demande le lundi, même si personne n'a ouvert
+        // WhatsApp entre-temps.
+        ContactMessage::query()->create($data);
 
         // En V1 le formulaire alimente la boîte WhatsApp de l'agence : c'est là
         // que le message est lu dans la journée, pas dans une boîte mail.
@@ -126,6 +133,10 @@ class PageController extends Controller
 
     public function terms(): View
     {
+        if ($page = $this->publishedPage('conditions-generales')) {
+            return $this->renderPage($page);
+        }
+
         $settings = $this->settings;
 
         return view('pages.terms', [
@@ -144,16 +155,39 @@ class PageController extends Controller
 
     public function privacy(): View
     {
+        if ($page = $this->publishedPage('confidentialite')) {
+            return $this->renderPage($page);
+        }
+
         return view('pages.privacy');
     }
 
     public function legal(): View
     {
+        if ($page = $this->publishedPage('mentions-legales')) {
+            return $this->renderPage($page);
+        }
+
         return view('pages.legal', [
             'company' => $this->settings->string('agency.name'),
             'address' => $this->settings->string('agency.address'),
             'phone' => $this->settings->formattedPhone(),
             'email' => $this->settings->string('contact.email'),
         ]);
+    }
+
+    /**
+     * Page juridique publiée en base, si l'agence en a créé une. Sans elle, on
+     * garde la version livrée avec l'application : le site ne tombe jamais sur
+     * une page vide parce qu'un contenu n'a pas encore été saisi.
+     */
+    private function publishedPage(string $slug): ?Page
+    {
+        return Page::query()->active()->where('slug', $slug)->first();
+    }
+
+    private function renderPage(Page $page): View
+    {
+        return view('pages.dynamic', ['page' => $page]);
     }
 }

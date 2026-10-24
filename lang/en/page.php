@@ -81,7 +81,7 @@ return [
     'terms_cancellation' => 'Cancellation',
     'terms_cancellation_text' => 'Cancellation is free as long as the rental has not started. There is no cancellation fee.',
     'terms_driver' => 'Chauffeur',
-    'terms_driver_text' => 'With a car rented from the agency, a chauffeur costs 5,000 F CFA per day. For a chauffeur-only booking, the rate is 8,000 F CFA per day for up to 3 days, then 6,500 F CFA per day for the entire booking from 4 days. With a chauffeur, the customer\'s driving licence is not required.',
+    'terms_driver_text' => 'With a car rented from the agency, a chauffeur costs 7,000 FCFA per day (supplement). For a chauffeur-only booking, the rate is 15,000 FCFA per day for up to 3 days, then 13,000 FCFA per day applied to the entire duration beyond 3 days. With a chauffeur, the customer\'s driving licence is not required.',
 
     'privacy_title' => 'Your data',
     'privacy_intro' => 'What we collect, why, and for how long.',
@@ -97,9 +97,9 @@ return [
 
     'legal_title' => 'Legal notice',
     'legal_publisher' => 'Site publisher',
-    'legal_publisher_text' => 'This website is published and operated by PDJ Autorent, a vehicle rental agency based in Lomé, Republic of Togo.',
+    'legal_publisher_text' => 'This website is published and operated by the vehicle rental agency based in Lomé, Republic of Togo. Its full contact details are available on the Contact page.',
     'legal_hosting' => 'Hosting',
     'legal_hosting_text' => 'Data is hosted on servers located in the European Union. No data is transferred to third countries without your consent.',
     'legal_property' => 'Intellectual property',
-    'legal_property_text' => 'Fleet photographs, texts and graphic identity belong to PDJ Autorent. Any reproduction without written authorisation is prohibited.',
+    'legal_property_text' => 'Fleet photographs, texts and the graphic identity of this website belong to the agency. Any reproduction without written authorisation is prohibited.',
 ];

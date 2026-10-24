@@ -1,6 +1,6 @@
 @extends('layouts.panel')
 
-@section('title', $category->exists ? 'Modifier la catÃ©gorie' : 'Nouvelle catÃ©gorie')
+@section('title', $category->exists ? 'Modifier la catégorie' : 'Nouvelle catégorie')
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -36,12 +36,12 @@
                     <h2 class="h6 fw-bold mb-3">{{ __('admin.tariffs') }}</h2>
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label" for="daily_price">{{ __('admin.daily_price') }} (F CFA)</label>
+                            <label class="form-label" for="daily_price">{{ __('admin.daily_price') }} (FCFA)</label>
                             <input type="number" class="form-control" id="daily_price" name="daily_price"
                                    value="{{ old('daily_price', $category->daily_price) }}" min="1000" step="500" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label" for="deposit_amount">{{ __('admin.deposit') }} (F CFA)</label>
+                            <label class="form-label" for="deposit_amount">{{ __('admin.deposit') }} (FCFA)</label>
                             <input type="number" class="form-control" id="deposit_amount" name="deposit_amount"
                                    value="{{ old('deposit_amount', $category->deposit_amount) }}" min="0" step="10000" required>
                         </div>

@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'yes' => 'Oui',
+    'no' => 'Non',
     'app_name' => 'Location de voitures',
 
     'tagline' => 'Location de voitures à :city',
@@ -92,5 +94,6 @@ return [
     'footer_help' => 'Aide',
     'footer_legal' => 'Légal',
     'footer_rights' => 'Tous droits réservés.',
+    'admin_access' => 'Admin',
     'opening_hours' => 'Ouvert du lundi au samedi, 8h à 19h',
 ];

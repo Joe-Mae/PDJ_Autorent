@@ -24,7 +24,7 @@
                     @forelse ($items as $item)
                         <tr>
                             <td class="small">{{ $item->author_name }}<br><span class="text-muted">{{ $item->author_city }}</span></td>
-                            <td class="text-end text-warning">{{ str_repeat('â˜…', $item->rating) }}</td>
+                            <td class="text-end text-warning">{{ str_repeat('★', $item->rating) }}</td>
                             <td class="small">{{ $item->comment }}</td>
                             <td>
                                 <form method="POST" action="{{ route('admin.contents.update', 'avis') }}" class="d-flex gap-2">

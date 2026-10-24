@@ -45,6 +45,9 @@ class NotificationService
             'a_emporter' => $this->formatAmount($booking->amountToCarry()),
             'annulation' => $this->cancellationDeadline($booking),
             'agence' => $this->settings->formattedPhone(),
+            'documents' => $booking->with_driver
+                ? __('booking.documents_for_pickup.with_driver')
+                : __('booking.documents_for_pickup.self_drive'),
         ]);
     }
 
@@ -117,7 +120,7 @@ class NotificationService
 
     public function formatAmount(int $amount): string
     {
-        return number_format($amount, 0, ' ', ' ').' F CFA';
+        return number_format($amount, 0, ' ', ' ').' FCFA';
     }
 
     private function dispatch(Booking $booking, string $channel, string $template, array $data): bool
@@ -134,6 +137,8 @@ class NotificationService
      */
     private function raw(string $phone, string $channel, string $template, array $data): bool
     {
+        $data['company'] = $this->settings->string('agency.name');
+
         $message = __('notifications.'.$template, $data, 'fr');
 
         Log::info('notification sortante', [

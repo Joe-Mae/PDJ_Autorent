@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\BookingStatus;
+use App\Enums\DocumentVerificationStatus;
 use Database\Factories\BookingFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -20,6 +21,11 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
     'daily_price', 'price_rental', 'price_driver', 'price_total',
     'deposit_amount', 'currency', 'holiday_days',
     'status', 'status_reason',
+    'document_verification_status', 'identity_original_verified', 'identity_name_matches',
+    'customer_age_eligible', 'driver_license_original_verified', 'driver_license_category_authorized',
+    'driver_license_category', 'driver_license_issued_at', 'driver_license_expires_at',
+    'document_verification_note', 'documents_verified_at', 'documents_verified_by',
+    'driver_license_copy_consent_at',
     'confirmed_at', 'cancelled_at', 'cancelled_by', 'started_at', 'ended_at',
     'mileage_at_pickup', 'mileage_at_return', 'fuel_level_pickup', 'fuel_level_return',
     'pickup_notes', 'return_notes',
@@ -55,6 +61,16 @@ class Booking extends Model
             'grace_expires_at' => 'datetime',
             'with_driver' => 'boolean',
             'status' => BookingStatus::class,
+            'document_verification_status' => DocumentVerificationStatus::class,
+            'identity_original_verified' => 'boolean',
+            'identity_name_matches' => 'boolean',
+            'customer_age_eligible' => 'boolean',
+            'driver_license_original_verified' => 'boolean',
+            'driver_license_category_authorized' => 'boolean',
+            'driver_license_issued_at' => 'date',
+            'driver_license_expires_at' => 'date',
+            'documents_verified_at' => 'datetime',
+            'driver_license_copy_consent_at' => 'datetime',
             'days' => 'integer',
             'driver_daily_price' => 'integer',
         ];
@@ -63,6 +79,11 @@ class Booking extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function documentsVerifiedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'documents_verified_by');
     }
 
     public function vehicle(): BelongsTo
@@ -138,6 +159,17 @@ class Booking extends Model
     public function hasPhoneVerified(): bool
     {
         return $this->phone_verified_at !== null;
+    }
+
+    public function isReadyForHandover(): bool
+    {
+        return $this->identity_original_verified
+            && $this->identity_name_matches
+            && $this->customer_age_eligible
+            && (
+                ($this->with_driver && $this->document_verification_status === DocumentVerificationStatus::NonRequis)
+                || (! $this->with_driver && $this->document_verification_status === DocumentVerificationStatus::Conforme)
+            );
     }
 
     public function isOverdue(): bool

@@ -88,17 +88,23 @@
             <div class="card-body p-4">
                 <h2 class="h5 mb-3">Identité visuelle</h2>
                 <div class="row g-3">
+                    <div class="col-md-2">
+                        <label for="brand_mark" class="form-label">Monogramme</label>
+                        <input class="form-control" id="brand_mark" name="brand_mark" maxlength="8"
+                               value="{{ old('brand_mark', $brandMark) }}">
+                        <div class="form-text">2 à 4 lettres.</div>
+                    </div>
                     <div class="col-md-4">
                         <label for="brand_label" class="form-label">Nom à côté du logo</label>
                         <input class="form-control" id="brand_label" name="brand_label" maxlength="40" required
                                value="{{ old('brand_label', $brandLabel) }}">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="brand_color" class="form-label">Couleur principale</label>
                         <input class="form-control form-control-color d-block" type="color" id="brand_color" name="brand_color"
                                value="{{ old('brand_color', $brandColor) }}" title="Choisir la couleur principale">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="accent_color" class="form-label">Couleur d’accent</label>
                         <input class="form-control form-control-color d-block" type="color" id="accent_color" name="accent_color"
                                value="{{ old('accent_color', $accentColor) }}" title="Choisir la couleur d’accent">
@@ -139,7 +145,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (['home' => 'Accueil', 'fleet' => 'Garage', 'driver' => 'Chauffeur', 'faq' => 'FAQ', 'contact' => 'Contact'] as $key => $label)
+                            @foreach (['home' => 'Accueil', 'fleet' => 'Garage', 'driver' => 'Chauffeur', 'faq' => 'FAQ', 'contact' => 'Contact', 'lookup' => 'Consulter ma réservation'] as $key => $label)
                                 <tr>
                                     <th scope="row">{{ $label }}</th>
                                     <td>

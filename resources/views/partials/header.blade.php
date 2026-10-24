@@ -14,7 +14,7 @@
     <div class="container">
         <div class="d-flex align-items-center justify-content-between py-2 gap-3">
             <a class="pdj-logo" href="{{ route('home', ['locale' => $locale]) }}">
-                <span class="pdj-logo-mark">PDJ</span>
+                <span class="pdj-logo-mark">{{ $settings->string('site.brand_mark') }}</span>
                 <span>{{ $settings->string('site.brand_label') }}</span>
             </a>
 
@@ -29,6 +29,8 @@
                    href="{{ route('page.faq', ['locale' => $locale]) }}">{{ $settings->string('nav.faq.'.$locale) }}</a>
                 <a class="nav-link @if (request()->routeIs('page.contact')) active @endif"
                    href="{{ route('page.contact', ['locale' => $locale]) }}">{{ $settings->string('nav.contact.'.$locale) }}</a>
+                    <a class="nav-link @if (request()->routeIs('booking.lookup')) active @endif"
+                       href="{{ route('booking.lookup', ['locale' => $locale]) }}">{{ $settings->string('nav.lookup.'.$locale) }}</a>
             </nav>
 
             <div class="d-flex align-items-center gap-2">
@@ -45,27 +47,7 @@
                        @if ($locale === 'en') aria-current="true" @endif>EN</a>
                 </div>
 
-                @auth
-                    <a class="btn btn-outline-primary d-none d-sm-inline-flex align-items-center"
-                       href="{{ route('account.dashboard', ['locale' => $locale]) }}">
-                        {{ __('nav.my_account') }}
-                    </a>
 
-                    {{-- La déconnexion reste atteignable depuis n'importe quelle
-                         page, pas seulement de « Mon espace ». Sur un téléphone
-                         prêté au guichet, le client suivant arrive souvent sur
-                         la page d'accueil : sans ce bouton, il n'a aucun moyen
-                         de passer la main. Icône seule pour ne pas alourdir une
-                         barre déjà chargée ; le libellé complet attend dans le
-                         menu mobile et dans la barre de l'espace client. --}}
-                    <form action="{{ route('logout', ['locale' => $locale]) }}" method="POST" class="m-0">
-                        @csrf
-                        <button type="submit" class="btn btn-outline-danger d-none d-sm-inline-flex align-items-center"
-                                aria-label="{{ __('nav.logout') }}" title="{{ __('nav.logout') }}">
-                            <i class="bi bi-box-arrow-right"></i>
-                        </button>
-                    </form>
-                @endauth
 
                 <button class="btn btn-primary d-lg-none" type="button"
                         data-bs-toggle="offcanvas" data-bs-target="#menuMobile"
@@ -92,20 +74,10 @@
         <a class="nav-link py-2" href="{{ route('page.payment', ['locale' => $locale]) }}">{{ __('nav.payment') }}</a>
         <a class="nav-link py-2" href="{{ route('page.deposit', ['locale' => $locale]) }}">{{ __('nav.deposit') }}</a>
         <a class="nav-link py-2" href="{{ route('page.contact', ['locale' => $locale]) }}">{{ $settings->string('nav.contact.'.$locale) }}</a>
+        <a class="nav-link py-2" href="{{ route('booking.lookup', ['locale' => $locale]) }}">{{ $settings->string('nav.lookup.'.$locale) }}</a>
 
         <hr class="my-3">
 
-        @auth
-            <a class="btn btn-outline-primary" href="{{ route('account.dashboard', ['locale' => $locale]) }}">
-                {{ __('nav.my_account') }}
-            </a>
 
-            <form action="{{ route('logout', ['locale' => $locale]) }}" method="POST" class="mt-2">
-                @csrf
-                <button type="submit" class="btn btn-outline-danger w-100 d-inline-flex justify-content-center align-items-center gap-2">
-                    <i class="bi bi-box-arrow-right"></i>{{ __('nav.logout') }}
-                </button>
-            </form>
-        @endauth
     </div>
 </div>

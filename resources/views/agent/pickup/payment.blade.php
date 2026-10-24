@@ -6,9 +6,9 @@
     <div class="row justify-content-center">
         <div class="col-lg-6">
             <div class="text-center mb-4">
-                <div class="small text-muted">{{ __('agent.step') }} 3/5</div>
+                <div class="small text-muted">{{ __('agent.step') }} 3/6</div>
                 <h1 class="h4 fw-bold">{{ __('agent.collect_rental') }}</h1>
-                <p class="text-muted">{{ $booking->reference }} w {{ $booking->user?->displayName() }}</p>
+                <p class="text-muted">{{ $booking->reference }} — {{ $booking->user?->displayName() ?? $booking->customer_name ?? '—' }}</p>
             </div>
 
             <div class="price-ticket mb-3">

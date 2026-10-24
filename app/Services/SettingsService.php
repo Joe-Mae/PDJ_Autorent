@@ -17,7 +17,7 @@ class SettingsService
     public const CACHE_KEY = 'pdj.settings.all';
 
     public const DEFAULTS = [
-        'agency.name' => 'PDJ Autorent',
+        'agency.name' => 'PDJ-AUTORENT',
         'agency.address' => 'Lomé, Togo',
         'agency.phone' => '+228 90 00 00 00',
         'agency.whatsapp' => '+22890000000',
@@ -33,19 +33,22 @@ class SettingsService
         'booking.free_cancellation_before' => '18:00',
         'booking.late_fee_multiplier' => '1',
         'booking.min_days' => '1',
+        'booking.insurance_deductible' => '150000',
 
         'driver.block_hours' => '4',
-        'driver.block_price' => '5000',
+        'driver.block_price' => '7000',
         'driver.auto_check_days' => '5',
-        'driver.solo_daily_price' => '8000',
-        'driver.solo_discount_daily_price' => '6500',
+        'driver.solo_daily_price' => '15000',
+        'driver.solo_discount_daily_price' => '13000',
         'driver.solo_discount_after_days' => '3',
+        'driver.with_car_mode' => 'supplement',
 
         'site.hero_vehicle_ids' => '[]',
         'site.hero_uploaded_images' => '[]',
         'site.brand_color' => '#0A6E4C',
         'site.accent_color' => '#FFC400',
-        'site.brand_label' => 'Autorent',
+        'site.brand_mark' => 'PDJ',
+        'site.brand_label' => 'AUTORENT',
         'site.hero_eyebrow.fr' => 'Location de voitures à Lomé',
         'site.hero_eyebrow.en' => 'Car rental in Lomé',
         'site.footer_tagline.fr' => 'Une agence, un point à Lomé, des prix qui ne changent pas à la réservation.',
@@ -60,6 +63,8 @@ class SettingsService
         'nav.faq.en' => 'Frequently asked questions',
         'nav.contact.fr' => 'Contact',
         'nav.contact.en' => 'Contact',
+        'nav.lookup.fr' => 'Consulter ma réservation',
+        'nav.lookup.en' => 'Check my booking',
 
         'no_show.max_absences' => '2',
 
@@ -116,7 +121,7 @@ class SettingsService
             return $this->resolved;
         }
 
-        $rows = Cache::rememberForever(self::CACHE_KEY, function () {
+        $rows = Cache::remember(self::CACHE_KEY, 300, function () {
             return Setting::query()
                 ->get(['key', 'value', 'type'])
                 ->mapWithKeys(fn (Setting $s) => [$s->key => $s->typedValue()])
@@ -198,6 +203,7 @@ class SettingsService
             $key === 'booking.min_license_years' => 'int',
             $key === 'booking.min_days' => 'int',
             $key === 'booking.late_fee_multiplier' => 'int',
+            $key === 'booking.insurance_deductible' => 'int',
             $key === 'driver.block_hours' => 'int',
             $key === 'driver.block_price' => 'int',
             $key === 'driver.auto_check_days' => 'int',

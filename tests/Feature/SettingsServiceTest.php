@@ -46,7 +46,7 @@ class SettingsServiceTest extends TestCase
         // Aucune ligne en base : c'est le défaut du service qui fait foi.
         $this->assertSame(120, $this->settings()->int('booking.speed_limit_kmh'));
         $this->assertSame(18, $this->settings()->int('booking.min_age'));
-        $this->assertSame(5000, $this->settings()->int('driver.block_price'));
+        $this->assertSame(7000, $this->settings()->int('driver.block_price'));
     }
 
     public function test_apres_ecriture_la_valeur_lit_en_base_prime_sur_le_defaut(): void

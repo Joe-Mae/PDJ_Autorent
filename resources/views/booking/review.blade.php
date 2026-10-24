@@ -41,7 +41,7 @@
             </li>
             <li class="mb-2">
                 <i class="bi bi-check-circle-fill text-success me-2"></i>
-                {{ number_format($quote->priceTotal, 0, ' ', ' ') }} F CFA {{ __('booking.to_pay') }}
+                {{ number_format($quote->priceTotal, 0, ' ', ' ') }} FCFA {{ __('booking.to_pay') }}
             </li>
 
             @if ($booking->with_driver)
@@ -49,10 +49,10 @@
                     <i class="bi bi-check-circle-fill text-success me-2"></i>
                     @if ($quote->legacyDriverPricing)
                         {{ __('booking.line.driver', ['blocks' => $quote->driverBlocks]) }} —
-                        {{ number_format($quote->priceDriver, 0, ' ', ' ') }} F CFA
+                        {{ number_format($quote->priceDriver, 0, ' ', ' ') }} FCFA
                     @else
                         {{ __('driver.badge') }} — {{ $quote->days }} {{ __('general.days') }} ×
-                        {{ number_format($quote->driverDailyPrice, 0, ' ', ' ') }} F CFA
+                        {{ number_format($quote->driverDailyPrice, 0, ' ', ' ') }} FCFA
                     @endif
                 </li>
             @endif

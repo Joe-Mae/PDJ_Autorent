@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Enums\BookingStatus;
+use App\Enums\DocumentVerificationStatus;
 use App\Models\Booking;
-use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\VehicleCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -48,15 +48,9 @@ class BookingFactory extends Factory
             'currency' => 'XOF',
             'holiday_days' => 0,
             'status' => BookingStatus::EnAttente,
+            'document_verification_status' => DocumentVerificationStatus::EnAttente,
             'public_token' => bin2hex(random_bytes(20)),
         ];
-    }
-
-    public function for(User $user): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'user_id' => $user->id,
-        ]);
     }
 
     /** Réservation d'un véhicule et d'une catégorie donnés. */
@@ -117,6 +111,7 @@ class BookingFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'with_driver' => true,
+            'document_verification_status' => DocumentVerificationStatus::EnAttente,
             'driver_blocks' => $blocks,
             'driver_hours' => $blocks * 4,
             'price_driver' => $priceDriver,
