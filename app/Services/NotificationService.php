@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Mail\BookingMail;
 use App\Models\Booking;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Envois client : WhatsApp d'abord, SMS en secours, e-mail pour les documents.
@@ -17,9 +19,9 @@ class NotificationService
 {
     public function __construct(private readonly SettingsService $settings) {}
 
-    public function sendBookingReceived(Booking $booking): bool
+    public function sendBookingReceived(Booking $booking, ?string $email = null): bool
     {
-        return $this->dispatch($booking, 'whatsapp', 'booking.received', [
+        $sent = $this->dispatch($booking, 'whatsapp', 'booking.received', [
             'reference' => $booking->reference,
             'vehicle' => $booking->vehicle?->displayName(),
             'debut' => $booking->starts_at->translatedFormat('d/m H:i'),
@@ -33,11 +35,23 @@ class NotificationService
                 : __('booking.reminder.license_needed'),
             'lien' => $this->publicLink($booking),
         ]);
+
+        if ($email !== null) {
+            $this->queueBookingMail($booking, $email, 'received', 'booking.received', 'received', [
+                __('notifications.mail.lines.reference') => $booking->reference,
+                __('notifications.mail.lines.vehicle') => $booking->vehicle?->displayName() ?? '—',
+                __('notifications.mail.lines.period') => $booking->starts_at->translatedFormat('d/m H:i').' → '.$booking->ends_at->translatedFormat('d/m H:i'),
+                __('notifications.mail.lines.to_pay') => $this->formatAmount($booking->amountToCarry()),
+                __('notifications.mail.lines.deposit') => $this->formatAmount((int) $booking->deposit_amount),
+            ]);
+        }
+
+        return $sent;
     }
 
-    public function sendBookingConfirmed(Booking $booking): bool
+    public function sendBookingConfirmed(Booking $booking, ?string $email = null): bool
     {
-        return $this->dispatch($booking, 'whatsapp', 'booking.confirmed', [
+        $sent = $this->dispatch($booking, 'whatsapp', 'booking.confirmed', [
             'reference' => $booking->reference,
             'vehicle' => $booking->vehicle?->displayName(),
             'debut' => $booking->starts_at->translatedFormat('d/m H:i'),
@@ -49,23 +63,51 @@ class NotificationService
                 ? __('booking.documents_for_pickup.with_driver')
                 : __('booking.documents_for_pickup.self_drive'),
         ]);
+
+        if ($email !== null) {
+            $this->queueBookingMail($booking, $email, 'confirmed', 'booking.confirmed', 'confirmed', [
+                __('notifications.mail.lines.reference') => $booking->reference,
+                __('notifications.mail.lines.vehicle') => $booking->vehicle?->displayName() ?? '—',
+                __('notifications.mail.lines.period') => $booking->starts_at->translatedFormat('d/m H:i').' → '.$booking->ends_at->translatedFormat('d/m H:i'),
+                __('notifications.mail.lines.to_pay') => $this->formatAmount($booking->amountToCarry()),
+            ]);
+        }
+
+        return $sent;
     }
 
-    public function sendBookingRefused(Booking $booking, string $reason): bool
+    public function sendBookingRefused(Booking $booking, string $reason, ?string $email = null): bool
     {
-        return $this->dispatch($booking, 'whatsapp', 'booking.refused', [
+        $sent = $this->dispatch($booking, 'whatsapp', 'booking.refused', [
             'reference' => $booking->reference,
             'motif' => $reason,
             'agence' => $this->settings->formattedPhone(),
         ]);
+
+        if ($email !== null) {
+            $this->queueBookingMail($booking, $email, 'refused', 'booking.refused', 'refused', [
+                __('notifications.mail.lines.reference') => $booking->reference,
+                __('notifications.mail.lines.reason') => $reason,
+            ]);
+        }
+
+        return $sent;
     }
 
-    public function sendBookingCancelled(Booking $booking): bool
+    public function sendBookingCancelled(Booking $booking, ?string $email = null): bool
     {
-        return $this->dispatch($booking, 'whatsapp', 'booking.cancelled', [
+        $sent = $this->dispatch($booking, 'whatsapp', 'booking.cancelled', [
             'reference' => $booking->reference,
             'agence' => $this->settings->formattedPhone(),
         ]);
+
+        if ($email !== null) {
+            $this->queueBookingMail($booking, $email, 'cancelled', 'booking.cancelled', 'cancelled', [
+                __('notifications.mail.lines.reference') => $booking->reference,
+            ]);
+        }
+
+        return $sent;
     }
 
     /** Rappel J-1 : le message le plus important pour éviter une absence. */
@@ -97,7 +139,7 @@ class NotificationService
     {
         return route('booking.show', [
             'locale' => $booking->user?->preferred_locale ?? 'fr',
-            'reference' => $booking->reference,
+            'booking' => $booking,
         ]);
     }
 
@@ -121,6 +163,27 @@ class NotificationService
     public function formatAmount(int $amount): string
     {
         return number_format($amount, 0, ' ', ' ').' FCFA';
+    }
+
+    /**
+     * Mets l'e-mail en file d'attente, jamais envoyé depuis la requête HTTP.
+     *
+     * Un e-mail ne part que s'il y a une adresse : la majorité des clients ne
+     * donnent que leur numéro, et le canal WhatsApp reste le canal réel. En
+     * l'absence de file (worker non lancé), l'envoi se fait dans la foulée —
+     * l'e-mail est un miroir, il ne doit jamais faire échouer la réservation.
+     *
+     * @param  array<string, string>  $lines
+     */
+    private function queueBookingMail(Booking $booking, string $email, string $subjectKey, string $introKey, string $footerKey, array $lines): void
+    {
+        if ($booking->with_driver) {
+            $lines[__('notifications.mail.lines.driver')] = __('booking.reminder.no_license_needed');
+        }
+
+        Mail::to($email)->queue(
+            new BookingMail($booking, $subjectKey, 'notifications.intros.'.$introKey, $lines, 'notifications.footers.'.$footerKey)
+        );
     }
 
     private function dispatch(Booking $booking, string $channel, string $template, array $data): bool

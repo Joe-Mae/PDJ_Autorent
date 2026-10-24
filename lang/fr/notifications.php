@@ -13,4 +13,42 @@ return [
         'reminder' => ":company\n\nRappel : votre :vehicle est prête demain :demain.\n\nSi tout va bien, tapez juste sur le bouton ci-dessous :\n:lien\n\nMerci d'arriver à l'heure. L'agence est ouverte de 8h à 19h.",
         'no_show' => "Bonjour :name,\n\nNous vous avons attendu ce matin pour :reference, sans succès. La voiture a été remise en location.\n\nSi c'est un oubli, dites-le nous : on peut reprogrammer.\n:company — :agence",
     ],
+
+    'mail' => [
+        'title' => 'Réservation :reference',
+        'cta' => 'Voir ma réservation',
+        'no_license' => 'Bonne nouvelle : avec chauffeur, pas besoin de permis — présentez juste votre pièce d\'identité.',
+    ],
+
+    'subjects' => [
+        'received' => 'Réservation :reference reçue — :company',
+        'confirmed' => 'Réservation :reference confirmée 👍 — :company',
+        'refused' => 'Réservation :reference non confirmée — :company',
+        'cancelled' => 'Réservation :reference annulée — :company',
+    ],
+
+    'intros' => [
+        'received' => 'Bonjour, votre réservation :reference est enregistrée, en attente de vérification.',
+        'confirmed' => 'Bonne nouvelle : votre réservation :reference est confirmée.',
+        'refused' => 'Votre réservation :reference n\'a malheureusement pas pu être confirmée.',
+        'cancelled' => 'Votre réservation :reference est annulée. Aucun frais.',
+    ],
+
+    'lines' => [
+        'reference' => 'Référence',
+        'vehicle' => 'Véhicule',
+        'period' => 'Période',
+        'to_pay' => 'À payer à l\'agence',
+        'deposit' => 'Caution',
+        'driver' => 'Avec chauffeur',
+        'reason' => 'Motif',
+    ],
+
+    'footers' => [
+        'agency' => ':company — appelez-nous au :phone, on va trouver une solution.',
+        'received' => ':company — appelez-nous au :phone si quelque chose n\'est pas clair.',
+        'confirmed' => ':company — à bientôt.',
+        'refused' => ':company — appelez-nous au :phone, on va trouver une solution.',
+        'cancelled' => ':company — n\'hésitez pas à réserver à nouveau.',
+    ],
 ];

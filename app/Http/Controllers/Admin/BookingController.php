@@ -94,7 +94,7 @@ class BookingController extends Controller
     {
         try {
             $this->bookings->confirm($booking, $request->user());
-            $this->notifications->sendBookingConfirmed($booking);
+            $this->notifications->sendBookingConfirmed($booking, $booking->customer_email ?? $booking->user?->email);
         } catch (BookingException $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -112,7 +112,7 @@ class BookingController extends Controller
 
         try {
             $this->bookings->refuse($booking, $request->user(), $data['motif']);
-            $this->notifications->sendBookingRefused($booking, $data['motif']);
+            $this->notifications->sendBookingRefused($booking, $data['motif'], $booking->customer_email ?? $booking->user?->email);
         } catch (BookingException $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -124,7 +124,7 @@ class BookingController extends Controller
     {
         try {
             $this->bookings->cancel($booking, $request->user(), 'agence');
-            $this->notifications->sendBookingCancelled($booking);
+            $this->notifications->sendBookingCancelled($booking, $booking->customer_email ?? $booking->user?->email);
         } catch (BookingException $e) {
             return back()->with('error', $e->getMessage());
         }

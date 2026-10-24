@@ -91,6 +91,7 @@ class DocumentController extends Controller
             app(NotificationService::class)->sendBookingRefused(
                 $booking,
                 $document->type->label().' : '.$document->review_note,
+                $booking->customer_email ?? $booking->user?->email,
             );
         }
     }

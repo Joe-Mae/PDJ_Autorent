@@ -345,7 +345,7 @@ class BookingController extends Controller
             return redirect()->route('booking.show', ['locale' => $locale, 'booking' => $booking])->with('error', $e->getMessage());
         }
 
-        $this->notifications->sendBookingReceived($confirmed);
+        $this->notifications->sendBookingReceived($confirmed, $confirmed->customer_email ?? $confirmed->user?->email);
 
         return redirect()->route('booking.confirmation', ['locale' => $locale, 'booking' => $confirmed]);
     }
