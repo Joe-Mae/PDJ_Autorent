@@ -109,6 +109,28 @@
                         <input class="form-control form-control-color d-block" type="color" id="accent_color" name="accent_color"
                                value="{{ old('accent_color', $accentColor) }}" title="Choisir la couleur d’accent">
                     </div>
+                    <div class="col-12">
+                        <label for="logo" class="form-label">Logo (image)</label>
+                        <div class="d-flex flex-wrap align-items-center gap-3">
+                            @if ($logoPath !== '')
+                                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($logoPath) }}"
+                                     alt="Logo actuel" class="rounded" style="max-height: 56px;">
+                            @endif
+                            <input class="form-control" type="file" id="logo" name="logo"
+                                   accept="image/jpeg,image/png,image/webp" style="max-width: 320px;">
+                        </div>
+                        <div class="form-text">JPG, PNG ou WebP, 2 Mo maximum. Sans logo, le monogramme s’affiche.</div>
+                        @error('logo')
+                            <div class="text-danger small" role="alert">{{ $message }}</div>
+                        @enderror
+                        @if ($logoPath !== '')
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="remove_logo" name="remove_logo" value="1"
+                                       @checked(old('remove_logo'))>
+                                <label class="form-check-label" for="remove_logo">Retirer le logo actuel</label>
+                            </div>
+                        @endif
+                    </div>
                     <div class="col-md-6">
                         <label for="hero_eyebrow_fr" class="form-label">Accroche du bandeau (FR)</label>
                         <input class="form-control" id="hero_eyebrow_fr" name="hero_eyebrow_fr" maxlength="100" required

@@ -368,6 +368,14 @@ a {
     align-items: center;
     gap: 0.55rem;
 
+    img.pdj-logo-img {
+        height: 34px;
+        width: auto;
+        max-width: 160px;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
     .pdj-logo-mark {
         width: 34px;
         height: 34px;
@@ -1296,6 +1304,12 @@ a {
     font-weight: 900;
     letter-spacing: -0.05em;
     box-shadow: 0 5px 15px rgba($yellow, 0.18);
+}
+
+img.admin-brand__mark {
+    object-fit: contain;
+    background: #fff;
+    padding: 3px;
 }
 
 .admin-nav-caption {

@@ -135,7 +135,7 @@
     @unless ($singleAction)
         <aside class="admin-sidebar flex-shrink-0 p-3 d-none d-lg-flex" id="adminSidebar">
             <a class="admin-brand text-decoration-none" href="{{ route('admin.dashboard') }}">
-                <span class="admin-brand__mark">{{ $settings->string('site.brand_mark') }}</span>
+                <x-brand-logo class="admin-brand__mark" />
                 <span class="admin-brand__text"><strong>{{ $settings->string('site.brand_label') }}</strong><small>{{ __('admin.management_space') }}</small></span>
             </a>
 

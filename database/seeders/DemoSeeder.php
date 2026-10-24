@@ -103,6 +103,7 @@ class DemoSeeder extends Seeder
             ['site.brand_color', '#0A6E4C', 'string', 'Couleur principale du site'],
             ['site.accent_color', '#FFC400', 'string', 'Couleur accent du site'],
             ['site.brand_mark', 'PDJ', 'string', 'Monogramme affiché dans le logo'],
+            ['site.logo_path', '', 'string', 'Chemin du logo téléversé'],
             ['site.brand_label', 'AUTORENT', 'string', 'Nom affiché dans le logo'],
             ['site.hero_eyebrow.fr', 'Location de voitures à Lomé', 'string', 'Accroche du bandeau accueil (FR)'],
             ['site.hero_eyebrow.en', 'Car rental in Lomé', 'string', 'Accroche du bandeau accueil (EN)'],

@@ -14,7 +14,7 @@
         <div class="row g-4">
             <div class="col-lg-4">
                 <a class="pdj-logo text-white mb-3" href="{{ route('home', ['locale' => $locale]) }}">
-                    <span class="pdj-logo-mark">{{ $settings->string('site.brand_mark') }}</span>
+                    <x-brand-logo />
                     <span>{{ $settings->string('site.brand_label') }}</span>
                 </a>
                 <p class="mb-3" style="max-width: 34ch;">{{ $settings->string('site.footer_tagline.'.$locale) }}</p>

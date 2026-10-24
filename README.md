@@ -213,6 +213,11 @@ nombre de réservations actives, seuil de blocage pour absence, devise
 (`general.currency`), préfixe des références de réservation
 (`booking.reference_prefix`).
 
+L'identité visuelle se règle depuis `/admin/apparence` : couleurs, monogramme,
+nom affiché, et le logo de l'agence (JPG, PNG ou WebP, 2 Mo maximum), stocké
+sur le disque public et affiché partout — en-tête, pied de page, panneau
+d'administration. Sans logo, le monogramme sert de repli.
+
 Aucun montant n'est écrit en dur : tout affichage passe par
 `SettingsService::money()`, qui lit la devise en cours. Changer la devise sur
 `/admin/parametres` suffit à faire basculer le site entier — prix, cautions,

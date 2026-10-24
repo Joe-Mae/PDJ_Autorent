@@ -52,6 +52,7 @@ class SettingsService
         'site.accent_color' => '#FFC400',
         'site.brand_mark' => 'PDJ',
         'site.brand_label' => 'AUTORENT',
+        'site.logo_path' => '',
         'site.hero_eyebrow.fr' => 'Location de voitures à Lomé',
         'site.hero_eyebrow.en' => 'Car rental in Lomé',
         'site.footer_tagline.fr' => 'Une agence, un point à Lomé, des prix qui ne changent pas à la réservation.',

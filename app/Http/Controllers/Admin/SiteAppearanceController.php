@@ -42,6 +42,7 @@ class SiteAppearanceController extends Controller
             'accentColor' => $this->safeColor('site.accent_color', '#FFC400'),
             'brandMark' => $this->settings->string('site.brand_mark'),
             'brandLabel' => $this->settings->string('site.brand_label'),
+            'logoPath' => $this->safeLogoPath(),
             'heroEyebrowFr' => $this->settings->string('site.hero_eyebrow.fr'),
             'heroEyebrowEn' => $this->settings->string('site.hero_eyebrow.en'),
             'footerTaglineFr' => $this->settings->string('site.footer_tagline.fr'),
@@ -108,6 +109,8 @@ class SiteAppearanceController extends Controller
             'accent_color' => ['required', 'regex:/\A#[0-9A-Fa-f]{6}\z/'],
             'brand_mark' => ['nullable', 'string', 'max:8'],
             'brand_label' => ['required', 'string', 'max:40'],
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'remove_logo' => ['nullable', 'boolean'],
             'hero_eyebrow_fr' => ['required', 'string', 'max:100'],
             'hero_eyebrow_en' => ['required', 'string', 'max:100'],
             'footer_tagline_fr' => ['required', 'string', 'max:180'],
@@ -129,7 +132,16 @@ class SiteAppearanceController extends Controller
             'hero_images.*.image' => 'Chaque fichier du diaporama doit être une image valide.',
             'hero_images.*.mimes' => 'Formats acceptés pour le diaporama : JPG, PNG ou WebP.',
             'hero_images.*.max' => 'Chaque photo du diaporama ne doit pas dépasser 2 Mo.',
+            'logo.image' => 'Le logo doit être une image valide.',
+            'logo.mimes' => 'Formats acceptés pour le logo : JPG, PNG ou WebP.',
+            'logo.max' => 'Le logo ne doit pas dépasser 2 Mo.',
         ]);
+
+        // Le logo est un fichier unique : on garde l'ancien pour le supprimer
+        // seulement quand le nouveau est bien enregistré.
+        $storedLogo = $this->settings->string('site.logo_path');
+        $logoPath = $storedLogo;
+        $logoToDelete = null;
 
         $heroVehicleIds = $data['hero_vehicle_ids'] ?? [];
         if ($heroVehicleIds !== []) {
@@ -175,6 +187,20 @@ class SiteAppearanceController extends Controller
             $uploadedHeroImages[] = $path;
         }
 
+        if ($request->boolean('remove_logo')) {
+            $logoPath = '';
+            $logoToDelete = $storedLogo;
+        } elseif ($request->hasFile('logo')) {
+            $uploadedLogo = $request->file('logo')->storePublicly('brand', 'public');
+
+            if ($uploadedLogo === false) {
+                throw new RuntimeException('Impossible d’enregistrer le logo.');
+            }
+
+            $logoPath = $uploadedLogo;
+            $logoToDelete = $storedLogo;
+        }
+
         $values = [
             'site.hero_vehicle_ids' => $heroVehicleIds,
             'site.hero_uploaded_images' => [
@@ -185,6 +211,7 @@ class SiteAppearanceController extends Controller
             'site.accent_color' => $data['accent_color'],
             'site.brand_mark' => $data['brand_mark'] ?? $this->settings->string('site.brand_mark'),
             'site.brand_label' => $data['brand_label'],
+            'site.logo_path' => $logoPath,
             'site.hero_eyebrow.fr' => $data['hero_eyebrow_fr'],
             'site.hero_eyebrow.en' => $data['hero_eyebrow_en'],
             'site.footer_tagline.fr' => $data['footer_tagline_fr'],
@@ -224,9 +251,30 @@ class SiteAppearanceController extends Controller
             }
         }
 
+        // L'ancien fichier ne part qu'une fois le nouveau chemin écrit en base.
+        if ($logoToDelete !== null
+            && $logoToDelete !== ''
+            && str_starts_with($logoToDelete, 'brand/')
+            && ! str_contains($logoToDelete, '..')
+            && Storage::disk('public')->exists($logoToDelete)) {
+            Storage::disk('public')->delete($logoToDelete);
+        }
+
         $this->settings->flush();
 
         return to_route('admin.appearance.edit')->with('status', 'Apparence du site mise à jour.');
+    }
+
+    /** Chemin du logo, sûr à afficher : non vide, sans « .. », réellement présent. */
+    private function safeLogoPath(): string
+    {
+        $path = $this->settings->string('site.logo_path');
+
+        if ($path === '' || str_contains($path, '..') || ! str_starts_with($path, 'brand/')) {
+            return '';
+        }
+
+        return Storage::disk('public')->exists($path) ? $path : '';
     }
 
     private function safeColor(string $key, string $fallback): string

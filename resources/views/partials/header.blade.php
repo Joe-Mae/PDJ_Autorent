@@ -14,7 +14,7 @@
     <div class="container">
         <div class="d-flex align-items-center justify-content-between py-2 gap-3">
             <a class="pdj-logo" href="{{ route('home', ['locale' => $locale]) }}">
-                <span class="pdj-logo-mark">{{ $settings->string('site.brand_mark') }}</span>
+                <x-brand-logo />
                 <span>{{ $settings->string('site.brand_label') }}</span>
             </a>
 
