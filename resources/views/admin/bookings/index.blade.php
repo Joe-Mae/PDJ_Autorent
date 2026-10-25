@@ -188,13 +188,8 @@
                                 @if ($booking->isOverdue())
                                     <span class="badge rounded-pill bg-danger">{{ __('admin.overdue') }}</span>
                                 @else
-                                    <div class="small text-muted">{{ __('admin.booking_status') }}</div>
                                     <span class="badge rounded-pill bg-{{ $booking->status->color() }}">{{ $booking->status->label() }}</span>
                                 @endif
-                                <div class="small text-muted mt-1">{{ __('admin.document_verification') }}</div>
-                                <span class="badge rounded-pill bg-{{ $booking->document_verification_status->color() }}">
-                                    {{ $booking->document_verification_status->label() }}
-                                </span>
                             </td>
                             <td class="text-end">
                                 <a class="btn btn-sm btn-light border" href="{{ route('admin.bookings.show', $booking) }}"

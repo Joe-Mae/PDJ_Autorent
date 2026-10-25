@@ -29,4 +29,15 @@ class AdminBookingListTest extends TestCase
             ->assertDontSee($other->reference)
             ->assertSee('client@example.com');
     }
+
+    public function test_la_liste_montre_le_statut_de_la_reservation_sans_la_verification_des_documents(): void
+    {
+        $booking = Booking::factory()->confirmed()->create(['reference' => 'PDJ-STATUT']);
+
+        $this->actingAs($this->staff('agent_accueil'))
+            ->get('/admin/reservations')
+            ->assertOk()
+            ->assertSee($booking->status->label())
+            ->assertDontSee('admin.document_verification');
+    }
 }
