@@ -5,7 +5,7 @@ namespace App\Http\Requests\Site;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Formulaire de recherche d'une demande invitée par sa référence.
+ * Formulaire de recherche d'une réservation, par référence ou par nom du client.
  */
 class LookupBookingRequest extends FormRequest
 {
@@ -19,7 +19,7 @@ class LookupBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'reference' => ['required', 'string', 'max:20'],
+            'query' => ['required', 'string', 'min:3', 'max:100'],
         ];
     }
 }

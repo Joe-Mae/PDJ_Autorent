@@ -17,6 +17,7 @@ use App\Services\PricingService;
 use App\Services\SettingsService;
 use App\Support\BookingPeriod;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
@@ -173,32 +174,111 @@ class GuestBookingController extends Controller
             'locale' => $locale,
             'booking' => null,
             'driverOnlyBooking' => null,
-            'reference' => '',
+            'matches' => collect(),
+            'query' => '',
             'error' => null,
         ]);
     }
 
     public function lookupStore(LookupBookingRequest $request, string $locale): View
     {
-        $data = $request->validated();
+        $query = trim($request->validated()['query']);
+        $reference = Str::upper($query);
 
-        $reference = strtoupper(trim($data['reference']));
-        $booking = Booking::query()
+        $bookings = Booking::query()
             ->whereRaw('UPPER(reference) = ?', [$reference])
-            ->first();
+            ->with(['vehicle.category', 'user'])
+            ->get();
 
         // Une demande de chauffeur seul a sa propre table et sa propre référence.
-        $driverOnlyBooking = $booking === null
-            ? DriverOnlyBooking::query()->whereRaw('UPPER(reference) = ?', [$reference])->first()
-            : null;
+        $driverOnlyBookings = DriverOnlyBooking::query()
+            ->whereRaw('UPPER(reference) = ?', [$reference])
+            ->get();
+
+        // Le client n'a pas toujours sa référence sous la main : on accepte
+        // aussi son nom. Chaque mot saisi doit se retrouver dans le nom, ce qui
+        // marche dans les deux ordres (« Afi Mensah » ou « Mensah Afi »).
+        if ($bookings->isEmpty() && $driverOnlyBookings->isEmpty()) {
+            [$bookings, $driverOnlyBookings] = $this->searchByName($query);
+        }
+
+        $matches = $bookings
+            ->map(fn (Booking $booking): array => [
+                'reference' => $booking->reference,
+                'customer' => $booking->user?->displayName() ?? $booking->customer_name ?? '',
+                'service' => $booking->vehicle?->fullName() ?? '',
+                'period' => $booking->starts_at->translatedFormat('d/m/Y H:i')
+                    .' → '.$booking->ends_at->translatedFormat('d/m/Y H:i'),
+                'status' => $booking->status->label(),
+                'color' => $booking->status->color(),
+            ])
+            ->concat($driverOnlyBookings->map(fn (DriverOnlyBooking $booking): array => [
+                'reference' => $booking->reference,
+                'customer' => $booking->customer_name,
+                'service' => __('driver.solo_title'),
+                'period' => $booking->starts_at->translatedFormat('d/m/Y H:i')
+                    .' → '.$booking->ends_at->translatedFormat('d/m/Y H:i'),
+                'status' => $booking->status->label(),
+                'color' => $booking->status->color(),
+            ]));
 
         return view('booking.lookup', [
             'locale' => $locale,
-            'booking' => $booking,
-            'driverOnlyBooking' => $driverOnlyBooking,
-            'reference' => $reference,
-            'error' => $booking || $driverOnlyBooking ? null : __('booking.lookup.not_found'),
+            // Une seule correspondance : fiche complète. Plusieurs : liste des
+            // dossiers, pour que le client choisisse le sien sans étaler le
+            // détail de tous ses homonymes.
+            'booking' => $matches->count() === 1 ? $bookings->first() : null,
+            'driverOnlyBooking' => $matches->count() === 1 ? $driverOnlyBookings->first() : null,
+            'matches' => $matches,
+            'query' => $query,
+            'error' => $matches->isEmpty() ? __('booking.lookup.not_found') : null,
         ]);
+    }
+
+    /**
+     * Recherche par nom. Chaque mot doit correspondre au nom porté par la
+     * réservation invitée ou par le compte du client.
+     *
+     * @return array{0: Collection<int, Booking>, 1: Collection<int, DriverOnlyBooking>}
+     */
+    private function searchByName(string $query): array
+    {
+        $words = preg_split('/\s+/', $query, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if ($words === []) {
+            return [new Collection, new Collection];
+        }
+
+        $bookings = Booking::query()
+            ->where(function ($builder) use ($words): void {
+                foreach ($words as $word) {
+                    $term = '%'.$word.'%';
+
+                    $builder->where(function ($sub) use ($term): void {
+                        $sub->where('customer_name', 'like', $term)
+                            ->orWhereHas('user', fn ($user) => $user
+                                ->where('first_name', 'like', $term)
+                                ->orWhere('last_name', 'like', $term)
+                                ->orWhere('name', 'like', $term));
+                    });
+                }
+            })
+            ->with(['vehicle.category', 'user'])
+            ->orderByDesc('starts_at')
+            ->limit(20)
+            ->get();
+
+        $driverOnlyBookings = DriverOnlyBooking::query()
+            ->where(function ($builder) use ($words): void {
+                foreach ($words as $word) {
+                    $builder->where('customer_name', 'like', '%'.$word.'%');
+                }
+            })
+            ->orderByDesc('starts_at')
+            ->limit(20)
+            ->get();
+
+        return [$bookings, $driverOnlyBookings];
     }
 
     private function guardToken(Booking $booking, string $token): void

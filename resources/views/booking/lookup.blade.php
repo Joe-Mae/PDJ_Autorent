@@ -11,21 +11,53 @@
         @csrf
         <div class="row g-2 align-items-end">
             <div class="col">
-                <label for="reference" class="form-label">{{ __('booking.lookup.reference_label') }}</label>
-                <input type="text" class="form-control text-uppercase font-monospace" id="reference" name="reference"
-                       value="{{ $reference ?? '' }}" placeholder="PDJ-XXXXXX" maxlength="12" required>
+                <label for="query" class="form-label">{{ __('booking.lookup.search_label') }}</label>
+                <input type="text" class="form-control" id="query" name="query"
+                       value="{{ $query ?? '' }}" placeholder="{{ __('booking.lookup.placeholder') }}"
+                       maxlength="100" autocomplete="off" required>
             </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-primary">{{ __('booking.lookup.submit') }}</button>
             </div>
         </div>
-        @error('reference')
+        @error('query')
             <div class="text-danger small mt-2">{{ $message }}</div>
         @enderror
     </form>
 
     @if ($error)
         <div class="alert alert-warning">{{ $error }}</div>
+    @endif
+
+    {{-- Plusieurs homonymes : on liste les dossiers et on laisse le client
+         ouvrir le sien par sa référence, sans afficher le détail de tous. --}}
+    @if ($matches->count() > 1)
+        <div class="pdj-card">
+            <h2 class="h5 fw-bold mb-1">{{ __('booking.lookup.results_title') }}</h2>
+            <p class="small text-muted mb-3">{{ __('booking.lookup.results_hint') }}</p>
+
+            <ul class="list-unstyled mb-0">
+                @foreach ($matches as $match)
+                    <li class="d-flex flex-wrap justify-content-between align-items-center gap-2 py-3 border-top">
+                        <div>
+                            <div class="fw-semibold">{{ $match['customer'] ?: '—' }}</div>
+                            <div class="small text-muted">{{ $match['service'] }} · {{ $match['period'] }}</div>
+                            <div class="small font-monospace">{{ $match['reference'] }}</div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-{{ $match['color'] }}">{{ $match['status'] }}</span>
+                            <form method="POST" action="{{ route('booking.lookup.store', ['locale' => $locale]) }}">
+                                @csrf
+                                <input type="hidden" name="query" value="{{ $match['reference'] }}">
+                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                    {{ __('booking.lookup.details') }}
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 
     @if ($booking)
@@ -42,6 +74,8 @@
             </div>
 
             <dl class="row mb-0">
+                <dt class="col-sm-4">{{ __('booking.lookup.customer') }}</dt>
+                <dd class="col-sm-8">{{ $booking->user?->displayName() ?? $booking->customer_name ?? '—' }}</dd>
                 <dt class="col-sm-4">{{ __('admin.vehicle') }}</dt>
                 <dd class="col-sm-8">{{ $booking->vehicle->fullName() }}</dd>
                 <dt class="col-sm-4">{{ __('booking.guest.period') }}</dt>
@@ -91,6 +125,8 @@
             </div>
 
             <dl class="row mb-0">
+                <dt class="col-sm-4">{{ __('booking.lookup.customer') }}</dt>
+                <dd class="col-sm-8">{{ $driverOnlyBooking->customer_name }}</dd>
                 <dt class="col-sm-4">{{ __('booking.lookup.service') }}</dt>
                 <dd class="col-sm-8">{{ __('driver.solo_title') }}</dd>
                 <dt class="col-sm-4">{{ __('booking.guest.period') }}</dt>
