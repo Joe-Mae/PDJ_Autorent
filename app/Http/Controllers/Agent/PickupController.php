@@ -263,10 +263,17 @@ class PickupController extends Controller
      */
     public function keys(Booking $booking): View
     {
+        $licenseDocument = $booking->documents()
+            ->where('type', DocumentType::DriverLicense->value)
+            ->latest('id')
+            ->first();
+
         return view('agent.pickup.keys', [
             'booking' => $booking->load(['vehicle.category', 'user']),
             'identityReady' => $booking->hasVerifiedIdentity(),
             'needsLicense' => ! $booking->with_driver,
+            'licenseDocument' => $licenseDocument,
+            'hasLicenseCopy' => $booking->hasDriverLicenseCopy(),
             'minimumLicenseYears' => app(SettingsService::class)->int('booking.min_license_years'),
         ]);
     }
@@ -298,30 +305,11 @@ class PickupController extends Controller
                     ]));
             }
 
-            $stored = app(DocumentStorageService::class)->store(
-                $request->file('license_copy'),
-                'originaux/'.$booking->reference,
-                'license_copy',
-            );
-
-            // Une seule photo de permis par réservation : la plus récente.
-            $booking->documents()
-                ->where('type', DocumentType::DriverLicense->value)
-                ->delete();
-
-            CustomerDocument::query()->create([
-                'user_id' => $booking->user_id,
-                'booking_id' => $booking->id,
-                'type' => DocumentType::DriverLicense,
-                'status' => DocumentStatus::Conforme,
-                'disk' => $stored->disk,
-                'path' => $stored->path,
-                'original_filename' => $stored->originalFilename,
-                'mime_type' => $stored->mimeType,
-                'size_kb' => $stored->sizeKb,
-                'reviewed_by' => $request->user()->id,
-                'reviewed_at' => now(),
-            ]);
+            // Le permis peut déjà avoir été joint au dossier par un collègue :
+            // la photo n'est alors exigée que si elle manque.
+            if ($request->hasFile('license_copy')) {
+                $this->storeLicenseCopy($booking, $request);
+            }
 
             $booking->update([
                 'driver_license_original_verified' => true,
@@ -329,7 +317,6 @@ class PickupController extends Controller
                 'driver_license_category' => trim($data['driver_license_category']),
                 'driver_license_issued_at' => $data['driver_license_issued_at'],
                 'driver_license_expires_at' => $data['driver_license_expires_at'],
-                'driver_license_copy_consent_at' => now(),
                 'document_verification_status' => DocumentVerificationStatus::Conforme,
                 'documents_verified_at' => now(),
                 'documents_verified_by' => $request->user()->id,
@@ -350,6 +337,42 @@ class PickupController extends Controller
         return redirect()
             ->route('agent.pickup.index')
             ->with('status', __('agent.pickup_done', ['ref' => $booking->reference]));
+    }
+
+    /**
+     * Enregistre la photo du permis, en remplaçant la précédente.
+     *
+     * Le fichier est stocké sur le disque privé (nom aléatoire, EXIF
+     * supprimés) et le consentement du client est horodaté au même moment.
+     */
+    private function storeLicenseCopy(Booking $booking, HandoverBookingRequest $request): void
+    {
+        $stored = app(DocumentStorageService::class)->store(
+            $request->file('license_copy'),
+            'originaux/'.$booking->reference,
+            'license_copy',
+        );
+
+        // Une seule photo de permis par réservation : la plus récente.
+        $booking->documents()
+            ->where('type', DocumentType::DriverLicense->value)
+            ->get()
+            ->each(fn (CustomerDocument $document) => $document->delete());
+
+        $booking->documents()->create([
+            'user_id' => $booking->user_id,
+            'type' => DocumentType::DriverLicense,
+            'status' => DocumentStatus::Conforme,
+            'disk' => $stored->disk,
+            'path' => $stored->path,
+            'original_filename' => $stored->originalFilename,
+            'mime_type' => $stored->mimeType,
+            'size_kb' => $stored->sizeKb,
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+        ]);
+
+        $booking->update(['driver_license_copy_consent_at' => now()]);
     }
 
     /**

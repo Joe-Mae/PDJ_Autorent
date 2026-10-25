@@ -164,6 +164,35 @@ class PickupDocumentVerificationTest extends TestCase
         $this->assertSame(BookingStatus::Confirmee, $booking->refresh()->status);
     }
 
+    public function test_un_permis_deja_au_dossier_evite_une_seconde_photo_a_la_remise(): void
+    {
+        Storage::fake('documents');
+
+        $booking = $this->confirmedBooking();
+        $agent = $this->staff();
+
+        // Un collègue a joint le permis depuis le dossier de la réservation.
+        $this->actingAs($agent)
+            ->post(route('admin.bookings.permit.store', $booking), [
+                'permit' => UploadedFile::fake()->image('permis.jpg'),
+                'permit_consent' => '1',
+            ])
+            ->assertSessionHasNoErrors();
+
+        $this->actingAs($agent)
+            ->post(route('agent.pickup.documents.store', $booking), $this->identityCheck());
+
+        $this->actingAs($agent)
+            ->post(route('agent.pickup.complete', $booking), $this->compliantLicense($booking))
+            ->assertRedirect(route('agent.pickup.index'));
+
+        $booking->refresh();
+
+        $this->assertSame(BookingStatus::EnCours, $booking->status);
+        $this->assertSame(1, $booking->documents()->where('type', 'permis')->count());
+        $this->assertNotNull($booking->driver_license_copy_consent_at);
+    }
+
     private function confirmedBooking(): Booking
     {
         return $this->bookings()->confirm(

@@ -87,18 +87,41 @@
                         </div>
 
                         <div class="pdj-card mb-3">
-                            <label class="form-label fw-semibold" for="license_copy">{{ __('agent.license_photo') }}</label>
+                            @if ($licenseDocument)
+                                <a href="{{ route('admin.documents.show', $licenseDocument) }}" target="_blank"
+                                   rel="noopener" class="d-block mb-2 text-decoration-none">
+                                    @if ($licenseDocument->mime_type === 'application/pdf')
+                                        <div class="border rounded p-3 text-center">
+                                            <i class="bi bi-file-earmark-pdf fs-3 text-danger"></i>
+                                            <div class="small mt-1">{{ __('admin.open_document') }}</div>
+                                        </div>
+                                    @else
+                                        <img src="{{ $licenseDocument->temporaryUrl() }}"
+                                             alt="{{ $licenseDocument->type->label() }}"
+                                             class="img-fluid rounded border" style="max-height: 200px;">
+                                    @endif
+                                </a>
+                                <div class="alert alert-success small">
+                                    <i class="bi bi-check-circle me-1"></i>{{ __('agent.license_copy_on_file') }}
+                                </div>
+                            @endif
+
+                            <label class="form-label fw-semibold" for="license_copy">
+                                {{ $hasLicenseCopy ? __('agent.license_photo_replace') : __('agent.license_photo') }}
+                            </label>
                             <input class="form-control" type="file" id="license_copy" name="license_copy"
-                                   accept="image/*" capture="environment" required>
+                                   accept="image/*" capture="environment" @required(! $hasLicenseCopy)>
                             <div class="form-text">{{ __('agent.license_photo_hint') }}</div>
 
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" name="license_copy_consent" value="1"
-                                       id="license_copy_consent" @checked(old('license_copy_consent')) required>
-                                <label class="form-check-label small" for="license_copy_consent">
-                                    {{ __('agent.license_copy_consent') }}
-                                </label>
-                            </div>
+                            @unless ($hasLicenseCopy)
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" name="license_copy_consent" value="1"
+                                           id="license_copy_consent" @checked(old('license_copy_consent')) required>
+                                    <label class="form-check-label small" for="license_copy_consent">
+                                        {{ __('agent.license_copy_consent') }}
+                                    </label>
+                                </div>
+                            @endunless
                         </div>
 
                         <div class="alert alert-info small">

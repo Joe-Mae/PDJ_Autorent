@@ -6,12 +6,13 @@ use App\Enums\BookingStatus;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Remise des clés : contrôle du permis et photo, puis départ du véhicule.
+ * Remise des clés : contrôle du permis, puis départ du véhicule.
  *
  * Le permis du locataire est vérifié à l'agence, au dernier moment. La photo
- * prise par la caissière est la preuve du contrôle : sans elle, la location ne
- * démarre pas. Une prestation avec chauffeur n'exige pas de permis, c'est le
- * chauffeur qui conduit.
+ * prise par la caissière est la preuve du contrôle : sans photo au dossier, la
+ * location ne démarre pas. Si un autre employé a déjà joint le permis depuis le
+ * dossier de la réservation, une nouvelle photo n'est pas exigée. Une prestation
+ * avec chauffeur n'exige pas de permis, c'est le chauffeur qui conduit.
  */
 class HandoverBookingRequest extends FormRequest
 {
@@ -27,7 +28,9 @@ class HandoverBookingRequest extends FormRequest
     /** @return array<string, array<int, string>|string> */
     public function rules(): array
     {
-        $needsLicense = ! $this->route('booking')->with_driver;
+        $booking = $this->route('booking');
+        $needsLicense = ! $booking->with_driver;
+        $licenseOnFile = $needsLicense && $booking->hasDriverLicenseCopy();
 
         return [
             'driver_license_original_verified' => ['nullable', 'boolean'],
@@ -35,12 +38,18 @@ class HandoverBookingRequest extends FormRequest
             'driver_license_category' => ['nullable', 'string', 'max:30'],
             'driver_license_issued_at' => ['nullable', 'date_format:Y-m-d'],
             'driver_license_expires_at' => ['nullable', 'date_format:Y-m-d'],
-            'license_copy' => $needsLicense
-                ? ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120']
-                : ['prohibited'],
-            'license_copy_consent' => $needsLicense
-                ? ['required', 'accepted']
-                : ['prohibited'],
+            'license_copy' => match (true) {
+                ! $needsLicense => ['prohibited'],
+                $licenseOnFile => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+                default => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            },
+            'license_copy_consent' => match (true) {
+                ! $needsLicense => ['prohibited'],
+                // `accepted` est une règle implicite : `nullable` ne la saute
+                // pas quand la case est absente du formulaire, d'où `sometimes`.
+                $licenseOnFile => ['sometimes', 'accepted'],
+                default => ['required', 'accepted'],
+            },
         ];
     }
 

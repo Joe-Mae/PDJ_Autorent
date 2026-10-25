@@ -186,7 +186,10 @@ Parcours de retrait verrouillé dans l'ordre, une action par écran :
 Le permis du locataire n'est pas vérifié à distance : la caissière contrôle
 l'original au guichet, le photographie, et cette photo est enregistrée sur la
 réservation. L'enregistrement fait passer la réservation en « en cours » — la
-voiture est partie. Une prestation avec chauffeur ne demande pas de permis.
+voiture est partie. N'importe quel employé peut aussi joindre cette photo plus
+tôt, depuis le dossier de la réservation : à la remise des clés, une nouvelle
+photo n'est alors demandée que si le dossier n'en contient pas. Une prestation
+avec chauffeur ne demande pas de permis.
 
 On ne rend pas les clés avant d'avoir tout validé : c'est la seule façon que
 la clôture de journée corresponde à ce qui s'est passé.

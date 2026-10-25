@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\DocumentStatus;
+use App\Enums\DocumentType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\ReviewDocumentRequest;
+use App\Http\Requests\Admin\StoreBookingPermitRequest;
 use App\Models\AuditLog;
 use App\Models\Booking;
 use App\Models\CustomerDocument;
+use App\Services\DocumentStorageService;
 use App\Services\NotificationService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -26,6 +30,8 @@ use Illuminate\Http\Request;
  */
 class DocumentController extends Controller
 {
+    public function __construct(private readonly DocumentStorageService $storage) {}
+
     public function index(Request $request): View
     {
         return view('admin.documents.index', [
@@ -102,6 +108,51 @@ class DocumentController extends Controller
             'type' => $document->type->label(),
             'verdict' => $document->status->label(),
         ]));
+    }
+
+    /**
+     * Joint la photo du permis au dossier de la réservation.
+     *
+     * Le permis est contrôlé en agence : n'importe quel employé peut joindre la
+     * photo, elle reste attachée à la réservation. Le fichier passe par le même
+     * stockage que les pièces du client (disque privé, nom aléatoire, EXIF
+     * supprimés) et la photo précédente est remplacée, fichier compris.
+     */
+    public function storePermit(StoreBookingPermitRequest $request, Booking $booking): RedirectResponse
+    {
+        $stored = $this->storage->store(
+            $request->file('permit'),
+            'reservations/'.$booking->reference,
+            'permit',
+        );
+
+        // Une seule photo de permis par réservation : la plus récente.
+        $booking->documents()
+            ->where('type', DocumentType::DriverLicense->value)
+            ->get()
+            ->each(fn (CustomerDocument $document) => $document->delete());
+
+        $document = $booking->documents()->create([
+            'user_id' => $booking->user_id,
+            'type' => DocumentType::DriverLicense,
+            'status' => DocumentStatus::Conforme,
+            'disk' => $stored->disk,
+            'path' => $stored->path,
+            'original_filename' => $stored->originalFilename,
+            'mime_type' => $stored->mimeType,
+            'size_kb' => $stored->sizeKb,
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+        ]);
+
+        $booking->update(['driver_license_copy_consent_at' => now()]);
+
+        $this->audit($request, 'document.uploaded', $document, [
+            'type' => $document->type->value,
+            'reservation' => $booking->reference,
+        ]);
+
+        return back()->with('status', __('admin.permit_uploaded'));
     }
 
     /**

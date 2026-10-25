@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\BookingStatus;
+use App\Enums\DocumentType;
 use App\Enums\DriverOnlyBookingStatus;
 use App\Enums\PaymentKind;
 use App\Exceptions\BookingException;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\RefuseBookingRequest;
 use App\Http\Requests\Admin\UpdateBookingRequest;
 use App\Models\Booking;
+use App\Models\CustomerDocument;
 use App\Models\Driver;
 use App\Models\DriverOnlyBooking;
 use App\Models\Vehicle;
@@ -86,9 +88,14 @@ class BookingController extends Controller
 
     public function show(Booking $booking): View
     {
+        $booking->load(['vehicle.category', 'user', 'documents', 'payments', 'driver', 'review', 'documentsVerifiedBy']);
+
         return view('admin.bookings.show', [
-            'booking' => $booking->load(['vehicle.category', 'user', 'documents', 'payments', 'driver', 'review', 'documentsVerifiedBy']),
+            'booking' => $booking,
             'drivers' => Driver::query()->available()->get(),
+            'licenseDocument' => $booking->documents->firstWhere('type', DocumentType::DriverLicense),
+            'hasIdentityDocument' => $booking->documents
+                ->contains(fn (CustomerDocument $document) => $document->type === DocumentType::IdentityCard),
         ]);
     }
 

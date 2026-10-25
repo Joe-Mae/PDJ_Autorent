@@ -118,43 +118,6 @@
             </table>
         </div>
 
-        <div class="pdj-card mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h2 class="h6 fw-bold mb-0">{{ __('admin.document_verification') }}</h2>
-                <span class="badge bg-{{ $booking->document_verification_status->color() }}">
-                    {{ $booking->document_verification_status->label() }}
-                </span>
-            </div>
-            <p class="small text-muted">
-                {{ __('admin.booking_status') }}: {{ $booking->status->label() }}.
-                {{ __('admin.document_verification_independent') }}
-            </p>
-            <div class="small">
-                {{ __('agent.identity_original_seen') }}:
-                {{ $booking->identity_original_verified ? __('general.yes') : __('general.no') }}<br>
-                {{ __('agent.identity_name_matches', ['name' => $booking->customer_name ?? $booking->user?->displayName() ?? '—']) }}:
-                {{ $booking->identity_name_matches ? __('general.yes') : __('general.no') }}<br>
-                {{ __('agent.age_requirement_met', ['age' => app(\App\Services\SettingsService::class)->int('booking.min_age')]) }}:
-                {{ $booking->customer_age_eligible ? __('general.yes') : __('general.no') }}
-                @unless ($booking->with_driver)
-                    <br>{{ __('agent.license_original_seen') }}:
-                    {{ $booking->driver_license_original_verified ? __('general.yes') : __('general.no') }}<br>
-                    {{ __('agent.license_category') }}: {{ $booking->driver_license_category ?? '—' }}<br>
-                    {{ __('agent.license_issued_at') }}: {{ $booking->driver_license_issued_at?->format('d/m/Y') ?? '—' }}<br>
-                    {{ __('agent.license_expires_at') }}: {{ $booking->driver_license_expires_at?->format('d/m/Y') ?? '—' }}
-                @endunless
-            </div>
-            @if ($booking->documents_verified_at)
-                <div class="small text-muted mt-2">
-                    {{ $booking->documents_verified_at->translatedFormat('d/m/Y H:i') }}
-                    — {{ $booking->documentsVerifiedBy?->displayName() ?? '—' }}
-                </div>
-            @endif
-            @if ($booking->document_verification_note)
-                <div class="alert alert-warning small mt-3 mb-0">{{ $booking->document_verification_note }}</div>
-            @endif
-        </div>
-
         {{-- ── Documents ───────────────────────────────────────────────────── --}}
         <div class="pdj-card mb-4">
             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -163,23 +126,73 @@
             </div>
 
             @forelse ($booking->documents as $document)
-                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
-                    <div>
+                <div class="d-flex align-items-center gap-3 border-bottom py-2">
+                    @if (str_starts_with($document->mime_type, 'image/'))
+                        <a href="{{ route('admin.documents.show', $document) }}" class="flex-shrink-0">
+                            <img src="{{ $document->temporaryUrl() }}" alt="{{ $document->type->label() }}"
+                                 class="rounded border" width="64" height="48" style="object-fit: cover;">
+                        </a>
+                    @else
+                        <a href="{{ route('admin.documents.show', $document) }}"
+                           class="flex-shrink-0 d-grid rounded border text-muted"
+                           style="width: 64px; height: 48px; place-items: center;">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                        </a>
+                    @endif
+                    <div class="flex-grow-1">
                         <div class="small fw-semibold">{{ $document->type->label() }}</div>
                         <div class="small text-muted">
                             {{ $document->reviewed_at?->translatedFormat('d/m/Y H:i') ?? __('admin.not_reviewed') }}
                         </div>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-{{ $document->status->color() }}">{{ $document->status->label() }}</span>
-                        <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.documents.show', $document) }}">
-                            <i class="bi bi-eye"></i>
-                        </a>
-                    </div>
+                    <span class="badge bg-{{ $document->status->color() }}">{{ $document->status->label() }}</span>
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ route('admin.documents.show', $document) }}">
+                        {{ __('admin.view') }}
+                    </a>
                 </div>
             @empty
                 <p class="text-muted small mb-0">{{ __('admin.no_document') }}</p>
             @endforelse
+
+            @unless ($hasIdentityDocument)
+                <div class="alert alert-info small mt-3 mb-0">
+                    <i class="bi bi-info-circle me-1"></i>{{ __('admin.identity_card_missing') }}
+                </div>
+            @endunless
+
+            @unless ($booking->with_driver || $booking->status->isFinal())
+                <hr class="my-3">
+
+                <h3 class="h6 fw-bold">{{ __('admin.permit_section') }}</h3>
+                <p class="small text-muted">{{ __('admin.permit_section_hint') }}</p>
+
+                @if ($licenseDocument)
+                    <div class="alert alert-success small">
+                        <i class="bi bi-check-circle me-1"></i>{{ __('admin.permit_on_file') }}
+                    </div>
+                @endif
+
+                <form action="{{ route('admin.bookings.permit.store', $booking) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+
+                    <div class="mb-2">
+                        <label class="form-label small" for="permit">{{ __('admin.permit_file') }}</label>
+                        <input class="form-control form-control-sm" type="file" id="permit" name="permit"
+                               accept="image/*,application/pdf" required>
+                        <div class="form-text">{{ __('document.upload_hint') }}</div>
+                    </div>
+
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" name="permit_consent" value="1"
+                               id="permit_consent" required>
+                        <label class="form-check-label small" for="permit_consent">
+                            {{ __('agent.license_copy_consent') }}
+                        </label>
+                    </div>
+
+                    <button class="btn btn-sm btn-outline-primary">{{ __('admin.permit_upload_action') }}</button>
+                </form>
+            @endunless
         </div>
 
         {{-- ── Re-dater ───────────────────────────────────────────────────── --}}

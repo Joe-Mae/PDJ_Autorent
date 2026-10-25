@@ -111,6 +111,7 @@ Route::prefix('admin')
         Route::post('/reservations/{booking}/annuler', [Admin\BookingController::class, 'cancel'])->name('bookings.cancel');
         Route::post('/reservations/{booking}/modifier', [Admin\BookingController::class, 'update'])->name('bookings.update');
         Route::post('/reservations/{booking}/chauffeur/{driver}', [Admin\BookingController::class, 'assignDriver'])->name('bookings.driver.assign');
+        Route::post('/reservations/{booking}/permis', [Admin\DocumentController::class, 'storePermit'])->name('bookings.permit.store');
 
         // File de vérification des documents
         Route::get('/documents', [Admin\DocumentController::class, 'index'])->name('documents.index');
