@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\BookingStatus;
+use App\Enums\DocumentType;
 use App\Enums\DocumentVerificationStatus;
 use Database\Factories\BookingFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -161,15 +162,38 @@ class Booking extends Model
         return $this->phone_verified_at !== null;
     }
 
-    public function isReadyForHandover(): bool
+    public function hasVerifiedIdentity(): bool
     {
         return $this->identity_original_verified
             && $this->identity_name_matches
-            && $this->customer_age_eligible
-            && (
-                ($this->with_driver && $this->document_verification_status === DocumentVerificationStatus::NonRequis)
-                || (! $this->with_driver && $this->document_verification_status === DocumentVerificationStatus::Conforme)
-            );
+            && $this->customer_age_eligible;
+    }
+
+    /**
+     * La photo du permis, prise en agence au moment de la remise des clés.
+     * Sans elle, la location ne peut pas démarrer : c'est la preuve que le
+     * permis a bien été contrôlé par la caissière.
+     */
+    public function hasDriverLicenseCopy(): bool
+    {
+        return $this->driver_license_copy_consent_at !== null
+            && $this->documents()
+                ->where('type', DocumentType::DriverLicense->value)
+                ->exists();
+    }
+
+    public function isReadyForHandover(): bool
+    {
+        if (! $this->hasVerifiedIdentity()) {
+            return false;
+        }
+
+        if ($this->with_driver) {
+            return $this->document_verification_status === DocumentVerificationStatus::NonRequis;
+        }
+
+        return $this->document_verification_status === DocumentVerificationStatus::Conforme
+            && $this->hasDriverLicenseCopy();
     }
 
     public function isOverdue(): bool

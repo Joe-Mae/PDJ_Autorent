@@ -1,6 +1,6 @@
 @extends('layouts.panel', ['section' => 'agent', 'singleAction' => true])
 
-@section('title', 'Contrôle des documents')
+@section('title', 'Contrôle de l\'identité')
 
 @section('content')
     @php
@@ -13,7 +13,7 @@
         <div class="col-lg-7">
             <div class="text-center mb-4">
                 <div class="small text-muted">{{ __('agent.step') }} 1/6</div>
-                <h1 class="h4 fw-bold">{{ __('agent.check_originals') }}</h1>
+                <h1 class="h4 fw-bold">{{ __('agent.identity_check') }}</h1>
                 <p class="text-muted">{{ $booking->reference }} — {{ $booking->vehicle->displayName() }}</p>
             </div>
 
@@ -21,7 +21,7 @@
                 <div class="alert alert-danger">{{ session('error') }}</div>
             @endif
 
-            <form method="POST" action="{{ route('agent.pickup.documents.store', $booking) }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('agent.pickup.documents.store', $booking) }}">
                 @csrf
 
                 <div class="pdj-card mb-3">
@@ -67,65 +67,13 @@
                     </div>
                 </div>
 
-                @if ($booking->with_driver)
-                    <div class="alert alert-success small">
-                        <i class="bi bi-person-check me-1"></i>{{ __('driver.no_license_needed') }}
+                @if (! $booking->with_driver)
+                    <div class="alert alert-info small">
+                        <i class="bi bi-card-checklist me-1"></i>{{ __('agent.license_checked_at_handover') }}
                     </div>
                 @else
-                    <div class="pdj-card mb-3">
-                        <h2 class="h6 fw-bold">{{ __('agent.license_check') }}</h2>
-                        <p class="small text-muted">{{ __('agent.original_license_required') }}</p>
-
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" name="driver_license_original_verified" value="1"
-                                   id="driver_license_original_verified"
-                                   @checked(old('driver_license_original_verified', $booking->driver_license_original_verified))>
-                            <label class="form-check-label" for="driver_license_original_verified">
-                                {{ __('agent.license_original_seen') }}
-                            </label>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label" for="driver_license_category">{{ __('agent.license_category') }}</label>
-                            <input class="form-control" type="text" id="driver_license_category" name="driver_license_category"
-                                   value="{{ old('driver_license_category', $booking->driver_license_category) }}" maxlength="30">
-                        </div>
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" name="driver_license_category_authorized" value="1"
-                                   id="driver_license_category_authorized"
-                                   @checked(old('driver_license_category_authorized', $booking->driver_license_category_authorized))>
-                            <label class="form-check-label" for="driver_license_category_authorized">
-                                {{ __('agent.license_category_authorized') }}
-                            </label>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label" for="driver_license_issued_at">{{ __('agent.license_issued_at') }}</label>
-                                <input class="form-control" type="date" id="driver_license_issued_at" name="driver_license_issued_at"
-                                       value="{{ old('driver_license_issued_at', $booking->driver_license_issued_at?->format('Y-m-d')) }}">
-                                <div class="form-text">{{ __('agent.license_tenure_hint', ['years' => $minimumLicenseYears]) }}</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label" for="driver_license_expires_at">{{ __('agent.license_expires_at') }}</label>
-                                <input class="form-control" type="date" id="driver_license_expires_at" name="driver_license_expires_at"
-                                       value="{{ old('driver_license_expires_at', $booking->driver_license_expires_at?->format('Y-m-d')) }}">
-                                <div class="form-text">{{ __('agent.license_valid_through', ['date' => $booking->ends_at->format('d/m/Y')]) }}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="pdj-card mb-3">
-                        <label class="form-label" for="license_copy">{{ __('agent.license_copy') }}</label>
-                        <input class="form-control" type="file" id="license_copy" name="license_copy"
-                               accept=".jpg,.jpeg,.png,.pdf">
-                        <div class="form-check mt-2">
-                            <input class="form-check-input" type="checkbox" name="license_copy_consent" value="1"
-                                   id="license_copy_consent" @checked(old('license_copy_consent'))>
-                            <label class="form-check-label small" for="license_copy_consent">
-                                {{ __('agent.license_copy_consent') }}
-                            </label>
-                        </div>
-                        <div class="form-text">{{ __('agent.license_copy_hint') }}</div>
+                    <div class="alert alert-success small">
+                        <i class="bi bi-person-check me-1"></i>{{ __('driver.no_license_needed') }}
                     </div>
                 @endif
 

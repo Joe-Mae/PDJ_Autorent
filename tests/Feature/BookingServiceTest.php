@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\BookingStatus;
+use App\Enums\DocumentStatus;
+use App\Enums\DocumentType;
 use App\Enums\DocumentVerificationStatus;
 use App\Enums\DriverStatus;
 use App\Exceptions\BookingException;
@@ -420,6 +422,17 @@ class BookingServiceTest extends TestCase
             'identity_name_matches' => true,
             'customer_age_eligible' => true,
             'driver_license_original_verified' => true,
+            'driver_license_copy_consent_at' => now(),
+        ]);
+
+        $confirmed->documents()->create([
+            'type' => DocumentType::DriverLicense,
+            'status' => DocumentStatus::Conforme,
+            'disk' => 'documents',
+            'path' => 'tests/permis.jpg',
+            'original_filename' => 'permis.jpg',
+            'mime_type' => 'image/jpeg',
+            'size_kb' => 120,
         ]);
 
         $started = $this->bookings()->start($confirmed, $agent, 42_000, 'full');

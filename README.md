@@ -179,9 +179,14 @@ explanation ne revient pas.
 
 Parcours de retrait verrouillé dans l'ordre, une action par écran :
 
-1. contrôle des originaux → 2. état des lieux (4 photos minimum) →
+1. contrôle de la pièce d'identité → 2. état des lieux (4 photos minimum) →
 3. encaissement de la location → 4. caution, sur un reçu séparé →
-5. contrat signé au doigt → 6. remise des clés
+5. contrat signé au doigt → 6. contrôle du permis, photo et remise des clés
+
+Le permis du locataire n'est pas vérifié à distance : la caissière contrôle
+l'original au guichet, le photographie, et cette photo est enregistrée sur la
+réservation. L'enregistrement fait passer la réservation en « en cours » — la
+voiture est partie. Une prestation avec chauffeur ne demande pas de permis.
 
 On ne rend pas les clés avant d'avoir tout validé : c'est la seule façon que
 la clôture de journée corresponde à ce qui s'est passé.

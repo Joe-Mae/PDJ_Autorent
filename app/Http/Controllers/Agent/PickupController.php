@@ -10,6 +10,7 @@ use App\Enums\PaymentKind;
 use App\Enums\PaymentMethod;
 use App\Exceptions\BookingException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Agent\HandoverBookingRequest;
 use App\Http\Requests\Agent\PickBookingRequest;
 use App\Http\Requests\Agent\SignPickupContractRequest;
 use App\Http\Requests\Agent\StorePickupConditionReportRequest;
@@ -21,13 +22,11 @@ use App\Models\CustomerDocument;
 use App\Models\Payment;
 use App\Models\Vehicle;
 use App\Services\BookingService;
+use App\Services\DocumentStorageService;
 use App\Services\SettingsService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 
 /**
  * Retrait du véhicule, en six écrans verrouillés dans l'ordre.
@@ -72,14 +71,13 @@ class PickupController extends Controller
         return redirect()->route('agent.pickup.documents', $booking);
     }
 
-    /** Étape 1 — contrôle des originaux. */
+    /** Étape 1 — contrôle de la pièce d'identité. */
     public function documents(Booking $booking): View
     {
         abort_unless($booking->status === BookingStatus::Confirmee, 422);
 
         return view('agent.pickup.documents', [
             'booking' => $booking->load(['vehicle.category', 'user', 'documents']),
-            'minimumLicenseYears' => app(SettingsService::class)->int('booking.min_license_years'),
             'minimumAge' => app(SettingsService::class)->int('booking.min_age'),
         ]);
     }
@@ -88,36 +86,11 @@ class PickupController extends Controller
     {
         $data = $request->validated();
 
-        if ($request->hasFile('license_copy') && ! $request->boolean('license_copy_consent')) {
-            throw ValidationException::withMessages([
-                'license_copy_consent' => __('agent.license_copy_consent_required'),
-            ]);
-        }
-
-        if ($booking->with_driver && $request->hasFile('license_copy')) {
-            throw ValidationException::withMessages([
-                'license_copy' => __('agent.license_copy_not_applicable'),
-            ]);
-        }
-
         $identityOriginalVerified = $request->boolean('identity_original_verified');
         $identityNameMatches = $request->boolean('identity_name_matches');
         $customerAgeEligible = $request->boolean('customer_age_eligible');
-        $licenseOriginalVerified = ! $booking->with_driver
-            && $request->boolean('driver_license_original_verified');
-        $licenseCategory = $booking->with_driver
-            ? ''
-            : trim($data['driver_license_category'] ?? '');
-        $licenseCategoryAuthorized = ! $booking->with_driver
-            && $request->boolean('driver_license_category_authorized');
-        $licenseIssuedAt = ! $booking->with_driver && filled($data['driver_license_issued_at'] ?? null)
-            ? Carbon::createFromFormat('Y-m-d', $data['driver_license_issued_at'])
-            : null;
-        $licenseExpiresAt = ! $booking->with_driver && filled($data['driver_license_expires_at'] ?? null)
-            ? Carbon::createFromFormat('Y-m-d', $data['driver_license_expires_at'])
-            : null;
+
         $identityFailures = [];
-        $licenseFailures = [];
 
         if (! $identityOriginalVerified) {
             $identityFailures[] = __('agent.verification_failures.identity_not_seen');
@@ -131,114 +104,38 @@ class PickupController extends Controller
             $identityFailures[] = __('agent.verification_failures.age_requirement');
         }
 
-        if (! $booking->with_driver) {
-            if (! $licenseOriginalVerified) {
-                $licenseFailures[] = __('agent.verification_failures.license_not_seen');
-            }
+        $identityVerified = $identityFailures === [];
 
-            if ($licenseIssuedAt === null || $licenseIssuedAt->copy()
-                ->addYears(app(SettingsService::class)->int('booking.min_license_years'))
-                ->isAfter(today())) {
-                $licenseFailures[] = __('agent.verification_failures.license_tenure');
-            }
-
-            if ($licenseExpiresAt === null || $licenseExpiresAt->isBefore($booking->ends_at->toDateString())) {
-                $licenseFailures[] = __('agent.verification_failures.license_expired');
-            }
-
-            if ($licenseCategory === '' || ! $licenseCategoryAuthorized) {
-                $licenseFailures[] = __('agent.verification_failures.license_category');
-            }
-        }
-
-        $documentStatus = $booking->with_driver
-            ? ($identityFailures === []
-                ? DocumentVerificationStatus::NonRequis
-                : DocumentVerificationStatus::NonConforme)
-            : ($identityFailures === [] && $licenseFailures === []
-                ? DocumentVerificationStatus::Conforme
-                : DocumentVerificationStatus::NonConforme);
-
-        if ($request->hasFile('license_copy') && ! $licenseOriginalVerified) {
-            throw ValidationException::withMessages([
-                'license_copy' => __('agent.license_copy_requires_original'),
-            ]);
-        }
-
-        $verificationNote = implode("\n", array_filter([
-            ...$identityFailures,
-            ...$licenseFailures,
-            $data['verification_note'] ?? null,
-        ]));
+        // Sans permis à contrôler ici, l'étape 1 suffit : la réservation est
+        // prête pour la remise. Sinon, elle reste en attente jusqu'au contrôle
+        // du permis, juste avant la remise des clés.
+        $documentStatus = $identityVerified
+            ? ($booking->with_driver ? DocumentVerificationStatus::NonRequis : DocumentVerificationStatus::EnAttente)
+            : DocumentVerificationStatus::NonConforme;
 
         $booking->update([
             'document_verification_status' => $documentStatus,
             'identity_original_verified' => $identityOriginalVerified,
             'identity_name_matches' => $identityNameMatches,
             'customer_age_eligible' => $customerAgeEligible,
-            'driver_license_original_verified' => $licenseOriginalVerified,
-            'driver_license_category_authorized' => $licenseCategoryAuthorized,
-            'driver_license_category' => $licenseCategory !== '' ? $licenseCategory : null,
-            'driver_license_issued_at' => $licenseIssuedAt?->toDateString(),
-            'driver_license_expires_at' => $licenseExpiresAt?->toDateString(),
-            'document_verification_note' => $verificationNote !== '' ? $verificationNote : null,
+            'document_verification_note' => filled($data['verification_note'] ?? null)
+                ? $data['verification_note']
+                : null,
             'documents_verified_at' => now(),
             'documents_verified_by' => $request->user()->id,
-            'driver_license_copy_consent_at' => $request->hasFile('license_copy')
-                ? now()
-                : $booking->driver_license_copy_consent_at,
         ]);
 
-        $booking->load('documents');
+        $identityDocument = $booking->documents()
+            ->where('type', DocumentType::IdentityCard->value)
+            ->first();
 
-        foreach (DocumentType::requiredAtPickup($booking->with_driver) as $type) {
-            $document = $booking->documents->firstWhere('type', $type);
+        $identityDocument?->update([
+            'status' => $identityOriginalVerified ? DocumentStatus::Presente : DocumentStatus::ARelever,
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+        ]);
 
-            if ($document !== null) {
-                $document->update([
-                    'status' => match ($type) {
-                        DocumentType::IdentityCard => $identityOriginalVerified
-                            ? DocumentStatus::Presente
-                            : DocumentStatus::ARelever,
-                        DocumentType::DriverLicense => $licenseOriginalVerified && $documentStatus === DocumentVerificationStatus::Conforme
-                            ? DocumentStatus::Conforme
-                            : DocumentStatus::ARelever,
-                        default => $document->status,
-                    },
-                    'reviewed_by' => $request->user()->id,
-                    'reviewed_at' => now(),
-                ]);
-            }
-        }
-
-        if ($request->hasFile('license_copy')) {
-            $file = $request->file('license_copy');
-            $path = $file->storeAs(
-                'originaux/'.$booking->reference,
-                Str::random(40).'.'.$file->getClientOriginalExtension(),
-                'documents',
-            );
-
-            $booking->documents()
-                ->where('type', DocumentType::DriverLicense->value)
-                ->delete();
-
-            CustomerDocument::query()->create([
-                'user_id' => $booking->user_id,
-                'booking_id' => $booking->id,
-                'type' => DocumentType::DriverLicense,
-                'status' => $licenseFailures === [] ? DocumentStatus::Conforme : DocumentStatus::NonConforme,
-                'disk' => 'documents',
-                'path' => $path,
-                'original_filename' => Str::limit($file->getClientOriginalName(), 120, ''),
-                'mime_type' => $file->getMimeType(),
-                'size_kb' => (int) ceil($file->getSize() / 1024),
-                'reviewed_by' => $request->user()->id,
-                'reviewed_at' => now(),
-            ]);
-        }
-
-        if (! $booking->refresh()->isReadyForHandover()) {
+        if (! $identityVerified) {
             return back()->with('error', __('agent.document_check_failed'));
         }
 
@@ -357,17 +254,88 @@ class PickupController extends Controller
         return redirect()->route('agent.pickup.keys', $booking);
     }
 
-    /** Étape 6 — remise des clés : c'est ici que la location commence. */
+    /**
+     * Étape 6 — contrôle du permis, photo et remise des clés.
+     *
+     * C'est le dernier geste : la caissière vérifie le permis original du
+     * locataire, le photographie, puis remet les clés. L'enregistrement de la
+     * photo fait passer la réservation en « en cours ».
+     */
     public function keys(Booking $booking): View
     {
         return view('agent.pickup.keys', [
             'booking' => $booking->load(['vehicle.category', 'user']),
-            'handoverReady' => $booking->isReadyForHandover(),
+            'identityReady' => $booking->hasVerifiedIdentity(),
+            'needsLicense' => ! $booking->with_driver,
+            'minimumLicenseYears' => app(SettingsService::class)->int('booking.min_license_years'),
         ]);
     }
 
-    public function complete(Request $request, Booking $booking): RedirectResponse
+    public function complete(HandoverBookingRequest $request, Booking $booking): RedirectResponse
     {
+        $data = $request->validated();
+
+        if (! $booking->hasVerifiedIdentity()) {
+            return back()->with('error', __('agent.handover_blocked'));
+        }
+
+        if (! $booking->with_driver) {
+            $licenseFailures = $this->licenseFailures($booking, $request, $data);
+
+            if ($licenseFailures !== []) {
+                $booking->update([
+                    'document_verification_status' => DocumentVerificationStatus::NonConforme,
+                    'driver_license_original_verified' => $request->boolean('driver_license_original_verified'),
+                    'driver_license_category_authorized' => false,
+                    'documents_verified_at' => now(),
+                    'documents_verified_by' => $request->user()->id,
+                ]);
+
+                return back()
+                    ->withInput()
+                    ->with('error', __('agent.license_check_failed', [
+                        'reasons' => implode(' ', $licenseFailures),
+                    ]));
+            }
+
+            $stored = app(DocumentStorageService::class)->store(
+                $request->file('license_copy'),
+                'originaux/'.$booking->reference,
+                'license_copy',
+            );
+
+            // Une seule photo de permis par réservation : la plus récente.
+            $booking->documents()
+                ->where('type', DocumentType::DriverLicense->value)
+                ->delete();
+
+            CustomerDocument::query()->create([
+                'user_id' => $booking->user_id,
+                'booking_id' => $booking->id,
+                'type' => DocumentType::DriverLicense,
+                'status' => DocumentStatus::Conforme,
+                'disk' => $stored->disk,
+                'path' => $stored->path,
+                'original_filename' => $stored->originalFilename,
+                'mime_type' => $stored->mimeType,
+                'size_kb' => $stored->sizeKb,
+                'reviewed_by' => $request->user()->id,
+                'reviewed_at' => now(),
+            ]);
+
+            $booking->update([
+                'driver_license_original_verified' => true,
+                'driver_license_category_authorized' => true,
+                'driver_license_category' => trim($data['driver_license_category']),
+                'driver_license_issued_at' => $data['driver_license_issued_at'],
+                'driver_license_expires_at' => $data['driver_license_expires_at'],
+                'driver_license_copy_consent_at' => now(),
+                'document_verification_status' => DocumentVerificationStatus::Conforme,
+                'documents_verified_at' => now(),
+                'documents_verified_by' => $request->user()->id,
+            ]);
+        }
+
         try {
             $this->bookings->start(
                 $booking,
@@ -382,5 +350,47 @@ class PickupController extends Controller
         return redirect()
             ->route('agent.pickup.index')
             ->with('status', __('agent.pickup_done', ['ref' => $booking->reference]));
+    }
+
+    /**
+     * Motifs de non-conformité du permis, dans l'ordre où la caissière les
+     * vérifie. Une liste vide vaut permis conforme.
+     *
+     * @param  array<string, mixed>  $data
+     * @return list<string>
+     */
+    private function licenseFailures(Booking $booking, HandoverBookingRequest $request, array $data): array
+    {
+        $settings = app(SettingsService::class);
+        $failures = [];
+
+        if (! $request->boolean('driver_license_original_verified')) {
+            $failures[] = __('agent.verification_failures.license_not_seen');
+        }
+
+        $issuedAt = filled($data['driver_license_issued_at'] ?? null)
+            ? Carbon::createFromFormat('Y-m-d', $data['driver_license_issued_at'])
+            : null;
+
+        if ($issuedAt === null || $issuedAt->copy()
+            ->addYears($settings->int('booking.min_license_years'))
+            ->isAfter(today())) {
+            $failures[] = __('agent.verification_failures.license_tenure');
+        }
+
+        $expiresAt = filled($data['driver_license_expires_at'] ?? null)
+            ? Carbon::createFromFormat('Y-m-d', $data['driver_license_expires_at'])
+            : null;
+
+        if ($expiresAt === null || $expiresAt->isBefore($booking->ends_at->toDateString())) {
+            $failures[] = __('agent.verification_failures.license_expired');
+        }
+
+        if (trim($data['driver_license_category'] ?? '') === ''
+            || ! $request->boolean('driver_license_category_authorized')) {
+            $failures[] = __('agent.verification_failures.license_category');
+        }
+
+        return $failures;
     }
 }
