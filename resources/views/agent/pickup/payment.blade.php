@@ -3,6 +3,10 @@
 @section('title', 'Encaissement de la location')
 
 @section('content')
+    @php
+        $money = fn (int $amount) => app(\App\Services\SettingsService::class)->money($amount);
+    @endphp
+
     <div class="row justify-content-center">
         <div class="col-lg-6">
             <div class="text-center mb-4">
@@ -12,16 +16,16 @@
             </div>
 
             <div class="price-ticket mb-3">
-                @foreach (\App\Support\BookingPeriod::fromDates($booking->starts_at->toImmutable(), $booking->ends_at->toImmutable())->receiptLines() as $line)
+                @foreach ($quote->receiptLines() as $line)
                     <div class="price-ticket__row">
                         <span>{{ $line['label'] }}</span>
-                        <span class="fw-semibold">{{ number_format($line['amount'], 0, ' ', ' ') }}</span>
+                        <span class="fw-semibold">{{ $money($line['amount']) }}</span>
                     </div>
                 @endforeach
                 <div class="price-ticket__sep"></div>
                 <div class="price-ticket__total">
                     <span>{{ __('general.pay_at_agency') }}</span>
-                    <span>{{ number_format($booking->price_total, 0, ' ', ' ') }}</span>
+                    <span>{{ $money($booking->price_total) }}</span>
                 </div>
             </div>
 

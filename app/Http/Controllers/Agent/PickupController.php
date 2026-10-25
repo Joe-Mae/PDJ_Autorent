@@ -22,6 +22,7 @@ use App\Models\CustomerDocument;
 use App\Models\Payment;
 use App\Services\BookingService;
 use App\Services\DocumentStorageService;
+use App\Services\PricingService;
 use App\Services\SettingsService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -37,7 +38,10 @@ use Illuminate\Support\Carbon;
  */
 class PickupController extends Controller
 {
-    public function __construct(private readonly BookingService $bookings) {}
+    public function __construct(
+        private readonly BookingService $bookings,
+        private readonly PricingService $pricing,
+    ) {}
 
     /** Accueil : qui doit partir aujourd'hui, et qui est en retard. */
     public function index(): View
@@ -181,6 +185,9 @@ class PickupController extends Controller
         return view('agent.pickup.payment', [
             'booking' => $booking->load(['vehicle.category', 'user', 'payments']),
             'methods' => PaymentMethod::cases(),
+            // Le décompte est reconstruit depuis les montants figés sur la
+            // réservation : il ne dépend ni des tarifs du jour ni du véhicule.
+            'quote' => $this->pricing->quoteForBooking($booking),
         ]);
     }
 
