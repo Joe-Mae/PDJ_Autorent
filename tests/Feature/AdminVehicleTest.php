@@ -24,6 +24,22 @@ class AdminVehicleTest extends TestCase
         Storage::fake('fleet');
     }
 
+    public function test_la_liste_des_vehicules_garde_les_formulaires_de_statut_hors_du_formulaire_de_suppression(): void
+    {
+        $this->vehicle();
+
+        $html = $this->actingAs($this->staff('gestionnaire'))
+            ->get('/admin/vehicules')
+            ->assertOk()
+            ->getContent();
+
+        // Les cases sont rattachées au formulaire de suppression par attribut :
+        // des formulaires imbriqués feraient passer un changement de statut
+        // pour une suppression en masse de la flotte.
+        $this->assertStringContainsString('id="vehicles-bulk"', $html);
+        $this->assertStringContainsString('form="vehicles-bulk"', $html);
+    }
+
     public function test_ajoute_un_vehicule_sans_photo(): void
     {
         $this->actingAs($this->staff('gestionnaire'))

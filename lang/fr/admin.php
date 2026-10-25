@@ -161,6 +161,8 @@ return [
     'add_vehicle' => 'Ajouter un véhicule',
     'all_statuses' => 'Tous les statuts',
     'inactive' => 'masqué',
+    'select_all' => 'Tout sélectionner',
+    'delete_selection' => 'Supprimer la sélection',
     'no_vehicle' => 'Aucun véhicule.',
     'category' => 'Catégorie',
     'plate' => 'Immatriculation',

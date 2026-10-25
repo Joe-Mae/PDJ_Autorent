@@ -161,6 +161,8 @@ return [
     'add_vehicle' => 'Add a vehicle',
     'all_statuses' => 'All statuses',
     'inactive' => 'hidden',
+    'select_all' => 'Select all',
+    'delete_selection' => 'Delete selection',
     'no_vehicle' => 'No vehicle.',
     'category' => 'Category',
     'plate' => 'Registration',

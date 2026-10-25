@@ -45,17 +45,16 @@
         </div>
     </form>
 
-    <form method="POST" action="{{ route('admin.vehicles.destroyMany') }}"
-          onsubmit="return confirm('{{ __('admin.delete_confirm') }}')">
-        @csrf
-        @method('DELETE')
-        <div class="pdj-card p-0 overflow-hidden">
-            <div class="table-responsive">
-                <table class="table admin-table align-middle mb-0">
+    {{-- La sélection est rattachée au formulaire par `form="vehicles-bulk"` :
+         imbriquer ce formulaire autour du tableau casserait les formulaires de
+         statut ligne par ligne (HTML interdit les formulaires imbriqués). --}}
+    <div class="pdj-card p-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table admin-table align-middle mb-0">
                 <thead class="table-light">
                     <tr>
                         <th style="width: 40px;">
-                            <input type="checkbox" id="selectAllVehicles" aria-label="Tout sélectionner">
+                            <input type="checkbox" id="selectAllVehicles" aria-label="{{ __('admin.select_all') }}">
                         </th>
                         <th>{{ __('admin.vehicle') }}</th>
                         <th>{{ __('admin.category') }}</th>
@@ -73,7 +72,8 @@
                         @endphp
                         <tr>
                             <td>
-                                <input type="checkbox" name="ids[]" value="{{ $vehicle->id }}" class="vehicle-checkbox">
+                                <input type="checkbox" name="ids[]" value="{{ $vehicle->id }}"
+                                       class="vehicle-checkbox" form="vehicles-bulk">
                             </td>
                             <td>
                                 <div class="admin-vehicle-cell">
@@ -161,12 +161,16 @@
     </div>
 
     <div class="d-flex justify-content-between align-items-center mt-3">
-        <button type="submit" class="btn btn-outline-danger btn-sm">
-            <i class="bi bi-trash me-1"></i>Supprimer la sélection
-        </button>
+        <form id="vehicles-bulk" method="POST" action="{{ route('admin.vehicles.destroyMany') }}"
+              onsubmit="return confirm('{{ __('admin.delete_confirm') }}')">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-trash me-1"></i>{{ __('admin.delete_selection') }}
+            </button>
+        </form>
         <div>{{ $vehicles->links() }}</div>
     </div>
-    </form>
 
     @push('scripts')
     <script>
