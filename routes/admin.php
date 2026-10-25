@@ -39,8 +39,13 @@ Route::prefix('admin')
             // l'agent), le nom de route est au singulier (c'est ce qu'on écrit).
             Route::delete('vehicules/bulk', [Admin\VehicleController::class, 'destroyMany'])
                 ->name('vehicles.destroyMany');
+            Route::post('vehicules/remettre-en-service', [Admin\VehicleController::class, 'restoreMany'])
+                ->name('vehicles.restoreMany');
             Route::post('vehicules/{vehicle}/statut', [Admin\VehicleController::class, 'setStatus'])
                 ->name('vehicles.setStatus');
+            Route::post('vehicules/{vehicle}/remettre-en-service', [Admin\VehicleController::class, 'restore'])
+                ->withTrashed()
+                ->name('vehicles.restore');
             Route::resource('vehicules', Admin\VehicleController::class)
                 ->parameters(['vehicules' => 'vehicle'])
                 ->names([

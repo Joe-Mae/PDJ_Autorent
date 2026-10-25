@@ -4,12 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\VehicleStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\DestroyManyVehiclesRequest;
 use App\Http\Requests\Admin\SaveVehicleRequest;
 use App\Http\Requests\Admin\SetVehicleStatusRequest;
+use App\Http\Requests\Admin\VehicleSelectionRequest;
 use App\Models\Vehicle;
 use App\Models\VehicleCategory;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -17,17 +18,43 @@ use Illuminate\Support\Str;
 /**
  * Gestion de la flotte.
  *
- * Deux règles de sûreté : un véhicule qui a déjà servi n'est jamais supprimé,
- * il passe en hors service ; et changer un véhicule de catégorie ne touche pas
- * au prix des réservations déjà prises, parce que le prix est figé à la
- * création de la réservation.
+ * Trois règles de sûreté : un véhicule qui a déjà servi n'est jamais supprimé,
+ * il est archivé puis remis en service d'un clic ; changer un véhicule de
+ * catégorie ne touche pas au prix des réservations déjà prises, parce que le
+ * prix est figé à la création de la réservation ; et un véhicule n'est
+ * réservable que s'il est à la fois visible et en service.
  */
 class VehicleController extends Controller
 {
     public function index(Request $request): View
     {
+        $view = $request->string('vue')->toString() === 'archives' ? 'archives' : 'active';
+        $status = $request->string('statut')->toString();
+
+        // « Hors service » n'existe que dans les archives : y basculer
+        // directement évite une flotte active vide et un filtre inutilisable.
+        if ($status === VehicleStatus::HorsService->value) {
+            $view = 'archives';
+        }
+
+        // Un véhicule est archivé dès qu'il est masqué, hors service ou
+        // supprimé. Les supprimés (sans historique) restent restaurables :
+        // leur fiche et leurs photos dorment en base, inutile de les recréer.
+        $archived = fn (Builder $query): Builder => $query
+            ->where(function (Builder $sub): void {
+                $sub->where('is_active', false)
+                    ->orWhere('status', VehicleStatus::HorsService->value)
+                    ->orWhereNotNull('deleted_at');
+            });
+
+        $query = $view === 'archives'
+            ? Vehicle::query()->withTrashed()->where($archived)
+            : Vehicle::query()
+                ->where('is_active', true)
+                ->where('status', '!=', VehicleStatus::HorsService->value);
+
         return view('admin.vehicles.index', [
-            'vehicles' => Vehicle::query()
+            'vehicles' => $query
                 ->with(['category', 'media'])
                 ->withCount([
                     'bookings as current_bookings_count' => fn ($query) => $query
@@ -35,7 +62,7 @@ class VehicleController extends Controller
                         ->where('starts_at', '<=', now())
                         ->where('ends_at', '>', now()),
                 ])
-                ->when($request->string('statut')->toString(), fn ($q, $s) => $q->where('status', $s))
+                ->when($status, fn ($q, $s) => $q->where('status', $s))
                 ->when($request->string('q')->toString(), function ($q, $term) {
                     $q->where(fn ($sub) => $sub->where('brand', 'like', "%{$term}%")
                         ->orWhere('model', 'like', "%{$term}%")
@@ -46,7 +73,15 @@ class VehicleController extends Controller
                 ->paginate(20)
                 ->withQueryString(),
             'statuses' => VehicleStatus::cases(),
-            'status' => $request->string('statut')->toString(),
+            'status' => $status,
+            'view' => $view,
+            'counts' => [
+                'active' => Vehicle::query()
+                    ->where('is_active', true)
+                    ->where('status', '!=', VehicleStatus::HorsService->value)
+                    ->count(),
+                'archived' => Vehicle::query()->withTrashed()->where($archived)->count(),
+            ],
         ]);
     }
 
@@ -140,7 +175,7 @@ class VehicleController extends Controller
     }
 
     /** Suppression (ou archivage) en masse des véhicules sélectionnés. */
-    public function destroyMany(DestroyManyVehiclesRequest $request): RedirectResponse
+    public function destroyMany(VehicleSelectionRequest $request): RedirectResponse
     {
         $data = $request->validated();
 
@@ -168,6 +203,53 @@ class VehicleController extends Controller
         return redirect()
             ->route('admin.vehicles.index')
             ->with('status', implode(' ', $message));
+    }
+
+    /**
+     * Remise en service d'un véhicule archivé ou supprimé.
+     *
+     * La fiche, les photos et l'historique n'ont jamais quitté la base :
+     * l'entreprise rachète rarement des voitures, elle recycle sa flotte.
+     * Un clic suffit donc, sans ressaisir le nom ni retéléverser les images.
+     */
+    public function restore(Vehicle $vehicle): RedirectResponse
+    {
+        $this->putBackInService($vehicle);
+
+        return redirect()
+            ->route('admin.vehicles.index', ['vue' => 'archives'])
+            ->with('status', __('admin.vehicle_restored', ['vehicle' => $vehicle->fullName()]));
+    }
+
+    /** Remise en service en masse depuis la vue « Archivés ». */
+    public function restoreMany(VehicleSelectionRequest $request): RedirectResponse
+    {
+        $count = 0;
+
+        foreach (Vehicle::query()->withTrashed()->whereIn('id', $request->validated()['ids'])->get() as $vehicle) {
+            $this->putBackInService($vehicle);
+            $count++;
+        }
+
+        return redirect()
+            ->route('admin.vehicles.index', ['vue' => 'archives'])
+            ->with('status', __('admin.vehicles_restored', ['count' => $count]));
+    }
+
+    private function putBackInService(Vehicle $vehicle): void
+    {
+        if ($vehicle->trashed()) {
+            $vehicle->restore();
+        }
+
+        $vehicle->update([
+            'is_active' => true,
+            // Une archive est hors service : la remettre en ligne la rend
+            // de nouveau louable. Une maintenance volontaire est conservée.
+            'status' => $vehicle->status === VehicleStatus::HorsService
+                ? VehicleStatus::Disponible
+                : $vehicle->status,
+        ]);
     }
 
     /** Passage rapide de statut depuis la liste (disponible / maintenance / hors service). */

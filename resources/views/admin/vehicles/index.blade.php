@@ -6,13 +6,33 @@
 @section('content')
     <x-admin.page-header
         :title="__('admin.vehicles')"
-        :subtitle="__('admin.fleet_count', ['count' => $vehicles->total()])">
+        :subtitle="$view === 'archives'
+            ? __('admin.archived_count', ['count' => $vehicles->total()])
+            : __('admin.fleet_count', ['count' => $vehicles->total()])">
         <a class="btn btn-primary" href="{{ route('admin.vehicles.create') }}">
             <i class="bi bi-plus-lg me-1"></i>{{ __('admin.add_vehicle') }}
         </a>
     </x-admin.page-header>
 
+    <div class="btn-group mb-4" role="group" aria-label="{{ __('admin.fleet_views') }}">
+        <a class="btn {{ $view === 'active' ? 'btn-primary' : 'btn-light border' }}"
+           href="{{ route('admin.vehicles.index', array_filter(['q' => request('q'), 'statut' => request('statut')])) }}">
+            {{ __('admin.fleet_active') }}
+            <span class="badge {{ $view === 'active' ? 'bg-white text-primary' : 'bg-secondary-subtle text-secondary-emphasis' }} ms-1">
+                {{ $counts['active'] }}
+            </span>
+        </a>
+        <a class="btn {{ $view === 'archives' ? 'btn-primary' : 'btn-light border' }}"
+           href="{{ route('admin.vehicles.index', array_filter(['vue' => 'archives', 'q' => request('q'), 'statut' => request('statut')])) }}">
+            {{ __('admin.archived_vehicles') }}
+            <span class="badge {{ $view === 'archives' ? 'bg-white text-primary' : 'bg-secondary-subtle text-secondary-emphasis' }} ms-1">
+                {{ $counts['archived'] }}
+            </span>
+        </a>
+    </div>
+
     <form method="GET" class="pdj-card mb-4">
+        <input type="hidden" name="vue" value="{{ $view }}">
         <div class="row g-3 align-items-end">
             <div class="col-12 col-md-5">
                 <label class="form-label" for="q">{{ __('admin.search') }}</label>
@@ -83,11 +103,17 @@
                                         </span>
                                     @endif
                                     <div class="admin-vehicle-cell__text">
-                                        <a class="fw-semibold text-decoration-none" href="{{ route('admin.vehicles.show', $vehicle) }}">
-                                            {{ $vehicle->fullName() }}
-                                        </a>
+                                        @if ($vehicle->trashed())
+                                            <span class="fw-semibold">{{ $vehicle->fullName() }}</span>
+                                        @else
+                                            <a class="fw-semibold text-decoration-none" href="{{ route('admin.vehicles.show', $vehicle) }}">
+                                                {{ $vehicle->fullName() }}
+                                            </a>
+                                        @endif
                                         <div class="small text-muted font-monospace">{{ $vehicle->plate }}</div>
-                                        @if (! $vehicle->is_active)
+                                        @if ($vehicle->trashed())
+                                            <span class="badge bg-dark mt-1">{{ __('admin.deleted_vehicle') }}</span>
+                                        @elseif (! $vehicle->is_active)
                                             <span class="badge bg-secondary mt-1">{{ __('admin.inactive') }}</span>
                                         @endif
                                     </div>
@@ -106,7 +132,11 @@
                                 <div class="small text-muted">{{ __('admin.per_day') }}</div>
                             </td>
                             <td>
-                                @if ($busyNow)
+                                @if ($vehicle->trashed())
+                                    <span class="admin-availability admin-availability--off">
+                                        <span class="admin-availability__dot"></span>{{ __('admin.archived') }}
+                                    </span>
+                                @elseif ($busyNow)
                                     <span class="admin-availability admin-availability--busy">
                                         <span class="admin-availability__dot"></span>{{ __('admin.busy_now') }}
                                     </span>
@@ -121,25 +151,40 @@
                                 @endif
                             </td>
                             <td>
-                                <form method="POST" action="{{ route('admin.vehicles.setStatus', $vehicle) }}">
-                                    @csrf
-                                    <select class="form-select form-select-sm admin-status-select" name="status" onchange="this.form.submit()"
-                                            aria-label="{{ __('admin.status') }}">
-                                        @foreach ($statuses as $item)
-                                            <option value="{{ $item->value }}" @selected($vehicle->status === $item)>{{ $item->label() }}</option>
-                                        @endforeach
-                                    </select>
-                                </form>
+                                @if ($vehicle->trashed())
+                                    <span class="badge bg-{{ $vehicle->status->color() }}">{{ $vehicle->status->label() }}</span>
+                                @else
+                                    <form method="POST" action="{{ route('admin.vehicles.setStatus', $vehicle) }}">
+                                        @csrf
+                                        <select class="form-select form-select-sm admin-status-select" name="status" onchange="this.form.submit()"
+                                                aria-label="{{ __('admin.status') }}">
+                                            @foreach ($statuses as $item)
+                                                <option value="{{ $item->value }}" @selected($vehicle->status === $item)>{{ $item->label() }}</option>
+                                            @endforeach
+                                        </select>
+                                    </form>
+                                @endif
                             </td>
                             <td class="text-end text-nowrap">
-                                <a class="btn btn-sm btn-light border" href="{{ route('admin.vehicles.show', $vehicle) }}"
-                                   aria-label="{{ __('admin.view_details') }}" title="{{ __('admin.view_details') }}">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a class="btn btn-sm btn-light border" href="{{ route('admin.vehicles.edit', $vehicle) }}"
-                                   aria-label="{{ __('admin.edit') }}" title="{{ __('admin.edit') }}">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
+                                @if ($view === 'archives')
+                                    <form method="POST" action="{{ route('admin.vehicles.restore', $vehicle) }}" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-success"
+                                                aria-label="{{ __('admin.restore_vehicle') }}" title="{{ __('admin.restore_vehicle') }}">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                                @unless ($vehicle->trashed())
+                                    <a class="btn btn-sm btn-light border" href="{{ route('admin.vehicles.show', $vehicle) }}"
+                                       aria-label="{{ __('admin.view_details') }}" title="{{ __('admin.view_details') }}">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a class="btn btn-sm btn-light border" href="{{ route('admin.vehicles.edit', $vehicle) }}"
+                                       aria-label="{{ __('admin.edit') }}" title="{{ __('admin.edit') }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                @endunless
                             </td>
                         </tr>
                     @empty
@@ -158,14 +203,23 @@
     </div>
 
     <div class="d-flex justify-content-between align-items-center mt-3">
-        <form id="vehicles-bulk" method="POST" action="{{ route('admin.vehicles.destroyMany') }}"
-              onsubmit="return confirm('{{ __('admin.delete_confirm') }}')">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-outline-danger btn-sm">
-                <i class="bi bi-trash me-1"></i>{{ __('admin.delete_selection') }}
-            </button>
-        </form>
+        @if ($view === 'archives')
+            <form id="vehicles-bulk" method="POST" action="{{ route('admin.vehicles.restoreMany') }}">
+                @csrf
+                <button type="submit" class="btn btn-outline-success btn-sm">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i>{{ __('admin.restore_selection') }}
+                </button>
+            </form>
+        @else
+            <form id="vehicles-bulk" method="POST" action="{{ route('admin.vehicles.destroyMany') }}"
+                  onsubmit="return confirm('{{ __('admin.delete_confirm') }}')">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-trash me-1"></i>{{ __('admin.delete_selection') }}
+                </button>
+            </form>
+        @endif
         <div>{{ $vehicles->links() }}</div>
     </div>
 

@@ -196,6 +196,108 @@ class AdminVehicleTest extends TestCase
         $this->assertSame(VehicleStatus::HorsService, $vehicle->refresh()->status);
     }
 
+    // ── Flotte recyclable : archives et remise en service ────────────────────
+
+    /** Par défaut, l'écran ne montre que la flotte qui peut rouler. */
+    public function test_la_liste_montre_la_flotte_active_par_defaut(): void
+    {
+        $active = $this->vehicle();
+        $archived = $this->vehicle(null, [
+            'status' => VehicleStatus::HorsService,
+            'is_active' => false,
+        ]);
+        $deleted = $this->vehicle();
+        $deleted->delete();
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->get('/admin/vehicules')
+            ->assertOk()
+            ->assertSee($active->plate)
+            ->assertDontSee($archived->plate)
+            ->assertDontSee($deleted->plate);
+    }
+
+    /** L'onglet « Archivés » réunit les véhicules masqués et les supprimés. */
+    public function test_la_vue_archives_montre_les_masques_et_les_supprimes(): void
+    {
+        $active = $this->vehicle();
+        $archived = $this->vehicle(null, [
+            'status' => VehicleStatus::HorsService,
+            'is_active' => false,
+        ]);
+        $deleted = $this->vehicle();
+        $deleted->delete();
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->get('/admin/vehicules?vue=archives')
+            ->assertOk()
+            ->assertSee($archived->plate)
+            ->assertSee($deleted->plate)
+            ->assertDontSee($active->plate);
+    }
+
+    public function test_remettre_en_service_un_vehicule_archive(): void
+    {
+        $vehicle = $this->vehicle(null, [
+            'status' => VehicleStatus::HorsService,
+            'is_active' => false,
+        ]);
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->post('/admin/vehicules/'.$vehicle->id.'/remettre-en-service')
+            ->assertRedirect(route('admin.vehicles.index', ['vue' => 'archives']));
+
+        $vehicle->refresh();
+
+        $this->assertTrue($vehicle->is_active);
+        $this->assertSame(VehicleStatus::Disponible, $vehicle->status);
+    }
+
+    /** Une voiture supprimée garde sa fiche et son immatriculation : on la restaure. */
+    public function test_remettre_en_service_un_vehicule_supprime_le_ressuscite_sans_le_recreer(): void
+    {
+        $vehicle = $this->vehicle(null, ['plate' => 'TG-RECY1']);
+        $vehicle->delete();
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->post('/admin/vehicules/'.$vehicle->id.'/remettre-en-service')
+            ->assertRedirect();
+
+        $restored = Vehicle::query()->withTrashed()->findOrFail($vehicle->id);
+
+        $this->assertFalse($restored->trashed());
+        $this->assertTrue($restored->is_active);
+        $this->assertSame(VehicleStatus::Disponible, $restored->status);
+        $this->assertSame('TG-RECY1', $restored->plate);
+        $this->assertSame(1, Vehicle::query()->count());
+    }
+
+    public function test_remettre_en_service_une_selection_de_vehicules(): void
+    {
+        $first = $this->vehicle(null, ['status' => VehicleStatus::HorsService, 'is_active' => false]);
+        $second = $this->vehicle(null, ['status' => VehicleStatus::HorsService, 'is_active' => false]);
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->post('/admin/vehicules/remettre-en-service', ['ids' => [$first->id, $second->id]])
+            ->assertRedirect(route('admin.vehicles.index', ['vue' => 'archives']));
+
+        foreach ([$first, $second] as $vehicle) {
+            $vehicle->refresh();
+
+            $this->assertTrue($vehicle->is_active);
+            $this->assertSame(VehicleStatus::Disponible, $vehicle->status);
+        }
+    }
+
+    public function test_un_agent_d_accueil_ne_remet_pas_un_vehicule_en_service(): void
+    {
+        $vehicle = $this->vehicle(null, ['status' => VehicleStatus::HorsService, 'is_active' => false]);
+
+        $this->actingAs($this->staff('agent_accueil'))
+            ->post('/admin/vehicules/'.$vehicle->id.'/remettre-en-service')
+            ->assertForbidden();
+    }
+
     // ── Photos ───────────────────────────────────────────────────────────────
 
     /**

@@ -5,9 +5,11 @@ namespace App\Http\Requests\Admin;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Suppression (ou archivage) en masse des véhicules sélectionnés.
+ * Sélection de véhicules pour une action en masse : suppression, archivage
+ * ou remise en service. Les véhicules archivés restent en base, d'où la même
+ * validation pour toutes ces actions.
  */
-class DestroyManyVehiclesRequest extends FormRequest
+class VehicleSelectionRequest extends FormRequest
 {
     /**
      * Les rôles sont vérifiés par les middlewares de route : toute requête

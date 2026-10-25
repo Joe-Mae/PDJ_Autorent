@@ -163,6 +163,15 @@ DB::transaction(function () {
 L'index `(vehicle_id, starts_at, ends_at, status)` rend ce contrôle peu
 coûteux ; il n'y a pas de cache d'invalidité à gérer.
 
+## Une flotte qui se recycle
+
+Une voiture qui a déjà loué n'est jamais effacée : elle porte des réservations,
+des contrats, des états des lieux et des reçus. La supprimer l'archive
+(masquée + hors service). L'écran des véhicules sépare donc **Flotte active**
+(par défaut) et **Archivés** ; une remise en service, seule ou en masse, rend
+la fiche et ses photos telles quelles, sans rien ressaisir. Un véhicule rendu
+après une location repasse automatiquement en `disponible`.
+
 ## Les documents du client
 
 Stockés **hors de `public/`**, sur un disque privé, avec un nom de fichier
