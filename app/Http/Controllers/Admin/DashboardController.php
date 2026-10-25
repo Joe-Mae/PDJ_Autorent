@@ -55,9 +55,6 @@ class DashboardController extends Controller
                         ->active()
                         ->where('starts_at', '<=', now())
                         ->where('ends_at', '>', now()))
-                    ->whereDoesntHave('blocks', fn ($query) => $query
-                        ->where('starts_at', '<=', now())
-                        ->where('ends_at', '>', now()))
                     ->count(),
                 'en_location' => Booking::query()
                     ->where('status', BookingStatus::EnCours->value)
@@ -66,10 +63,7 @@ class DashboardController extends Controller
                 'unavailable' => Vehicle::query()
                     ->where(function ($query) {
                         $query->whereIn('status', [VehicleStatus::EnMaintenance->value, VehicleStatus::HorsService->value])
-                            ->orWhere('is_active', false)
-                            ->orWhereHas('blocks', fn ($blocks) => $blocks
-                                ->where('starts_at', '<=', now())
-                                ->where('ends_at', '>', now()));
+                            ->orWhere('is_active', false);
                     })
                     ->count(),
                 'total_bookings' => Booking::query()->count(),

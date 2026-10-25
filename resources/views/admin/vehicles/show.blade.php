@@ -72,18 +72,6 @@
                     </tbody>
                 </table>
             </div>
-
-            <div class="pdj-card">
-                <h2 class="h6 fw-bold mb-3">{{ __('admin.blocks') }}</h2>
-                @forelse ($blocks as $block)
-                    <div class="border-bottom py-2 small">
-                        {{ $block->starts_at->translatedFormat('d/m') }} → {{ $block->ends_at->translatedFormat('d/m/Y') }}
-                        <span class="badge bg-secondary ms-1">{{ $block->reason->label() }}</span>
-                    </div>
-                @empty
-                    <p class="text-muted small mb-0">{{ __('admin.no_block') }}</p>
-                @endforelse
-            </div>
         </div>
     </div>
 @endsection

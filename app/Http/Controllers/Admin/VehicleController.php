@@ -34,9 +34,6 @@ class VehicleController extends Controller
                         ->active()
                         ->where('starts_at', '<=', now())
                         ->where('ends_at', '>', now()),
-                    'blocks as current_blocks_count' => fn ($query) => $query
-                        ->where('starts_at', '<=', now())
-                        ->where('ends_at', '>', now()),
                 ])
                 ->when($request->string('statut')->toString(), fn ($q, $s) => $q->where('status', $s))
                 ->when($request->string('q')->toString(), function ($q, $term) {
@@ -85,7 +82,6 @@ class VehicleController extends Controller
         return view('admin.vehicles.show', [
             'vehicle' => $vehicle->load(['category', 'media']),
             'bookings' => $vehicle->bookings()->with('user')->orderByDesc('starts_at')->limit(20)->get(),
-            'blocks' => $vehicle->blocks()->orderByDesc('starts_at')->limit(10)->get(),
         ]);
     }
 

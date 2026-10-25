@@ -9,7 +9,6 @@ use App\Enums\DocumentVerificationStatus;
 use App\Enums\DriverStatus;
 use App\Exceptions\BookingException;
 use App\Models\Booking;
-use App\Models\BookingBlock;
 use App\Models\User;
 use App\Services\BookingService;
 use App\Services\ReferenceGenerator;
@@ -169,27 +168,6 @@ class BookingServiceTest extends TestCase
         ]);
 
         $this->assertSame(BookingStatus::EnAttente, $booking->status);
-    }
-
-    public function test_refuse_un_vehicule_bloque_par_la_maintenance(): void
-    {
-        $vehicle = $this->vehicle();
-        $period = $this->period(4);
-
-        BookingBlock::query()->create([
-            'vehicle_id' => $vehicle->id,
-            'starts_at' => $period->startsAt,
-            'ends_at' => $period->endsAt,
-        ]);
-
-        $this->expectException(BookingException::class);
-
-        $this->bookings()->create([
-            'vehicle' => $vehicle,
-            'period' => $period,
-            'user' => null,
-            'with_driver' => false,
-        ]);
     }
 
     public function test_refuse_un_vehicule_hors_service(): void

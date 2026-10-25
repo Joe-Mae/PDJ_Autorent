@@ -109,11 +109,8 @@ return [
     'content_deleted' => 'Contenu supprimé.',
 
     'settings_saved' => 'Paramètres enregistrés.',
-    'block_created' => 'Véhicule bloqué sur la période.',
-    'block_removed' => 'Blocage levé.',
 
     'bookings' => 'Réservations',
-    'see_planning' => 'Voir le planning',
     'status' => 'Statut',
     'all' => 'Tous',
     'search' => 'Rechercher',
@@ -200,9 +197,6 @@ return [
     'delete_confirm' => 'Confirmer la suppression ?',
     'last_bookings' => 'Dernières locations',
     'no_booking_short' => 'Aucune location.',
-    'blocks' => 'Blocages',
-    'no_block' => 'Aucun blocage.',
-    'next_month' => 'Mois suivant',
 
     'categories' => 'Catégories et tarifs',
     'add_category' => 'Ajouter une catégorie',
@@ -296,9 +290,7 @@ return [
     'enabled' => 'Activé',
     'cancel' => 'Annuler',
     'save_settings' => 'Enregistrer les paramètres',
-    'calendar' => 'Planning de disponibilité',
     'this_month' => 'Ce mois-ci',
-    'calendar_hint' => 'Une ligne par véhicule, une colonne par jour. Créez un blocage depuis la fiche d\'un véhicule.',
 
     // ── Tableau de bord enrichi ─────────────────────────────────────────────
     'total_bookings' => 'Réservations totales',
@@ -365,13 +357,7 @@ return [
     'driver_only_search_hint' => 'Référence, nom ou téléphone',
     'pending_requests' => 'En attente',
 
-    // ── Planning ────────────────────────────────────────────────────────────
-    'calendar_subtitle' => 'Réservations et blocages, véhicule par véhicule.',
-    'calendar_navigation' => 'Navigation du planning',
-    'previous_month' => 'Mois précédent',
-    'next_month' => 'Mois suivant',
     'available' => 'Disponible',
-    'blocked_slot' => 'Blocage',
     'driver_history_for' => 'Réservations avec :name',
 
     // ── Navigation et barre supérieure ──────────────────────────────────────

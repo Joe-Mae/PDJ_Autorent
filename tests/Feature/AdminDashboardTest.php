@@ -2,11 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Enums\BlockReason;
 use App\Enums\BookingStatus;
 use App\Enums\VehicleStatus;
 use App\Models\Booking;
-use App\Models\BookingBlock;
 use Tests\TestCase;
 
 class AdminDashboardTest extends TestCase
@@ -19,13 +17,6 @@ class AdminDashboardTest extends TestCase
         $reserved = $this->vehicle(null, ['status' => VehicleStatus::Reserve]);
         $rented = $this->vehicle(null, ['status' => VehicleStatus::EnLocation]);
         $this->vehicle(null, ['status' => VehicleStatus::EnMaintenance]);
-        $blocked = $this->vehicle();
-        BookingBlock::query()->create([
-            'vehicle_id' => $blocked->id,
-            'starts_at' => now()->subHour(),
-            'ends_at' => now()->addDay(),
-            'reason' => BlockReason::Maintenance,
-        ]);
 
         $overdue = Booking::factory()->on($rented)->started()->create([
             'reference' => 'PDJ-LATE01',
@@ -50,10 +41,10 @@ class AdminDashboardTest extends TestCase
         $response = $this->actingAs($this->staff('agent_accueil'))->get('/admin');
 
         $response->assertOk()
-            ->assertViewHas('stats', fn (array $stats): bool => $stats['total_vehicles'] === 5
+            ->assertViewHas('stats', fn (array $stats): bool => $stats['total_vehicles'] === 4
                 && $stats['available'] === 2
                 && $stats['en_location'] === 1
-                && $stats['unavailable'] === 2
+                && $stats['unavailable'] === 1
                 && $stats['pending'] === 0
                 && $stats['confirmed'] === 1
                 && $stats['in_progress'] === 1

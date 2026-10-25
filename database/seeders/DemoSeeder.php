@@ -46,7 +46,7 @@ class DemoSeeder extends Seeder
 
         $roles = [
             'super_admin' => ['Tout voir, tout faire, gérer les comptes et les paramètres.'],
-            'gestionnaire' => ['Gère la flotte, les tarifs, le planning et les contenus.'],
+            'gestionnaire' => ['Gère la flotte, les tarifs, les chauffeurs et les contenus.'],
             'agent_accueil' => ['Traite les réservations, les documents, la caisse, le retrait et le retour.'],
         ];
 

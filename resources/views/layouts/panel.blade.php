@@ -33,7 +33,6 @@
             'links' => [
                 ['route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'label' => __('admin.dashboard_title'), 'icon' => 'grid-1x2', 'tier' => StaffTier::AgentAccueil],
                 ['route' => 'admin.bookings.index', 'active' => 'admin.bookings.*', 'label' => __('admin.bookings'), 'icon' => 'calendar-check', 'tier' => StaffTier::AgentAccueil],
-                ['route' => 'admin.calendar', 'active' => 'admin.calendar*', 'label' => __('admin.calendar'), 'icon' => 'calendar3', 'tier' => StaffTier::Gestionnaire],
             ],
         ],
         [

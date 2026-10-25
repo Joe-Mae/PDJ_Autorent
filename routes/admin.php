@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 |   agent_accueil  → tableau de bord, réservations, documents, paiements,
 |                     clients, caisse. C'est le quotidien du guichet.
-|   gestionnaire    → + véhicules, catégories, planning, chauffeurs, contenus.
+|   gestionnaire    → + véhicules, catégories, chauffeurs, contenus.
 |                     Le parc et les tarifs appartiennent à la direction.
 |   super_admin     → + paramètres de l'agence. Horaires, caution, prix du
 |                     chauffeur : ce qui engage l'entreprise.
@@ -64,12 +64,6 @@ Route::prefix('admin')
                     'update' => 'categories.update',
                     'destroy' => 'categories.destroy',
                 ]);
-
-            // Planning de disponibilité
-            Route::get('/calendrier', [Admin\CalendrierController::class, 'index'])->name('calendar');
-            Route::get('/calendrier/{vehicle}', [Admin\CalendrierController::class, 'show'])->name('calendar.vehicle');
-            Route::post('/calendrier/bloc', [Admin\CalendrierController::class, 'storeBlock'])->name('calendar.block.store');
-            Route::delete('/calendrier/bloc/{block}', [Admin\CalendrierController::class, 'destroyBlock'])->name('calendar.block.destroy');
 
             Route::resource('chauffeurs', Admin\DriverController::class)
                 ->parameters(['chauffeurs' => 'driver'])

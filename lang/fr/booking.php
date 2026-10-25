@@ -15,14 +15,6 @@ return [
         'no_show' => 'Client absent au délai de grâce',
     ],
 
-    'block_reason' => [
-        'maintenance' => 'Maintenance',
-        'controle_technique' => 'Contrôle technique',
-        'accident' => 'Accident / réparation',
-        'detente' => 'Détente planifiée',
-        'interne' => 'Usage interne',
-    ],
-
     'step' => [
         'summary' => 'Récapitulatif',
         'contact' => 'Conducteur',
@@ -39,7 +31,6 @@ return [
     'error' => [
         'vehicle_not_bookable' => 'Ce véhicule n\'est pas disponible à la location pour le moment.',
         'vehicle_just_taken' => 'Cette voiture vient d\'être réservée pour ces dates. Voici les alternatives.',
-        'vehicle_in_maintenance' => 'Ce véhicule est bloqué à l\'atelier sur cette période.',
         'no_driver_available' => 'Pas de chauffeur disponible sur ces dates.',
         'account_blocked' => 'Votre compte est bloqué après plusieurs absences. Appelez l\'agence au :phone pour le débloquer.',
         'too_many_bookings' => 'Vous avez déjà :max réservation(s) en cours. Annulez-en une ou contactez l\'agence.',        'too_young' => 'Il faut avoir :age ans révolus pour louer un véhicule.',

@@ -61,11 +61,6 @@ class Vehicle extends Model implements HasMedia
         return $this->hasMany(Booking::class);
     }
 
-    public function blocks(): HasMany
-    {
-        return $this->hasMany(BookingBlock::class);
-    }
-
     #[Scope]
     protected function bookable(Builder $query): Builder
     {

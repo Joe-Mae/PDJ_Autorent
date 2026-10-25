@@ -41,7 +41,6 @@ class StaffTierTest extends TestCase
         return [
             'véhicules' => ['/admin/vehicules'],
             'catégories et tarifs' => ['/admin/categories'],
-            'planning' => ['/admin/calendrier'],
             'statistiques' => ['/admin/statistiques'],
             'chauffeurs' => ['/admin/chauffeurs'],
             'contenus du site' => ['/admin/contenus'],
@@ -240,7 +239,6 @@ class StaffTierTest extends TestCase
         $html = $this->actingAs($this->staff('super_admin'))->get('/admin')->assertOk()->getContent();
 
         $this->assertStringContainsString(route('admin.vehicles.index'), $html);
-        $this->assertStringContainsString(route('admin.calendar'), $html);
         $this->assertStringContainsString(route('admin.customers.index'), $html);
         $this->assertStringContainsString(route('admin.statistics.index'), $html);
         $this->assertStringContainsString(route('admin.settings.index'), $html);

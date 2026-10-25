@@ -109,11 +109,8 @@ return [
     'content_deleted' => 'Content deleted.',
 
     'settings_saved' => 'Settings saved.',
-    'block_created' => 'Vehicle blocked for that period.',
-    'block_removed' => 'Block removed.',
 
     'bookings' => 'Bookings',
-    'see_planning' => 'See the schedule',
     'status' => 'Status',
     'all' => 'All',
     'search' => 'Search',
@@ -200,9 +197,6 @@ return [
     'delete_confirm' => 'Confirm the deletion?',
     'last_bookings' => 'Recent rentals',
     'no_booking_short' => 'No rental.',
-    'blocks' => 'Blocks',
-    'no_block' => 'No block.',
-    'next_month' => 'Next month',
 
     'categories' => 'Categories and rates',
     'add_category' => 'Add a category',
@@ -296,9 +290,7 @@ return [
     'enabled' => 'Enabled',
     'cancel' => 'Cancel',
     'save_settings' => 'Save settings',
-    'calendar' => 'Availability schedule',
     'this_month' => 'This month',
-    'calendar_hint' => 'One row per vehicle, one column per day. Create a block from the vehicle page.',
 
     // ── Enriched dashboard ──────────────────────────────────────────────────
     'total_bookings' => 'Total bookings',
@@ -365,13 +357,7 @@ return [
     'driver_only_search_hint' => 'Reference, name or phone',
     'pending_requests' => 'Pending',
 
-    // ── Planning ────────────────────────────────────────────────────────────
-    'calendar_subtitle' => 'Bookings and blocks, vehicle by vehicle.',
-    'calendar_navigation' => 'Planning navigation',
-    'previous_month' => 'Previous month',
-    'next_month' => 'Next month',
     'available' => 'Available',
-    'blocked_slot' => 'Blocked',
     'driver_history_for' => 'Bookings with :name',
 
     // ── Navigation and top bar ──────────────────────────────────────────────

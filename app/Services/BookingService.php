@@ -8,7 +8,6 @@ use App\Enums\VehicleStatus;
 use App\Exceptions\BookingException;
 use App\Models\AuditLog;
 use App\Models\Booking;
-use App\Models\BookingBlock;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Support\BookingPeriod;
@@ -386,15 +385,6 @@ class BookingService
 
         if ($conflict) {
             throw new BookingException(__('booking.error.vehicle_just_taken'));
-        }
-
-        $maintenance = BookingBlock::query()
-            ->where('vehicle_id', $vehicle->id)
-            ->forPeriod($padded->startsAt, $padded->endsAt)
-            ->exists();
-
-        if ($maintenance) {
-            throw new BookingException(__('booking.error.vehicle_in_maintenance'));
         }
     }
 

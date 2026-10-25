@@ -25,7 +25,6 @@ class BackOfficeAccessTest extends TestCase
             'documents à vérifier' => ['/admin/documents'],
             'véhicules' => ['/admin/vehicules'],
             'catégories' => ['/admin/categories'],
-            'planning' => ['/admin/calendrier'],
             'chauffeurs' => ['/admin/chauffeurs'],
             'clients' => ['/admin/clients'],
             'paramètres' => ['/admin/parametres'],

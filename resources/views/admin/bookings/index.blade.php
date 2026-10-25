@@ -7,9 +7,6 @@
     <x-admin.page-header
         :title="__('admin.bookings')"
         :subtitle="__('admin.bookings_count', ['count' => $bookings->total()])">
-        <a class="btn btn-outline-primary" href="{{ route('admin.calendar') }}">
-            <i class="bi bi-calendar3 me-1"></i>{{ __('admin.see_planning') }}
-        </a>
         <a class="btn btn-primary" href="{{ route('agent.pickup.index') }}">
             <i class="bi bi-box-arrow-right me-1"></i>{{ __('admin.start_pickup') }}
         </a>

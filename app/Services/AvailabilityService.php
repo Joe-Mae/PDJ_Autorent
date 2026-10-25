@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Booking;
-use App\Models\BookingBlock;
 use App\Models\Driver;
 use App\Models\DriverOnlyBooking;
 use App\Models\Vehicle;
@@ -37,14 +36,9 @@ class AvailabilityService
             ->distinct()
             ->pluck('vehicle_id');
 
-        $blocked = BookingBlock::query()
-            ->forPeriod($padded->startsAt, $padded->endsAt)
-            ->distinct()
-            ->pluck('vehicle_id');
-
         return Vehicle::query()
             ->bookable()
-            ->whereNotIn('id', $taken->merge($blocked)->unique())
+            ->whereNotIn('id', $taken)
             ->pluck('id')
             ->all();
     }

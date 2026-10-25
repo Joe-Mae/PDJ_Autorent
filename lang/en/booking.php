@@ -15,14 +15,6 @@ return [
         'no_show' => 'Customer did not show up within the grace period',
     ],
 
-    'block_reason' => [
-        'maintenance' => 'Maintenance',
-        'controle_technique' => 'Technical inspection',
-        'accident' => 'Accident / repairs',
-        'detente' => 'Scheduled downtime',
-        'interne' => 'Internal use',
-    ],
-
     'step' => [
         'summary' => 'Summary',
         'contact' => 'Driver',
@@ -39,7 +31,6 @@ return [
     'error' => [
         'vehicle_not_bookable' => 'This vehicle is not available for rent at the moment.',
         'vehicle_just_taken' => 'This car has just been booked for those dates. Here are alternatives.',
-        'vehicle_in_maintenance' => 'This vehicle is in the workshop for that period.',
         'no_driver_available' => 'No chauffeur available for those dates.',
         'account_blocked' => 'Your account is blocked after several no-shows. Call the agency on :phone to unblock it.',
         'too_many_bookings' => 'You already have :max booking(s) in progress. Cancel one or contact the agency.',

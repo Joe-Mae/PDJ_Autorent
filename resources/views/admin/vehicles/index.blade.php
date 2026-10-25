@@ -7,9 +7,6 @@
     <x-admin.page-header
         :title="__('admin.vehicles')"
         :subtitle="__('admin.fleet_count', ['count' => $vehicles->total()])">
-        <a class="btn btn-outline-primary" href="{{ route('admin.calendar') }}">
-            <i class="bi bi-calendar3 me-1"></i>{{ __('admin.see_planning') }}
-        </a>
         <a class="btn btn-primary" href="{{ route('admin.vehicles.create') }}">
             <i class="bi bi-plus-lg me-1"></i>{{ __('admin.add_vehicle') }}
         </a>
@@ -68,7 +65,7 @@
                 <tbody>
                     @forelse ($vehicles as $vehicle)
                         @php
-                            $busyNow = $vehicle->current_bookings_count > 0 || $vehicle->current_blocks_count > 0;
+                            $busyNow = $vehicle->current_bookings_count > 0;
                         @endphp
                         <tr>
                             <td>
