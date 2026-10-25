@@ -96,11 +96,20 @@ class VehicleController extends Controller
     public function update(SaveVehicleRequest $request, Vehicle $vehicle): RedirectResponse
     {
         $data = $this->validated($request);
+        $wasHidden = ! $vehicle->is_active;
 
         $vehicle->update([
             ...$data,
             'features' => array_values(array_filter($request->input('features', []))),
         ]);
+
+        // Archiver un véhicule le rend invisible ET hors service. Recocher
+        // « Visible sur le site » doit donc aussi le remettre en service,
+        // sinon la fiche réapparaît mais reste non réservable. Un véhicule
+        // déjà visible qui est hors service (panne, atelier) n'est pas touché.
+        if ($wasHidden && $data['is_active'] && $vehicle->status === VehicleStatus::HorsService) {
+            $vehicle->update(['status' => VehicleStatus::Disponible]);
+        }
 
         $newMedia = $this->attachPhotos($request, $vehicle);
 

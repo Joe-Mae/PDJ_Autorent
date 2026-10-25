@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\VehicleStatus;
 use App\Models\Vehicle;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -156,6 +157,43 @@ class AdminVehicleTest extends TestCase
             ->assertRedirect();
 
         $this->assertTrue($vehicle->refresh()->is_active);
+    }
+
+    /**
+     * Archiver un véhicule le passe hors service ET le masque. Recocher
+     * « Visible sur le site » doit annuler les deux, sinon la fiche réapparaît
+     * dans la liste mais reste « non réservable ».
+     */
+    public function test_recocher_visible_remet_en_service_un_vehicule_archive(): void
+    {
+        $vehicle = $this->vehicle(null, [
+            'status' => VehicleStatus::HorsService,
+            'is_active' => false,
+        ]);
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->put('/admin/vehicules/'.$vehicle->id, $this->payload(['is_active' => '1']))
+            ->assertRedirect();
+
+        $vehicle->refresh();
+
+        $this->assertTrue($vehicle->is_active);
+        $this->assertSame(VehicleStatus::Disponible, $vehicle->status);
+    }
+
+    /** Une immobilisation volontaire (panne, atelier) ne doit pas être annulée par une simple modification. */
+    public function test_un_vehicule_deja_visible_et_hors_service_reste_hors_service(): void
+    {
+        $vehicle = $this->vehicle(null, [
+            'status' => VehicleStatus::HorsService,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->put('/admin/vehicules/'.$vehicle->id, $this->payload(['is_active' => '1']))
+            ->assertRedirect();
+
+        $this->assertSame(VehicleStatus::HorsService, $vehicle->refresh()->status);
     }
 
     // ── Photos ───────────────────────────────────────────────────────────────

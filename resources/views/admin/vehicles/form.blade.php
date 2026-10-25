@@ -141,6 +141,12 @@
             <div class="col-lg-4">
                 <div class="pdj-card">
                     <h2 class="h6 fw-bold mb-3">{{ __('admin.availability') }}</h2>
+                    @if ($vehicle->exists)
+                        <p class="small mb-3">
+                            {{ __('admin.status') }} :
+                            <span class="badge bg-{{ $vehicle->status->color() }}">{{ $vehicle->status->label() }}</span>
+                        </p>
+                    @endif
                     <div class="form-check form-switch mb-3">
                         <input class="form-check-input" type="checkbox" name="is_active" value="1"
                                id="is_active" @checked(old('is_active', $vehicle->exists ? $vehicle->is_active : true))>

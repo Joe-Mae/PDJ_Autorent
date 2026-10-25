@@ -177,7 +177,7 @@ return [
     'description' => 'Description',
     'availability' => 'Disponibilité',
     'visible_on_site' => 'Visible sur le site',
-    'is_active_hint' => 'Décoché, le véhicule reste dans l\'historique mais disparaît de la recherche.',
+    'is_active_hint' => 'Décoché, le véhicule reste dans l\'historique mais disparaît de la recherche. Le recocher le remet en service s\'il avait été archivé.',
     'category_hint' => 'Le prix vient de la catégorie : changer de catégorie change le tarif des nouvelles réservations.',
     'photos' => 'Photos',
     'photos_hint' => 'Les vraies photos de la voiture, pas des illustrations. La première est celle de la liste.',

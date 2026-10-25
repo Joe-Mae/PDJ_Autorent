@@ -177,7 +177,7 @@ return [
     'description' => 'Description',
     'availability' => 'Availability',
     'visible_on_site' => 'Visible on the site',
-    'is_active_hint' => 'Unchecked, the vehicle stays in the history but disappears from the search.',
+    'is_active_hint' => 'Unchecked, the vehicle stays in the history but disappears from the search. Checking it again puts an archived vehicle back into service.',
     'category_hint' => 'The price comes from the category: changing category changes the rate for new bookings.',
     'photos' => 'Photos',
     'photos_hint' => 'Real photos of the car, not illustrations. The first one is the list thumbnail.',
