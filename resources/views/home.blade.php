@@ -172,9 +172,11 @@
                         <div class="fw-bold mt-2" style="color: var(--pdj-green);">
                             {{ app(\App\Services\SettingsService::class)->money($vehicle->category->daily_price) }} / {{ __('general.day_short') }}
                         </div>
-                        <div class="small text-muted">
-                            {{ __('general.deposit', ['price' => app(\App\Services\SettingsService::class)->money($vehicle->category->deposit_amount)]) }}
-                        </div>
+                        @if ($vehicle->deposit_required)
+                            <div class="small text-muted">
+                                {{ __('general.deposit', ['price' => app(\App\Services\SettingsService::class)->money($vehicle->category->deposit())]) }}
+                            </div>
+                        @endif
                     </a>
                 </div>
             @endforeach

@@ -49,6 +49,7 @@ return [
     'deposit_step2' => 'You drive normally. The deposit does not stop you from leaving.',
     'deposit_step3' => 'On return, after the vehicle and fuel check, we refund the deposit.',
     'deposit_amounts' => 'Amount per category',
+    'deposit_vehicle_exception' => 'Some vehicles in the fleet are rented without a deposit: the price shown on their page applies.',
     'deposit_deductions' => 'What can be deducted',
     'deposit_deduct_fuel' => 'Missing fuel on return',
     'deposit_deduct_damage' => 'Damage identified, on quote',

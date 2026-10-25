@@ -290,10 +290,12 @@
                         <td>{{ __('general.pay_at_agency') }}</td>
                         <td class="text-end">{{ number_format($booking->price_total, 0, ' ', ' ') }}</td>
                     </tr>
-                    <tr>
-                        <td>{{ __('page.deposit_title') }}</td>
-                        <td class="text-end">{{ number_format($booking->deposit_amount, 0, ' ', ' ') }}</td>
-                    </tr>
+                    @if ($booking->deposit_amount > 0)
+                        <tr>
+                            <td>{{ __('page.deposit_title') }}</td>
+                            <td class="text-end">{{ number_format($booking->deposit_amount, 0, ' ', ' ') }}</td>
+                        </tr>
+                    @endif
                     <tr class="fw-bold" style="background: var(--pdj-green-light);">
                         <td>{{ __('general.carry_on_day') }}</td>
                         <td class="text-end">{{ number_format($booking->amountToCarry(), 0, ' ', ' ') }}</td>

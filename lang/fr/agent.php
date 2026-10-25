@@ -8,6 +8,7 @@ return [
 
     'pickup_done' => ':ref — voiture remise, location en cours.',
     'return_done' => ':ref — retour effectué, :amount rendus au client.',
+    'return_done_without_deposit' => ':ref — retour effectué, aucune caution à restituer.',
     'late_fee' => 'Pénalité de retard',
 
     'cash_closed_ok' => 'Caisse close, tout est juste.',
@@ -94,6 +95,7 @@ return [
     'collect_deposit' => 'Encaisser la caution',
     'deposit_receipt_hint' => 'La caution donne droit à un reçu distinct, à rendre au retour. Ne la confondez pas avec la location.',
     'deposit_methods_hint' => 'Espèces ou mobile money. Pas de carte pour la caution : on veut un remboursement le jour même.',
+    'no_deposit_required' => 'Aucune caution n\'est exigée pour ce véhicule : après l\'encaissement, vous passez directement au contrat.',
 
     'contract' => 'Contrat de location',
     'conditions_title' => 'Conditions du véhicule',
@@ -137,6 +139,7 @@ return [
     'deduction_placeholder' => 'Plein effectué station Tokoin : 5 000 :currency',
     'deduction_explain' => 'Ce texte apparaît sur le reçu du client. Il doit dire la vérité, sinon il y aura un litige au retour suivant.',
     'refund' => 'Rendre la caution et clôturer',
+    'finish_return' => 'Clôturer le retour',
 
     'cash_of' => 'Caisse du',
     'no_operation' => 'Aucune opération aujourd\'hui.',

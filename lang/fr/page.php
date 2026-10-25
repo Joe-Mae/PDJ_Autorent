@@ -49,6 +49,7 @@ return [
     'deposit_step2' => 'Vous conductez normalement. La caution ne vous empêche pas de partir.',
     'deposit_step3' => 'Au retour, après le contrôle du véhicule et du carburant, on vous rend la caution.',
     'deposit_amounts' => 'Montant par catégorie',
+    'deposit_vehicle_exception' => 'Certains véhicules de la flotte sont loués sans caution : le prix affiché sur leur fiche fait foi.',
     'deposit_deductions' => 'Ce qui peut être prélevé',
     'deposit_deduct_fuel' => 'Carburant manquant au retour',
     'deposit_deduct_damage' => 'Dégâts constatés, sur facture',

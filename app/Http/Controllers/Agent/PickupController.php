@@ -214,12 +214,20 @@ class PickupController extends Controller
             'recorded_at' => now(),
         ]);
 
-        return redirect()->route('agent.pickup.deposit', $booking);
+        return redirect()->route(
+            $booking->requiresDeposit() ? 'agent.pickup.deposit' : 'agent.pickup.contract',
+            $booking,
+        );
     }
 
     /** Étape 4 — caution, sur un reçu distinct. */
-    public function deposit(Booking $booking): View
+    public function deposit(Booking $booking): View|RedirectResponse
     {
+        // Véhicule loué sans caution : l'étape est sautée, pas supprimée.
+        if (! $booking->requiresDeposit()) {
+            return redirect()->route('agent.pickup.contract', $booking);
+        }
+
         return view('agent.pickup.deposit', [
             'booking' => $booking->load(['vehicle.category', 'user', 'payments']),
             'methods' => PaymentMethod::depositMethods(),
@@ -228,6 +236,10 @@ class PickupController extends Controller
 
     public function storeDeposit(StorePickupDepositRequest $request, Booking $booking): RedirectResponse
     {
+        if (! $booking->requiresDeposit()) {
+            return redirect()->route('agent.pickup.contract', $booking);
+        }
+
         $data = $request->validated();
 
         Payment::query()->create([

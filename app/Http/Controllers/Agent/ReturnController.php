@@ -123,24 +123,30 @@ class ReturnController extends Controller
             ]);
         }
 
-        Payment::query()->create([
-            'booking_id' => $booking->id,
-            'kind' => PaymentKind::DepositRefund,
-            'method' => PaymentMethod::Especes,
-            'amount' => $paid - $deducted,
-            'deducted_amount' => $deducted,
-            'reference' => $data['note'] ?? null,
-            'recorded_by' => $request->user()->id,
-            'recorded_at' => now(),
-        ]);
+        // Sans caution versée, il n'y a rien à restituer : on clôture quand
+        // même la location, sinon la voiture resterait « en cours » à vie.
+        if ($paid > 0) {
+            Payment::query()->create([
+                'booking_id' => $booking->id,
+                'kind' => PaymentKind::DepositRefund,
+                'method' => PaymentMethod::Especes,
+                'amount' => $paid - $deducted,
+                'deducted_amount' => $deducted,
+                'reference' => $data['note'] ?? null,
+                'recorded_by' => $request->user()->id,
+                'recorded_at' => now(),
+            ]);
+        }
 
         $this->bookings->finish($booking, $request->user(), $booking->mileage_at_return, $booking->fuel_level_return);
 
         return redirect()
             ->route('agent.return.index')
-            ->with('status', __('agent.return_done', [
-                'ref' => $booking->reference,
-                'amount' => $this->settings->money($paid - $deducted),
-            ]));
+            ->with('status', $paid > 0
+                ? __('agent.return_done', [
+                    'ref' => $booking->reference,
+                    'amount' => $this->settings->money($paid - $deducted),
+                ])
+                : __('agent.return_done_without_deposit', ['ref' => $booking->reference]));
     }
 }

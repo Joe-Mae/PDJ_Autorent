@@ -29,10 +29,12 @@
         <span>{{ $money($quote->priceTotal) }}</span>
     </div>
 
-    <div class="price-ticket__row price-ticket__deposit">
-        <span>{{ __('general.deposit_to_prepare') }}</span>
-        <span class="text-nowrap">+ {{ $money($quote->deposit) }}</span>
-    </div>
+    @if ($quote->deposit > 0)
+        <div class="price-ticket__row price-ticket__deposit">
+            <span>{{ __('general.deposit_to_prepare') }}</span>
+            <span class="text-nowrap">+ {{ $money($quote->deposit) }}</span>
+        </div>
+    @endif
 
     <div class="price-ticket__carry">
         <div class="label">{{ __('general.carry_on_day') }}</div>

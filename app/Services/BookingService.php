@@ -62,7 +62,7 @@ class BookingService
             $this->assertVehicleBookable($locked, $period);
             $this->assertDriverAvailable($period, $withDriver);
             $this->assertCustomerEligible($user, $period);
-            $quote = $this->pricing->quote($locked->category, $period, $withDriver);
+            $quote = $this->pricing->quote($locked->category, $period, $withDriver, $locked->deposit_required);
 
             $booking = new Booking([
                 'reference' => $this->references->generate(),
@@ -126,7 +126,7 @@ class BookingService
             $this->assertVehicleBookable($booking->vehicle, $period, $booking);
             $this->assertDriverAvailable($period, $withDriver);
 
-            $quote = $this->pricing->quote($booking->category, $period, $withDriver);
+            $quote = $this->pricing->quote($booking->category, $period, $withDriver, $booking->vehicle->deposit_required);
 
             $booking->update([
                 'starts_at' => $period->startsAt,

@@ -10,11 +10,11 @@
             <div class="text-center mb-4">
                 <div class="small text-muted">{{ __('agent.step') }} 2/2</div>
                 <h1 class="h4 fw-bold">{{ __('agent.refund_deposit') }}</h1>
-                <p class="text-muted">{{ $booking->reference }} w {{ $booking->user?->displayName() }}</p>
+                <p class="text-muted">{{ $booking->reference }} — {{ $booking->user?->displayName() }}</p>
             </div>
 
             @if ($paid === 0)
-                <div class="alert alert-warning">{{ __('agent.no_deposit') }}</div>
+                <div class="alert alert-info">{{ __('agent.no_deposit') }}</div>
             @else
                 <div class="price-ticket mb-3">
                     <div class="price-ticket__row">
@@ -26,9 +26,15 @@
                         <span>{{ __('agent.to_return') }}</span>
                         <span id="aRendre">{{ number_format($paid, 0, ' ', ' ') }}</span>                    </div>
                 </div>
+            @endif
 
-                <form method="POST" action="{{ route('agent.return.deposit.store', $booking) }}">
-                    @csrf
+            <form method="POST" action="{{ route('agent.return.deposit.store', $booking) }}">
+                @csrf
+
+                @if ($paid === 0)
+                    {{-- Rien à restituer : la location se clôture quand même. --}}
+                    <input type="hidden" name="deducted_amount" value="0">
+                @else
                     <div class="pdj-card mb-3">
                         <label class="form-label" for="deducted_amount">{{ __('agent.deduction', ['currency' => app(\App\Services\SettingsService::class)->currency()]) }}</label>
                         <input type="number" class="form-control form-control-lg" id="deducted_amount" name="deducted_amount"
@@ -42,13 +48,15 @@
                                   placeholder="{{ __('agent.deduction_placeholder', ['currency' => app(\App\Services\SettingsService::class)->currency()]) }}"></textarea>
                         <div class="form-text">{{ __('agent.deduction_explain') }}</div>
                     </div>
+                @endif
 
-                    <div class="d-grid gap-2">
-                        <button class="btn btn-primary btn-lg">{{ __('agent.refund') }}</button>
-                        <a class="btn btn-outline-secondary" href="{{ route('agent.return.index') }}">{{ __('admin.back') }}</a>
-                    </div>
-                </form>
-            @endif
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary btn-lg">
+                        {{ $paid > 0 ? __('agent.refund') : __('agent.finish_return') }}
+                    </button>
+                    <a class="btn btn-outline-secondary" href="{{ route('agent.return.index') }}">{{ __('admin.back') }}</a>
+                </div>
+            </form>
         </div>
     </div>
 

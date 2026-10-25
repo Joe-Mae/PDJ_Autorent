@@ -218,10 +218,12 @@
             <td style="font-size:11px;font-weight:bold;">Montant total</td>
             <td class="right" style="font-size:13px;font-weight:bold;">{{ $money($booking->price_total) }}</td>
         </tr>
-        <tr>
-            <td style="{{ $label }}">Caution</td>
-            <td class="right">{{ $money($booking->deposit_amount) }}</td>
-        </tr>
+        @if ($booking->deposit_amount > 0)
+            <tr>
+                <td style="{{ $label }}">Caution</td>
+                <td class="right">{{ $money($booking->deposit_amount) }}</td>
+            </tr>
+        @endif
     </table>
 
     <div class="dash"></div>

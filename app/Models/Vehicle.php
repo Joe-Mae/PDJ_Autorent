@@ -21,7 +21,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
     'transmission', 'fuel', 'seats', 'doors', 'bags', 'air_conditioning',
     'features', 'description_fr', 'description_en',
     'mileage', 'technical_control_at', 'next_technical_control_at', 'fuel_level',
-    'status', 'is_active',
+    'status', 'is_active', 'deposit_required',
 ])]
 class Vehicle extends Model implements HasMedia
 {
@@ -41,6 +41,7 @@ class Vehicle extends Model implements HasMedia
             'features' => 'array',
             'air_conditioning' => 'boolean',
             'is_active' => 'boolean',
+            'deposit_required' => 'boolean',
             'year' => 'integer',
             'seats' => 'integer',
             'technical_control_at' => 'date',

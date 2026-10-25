@@ -10,7 +10,8 @@ Réservation en ligne, paiement et caution à l'agence.
 Le client cherche une voiture libre sur ses dates, voit le prix exact,
 réserve, dépose ses papiers, reçoit un rappel la veille et vient à l'agence
 avec ses originaux. **Rien n'est payé en ligne** : le site affiche le montant
-à préparer, la caution comprise, et l'encaissement se fait au guichet.
+à préparer — caution comprise quand le véhicule en exige une — et
+l'encaissement se fait au guichet.
 
 ## Les cinq règles qui structurent tout
 
@@ -198,6 +199,11 @@ est constaté, la description et **quatre photos** deviennent obligatoires ;
 elles sont conservées sur la réservation et servent de preuve en cas de
 litige. La même règle s'applique au retour, pour comparer avec le départ.
 
+La caution, elle, se décide véhicule par véhicule depuis sa fiche. Quand
+l'agence ne l'exige pas, l'étape 4 est sautée, la réservation part sans
+caution et le retour se clôture sans restitution. Le montant reste figé sur
+les réservations déjà prises : changer d'avis ne réécrit pas un dossier.
+
 Le permis du locataire n'est pas vérifié à distance : la caissière contrôle
 l'original au guichet, le photographie, et cette photo est enregistrée sur la
 réservation. L'enregistrement fait passer la réservation en « en cours » — la
@@ -242,7 +248,8 @@ la facture du client.
 
 Tout ce qui touche au métier est modifiable depuis `/admin/parametres`, sans
 redéploiement : horaires, battement, délai de grâce, tarif du bloc chauffeur,
-âge minimum, ancienneté du permis, vitesse maximale, cautions par catégorie,
+âge minimum, ancienneté du permis, vitesse maximale, cautions par catégorie
+(chaque véhicule pouvant en être dispensé),
 nombre de réservations actives, seuil de blocage pour absence, devise
 (`general.currency`), préfixe des références de réservation
 (`booking.reference_prefix`).

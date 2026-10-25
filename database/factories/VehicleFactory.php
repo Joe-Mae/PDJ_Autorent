@@ -38,6 +38,7 @@ class VehicleFactory extends Factory
             'fuel_level' => 'full',
             'status' => VehicleStatus::Disponible,
             'is_active' => true,
+            'deposit_required' => true,
         ];
     }
 
@@ -54,6 +55,14 @@ class VehicleFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'is_active' => false,
+        ]);
+    }
+
+    /** Véhicule loué sans caution : l'agence l'a décidé pour cette voiture. */
+    public function withoutDeposit(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'deposit_required' => false,
         ]);
     }
 

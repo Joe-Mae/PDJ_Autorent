@@ -230,6 +230,17 @@ class Booking extends Model implements HasMedia
         return (int) $this->price_total + (int) $this->deposit_amount;
     }
 
+    /**
+     * Une caution est-elle attendue pour cette réservation ?
+     *
+     * Le montant est figé à la création : l'agence peut changer d'avis pour un
+     * véhicule sans toucher aux réservations déjà prises.
+     */
+    public function requiresDeposit(): bool
+    {
+        return (int) $this->deposit_amount > 0;
+    }
+
     /** Caution effectivement versée, déduction faite de ce qui a été prélevé au retour. */
     public function depositPaid(): int
     {

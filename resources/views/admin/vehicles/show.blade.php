@@ -60,6 +60,16 @@
                     <tbody>
                         <tr><td>{{ __('admin.plate') }}</td><td class="text-end font-monospace">{{ $vehicle->plate }}</td></tr>
                         <tr><td>{{ __('admin.category') }}</td><td class="text-end">{{ $vehicle->category->name('fr') }}</td></tr>
+                        <tr>
+                            <td>{{ __('admin.deposit') }}</td>
+                            <td class="text-end">
+                                @if ($vehicle->deposit_required)
+                                    {{ app(\App\Services\SettingsService::class)->money($vehicle->category->deposit()) }}
+                                @else
+                                    <span class="text-muted">{{ __('admin.deposit_not_required') }}</span>
+                                @endif
+                            </td>
+                        </tr>
                         <tr><td>{{ __('admin.transmission') }}</td><td class="text-end">{{ $vehicle->transmissionLabel() }}</td></tr>
                         <tr><td>{{ __('admin.fuel') }}</td><td class="text-end">{{ $vehicle->fuelLabel() }}</td></tr>
                         <tr><td>{{ __('admin.seats') }}</td><td class="text-end">{{ $vehicle->seats }}</td></tr>

@@ -8,6 +8,7 @@ return [
 
     'pickup_done' => ':ref — car handed over, rental started.',
     'return_done' => ':ref — return done, :amount handed back to the customer.',
+    'return_done_without_deposit' => ':ref — return done, no deposit to refund.',
     'late_fee' => 'Late return penalty',
 
     'cash_closed_ok' => 'Till closed, everything matches.',
@@ -94,6 +95,7 @@ return [
     'collect_deposit' => 'Collect the deposit',
     'deposit_receipt_hint' => 'The deposit gets its own receipt, to be refunded on return. Do not confuse it with the rental.',
     'deposit_methods_hint' => 'Cash or mobile money. No card for the deposit: we want to refund it the same day.',
+    'no_deposit_required' => 'No deposit is required for this vehicle: after payment you go straight to the contract.',
 
     'contract' => 'Rental agreement',
     'conditions_title' => 'Vehicle conditions',
@@ -137,6 +139,7 @@ return [
     'deduction_placeholder' => 'Refuelled at Tokoin station: 5,000 :currency',
     'deduction_explain' => 'This text appears on the customer\'s receipt. It must tell the truth, or there will be a dispute on their next visit.',
     'refund' => 'Refund the deposit and close',
+    'finish_return' => 'Close the return',
 
     'cash_of' => 'Till for',
     'no_operation' => 'No transaction today.',

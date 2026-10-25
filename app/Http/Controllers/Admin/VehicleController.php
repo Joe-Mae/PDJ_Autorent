@@ -278,6 +278,10 @@ class VehicleController extends Controller
             // décochait, on enregistrait, et le véhicule restait visible.
             'air_conditioning' => $request->boolean('air_conditioning'),
             'is_active' => $request->boolean('is_active'),
+
+            // Même logique pour la caution : la case est cochée par défaut,
+            // la décocher veut dire « cette voiture part sans caution ».
+            'deposit_required' => $request->boolean('deposit_required'),
         ]);
     }
 

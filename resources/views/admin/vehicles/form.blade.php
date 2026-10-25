@@ -153,6 +153,18 @@
                         <label class="form-check-label" for="is_active">{{ __('admin.visible_on_site') }}</label>
                     </div>
                     <p class="small text-muted">{{ __('admin.is_active_hint') }}</p>
+
+                    <hr>
+
+                    <div class="form-check form-switch mb-3">
+                        {{-- Le champ caché porte « non » quand la case est décochée ; le navigateur envoie ensuite « 1 » si elle est cochée. --}}
+                        <input type="hidden" name="deposit_required" value="0">
+                        <input class="form-check-input" type="checkbox" name="deposit_required" value="1"
+                               id="deposit_required" @checked(old('deposit_required', $vehicle->exists ? $vehicle->deposit_required : true))>
+                        <label class="form-check-label" for="deposit_required">{{ __('admin.deposit_required') }}</label>
+                    </div>
+                    <p class="small text-muted">{{ __('admin.deposit_required_hint') }}</p>
+
                     <button class="btn btn-primary w-100">{{ $vehicle->exists ? __('admin.save') : __('admin.create') }}</button>
                 </div>
             </div>

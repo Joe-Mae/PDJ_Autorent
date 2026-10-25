@@ -54,7 +54,7 @@ class GuestBookingController extends Controller
         return view('booking.guest', [
             'vehicle' => $vehicle->load('category'),
             'period' => $period,
-            'quote' => $this->pricing->quote($vehicle->category, $period, $withDriver),
+            'quote' => $this->pricing->quote($vehicle->category, $period, $withDriver, $vehicle->deposit_required),
             'withDriver' => $withDriver,
         ]);
     }
@@ -65,7 +65,7 @@ class GuestBookingController extends Controller
 
         $period = $this->periodFrom($data);
         $this->validatePeriod($period);
-        $quote = $this->pricing->quote($vehicle->category, $period, (bool) ($data['avec_chauffeur'] ?? false));
+        $quote = $this->pricing->quote($vehicle->category, $period, (bool) ($data['avec_chauffeur'] ?? false), $vehicle->deposit_required);
 
         return response()->json([
             'days' => $quote->days,

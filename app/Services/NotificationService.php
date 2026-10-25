@@ -37,13 +37,20 @@ class NotificationService
         ]);
 
         if ($email !== null) {
-            $this->queueBookingMail($booking, $email, 'received', 'booking.received', 'received', [
+            $lines = [
                 __('notifications.mail.lines.reference') => $booking->reference,
                 __('notifications.mail.lines.vehicle') => $booking->vehicle?->displayName() ?? '—',
                 __('notifications.mail.lines.period') => $booking->starts_at->translatedFormat('d/m H:i').' → '.$booking->ends_at->translatedFormat('d/m H:i'),
                 __('notifications.mail.lines.to_pay') => $this->formatAmount($booking->amountToCarry()),
-                __('notifications.mail.lines.deposit') => $this->formatAmount((int) $booking->deposit_amount),
-            ]);
+            ];
+
+            // Une location sans caution n'a pas de ligne « caution : 0 » à
+            // afficher dans le mail de confirmation.
+            if ($booking->requiresDeposit()) {
+                $lines[__('notifications.mail.lines.deposit')] = $this->formatAmount((int) $booking->deposit_amount);
+            }
+
+            $this->queueBookingMail($booking, $email, 'received', 'booking.received', 'received', $lines);
         }
 
         return $sent;

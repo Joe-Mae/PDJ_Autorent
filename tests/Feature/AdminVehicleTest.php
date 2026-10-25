@@ -160,6 +160,38 @@ class AdminVehicleTest extends TestCase
     }
 
     /**
+     * La caution se décide véhicule par véhicule : décocher la case doit
+     * vraiment l'enlever, la recocher doit la remettre.
+     */
+    public function test_l_admin_desactive_puis_reactive_la_caution_d_un_vehicule(): void
+    {
+        $vehicle = $this->vehicle();
+
+        $this->assertTrue($vehicle->deposit_required);
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->put('/admin/vehicules/'.$vehicle->id, $this->payload(['deposit_required' => null]))
+            ->assertRedirect();
+
+        $this->assertFalse($vehicle->refresh()->deposit_required);
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->put('/admin/vehicules/'.$vehicle->id, $this->payload(['deposit_required' => '1']))
+            ->assertRedirect();
+
+        $this->assertTrue($vehicle->refresh()->deposit_required);
+    }
+
+    public function test_un_vehicule_cree_avec_la_caution_cochee_l_exige(): void
+    {
+        $this->actingAs($this->staff('gestionnaire'))
+            ->post('/admin/vehicules', $this->payload(['deposit_required' => '1']))
+            ->assertRedirect();
+
+        $this->assertTrue(Vehicle::query()->latest('id')->firstOrFail()->deposit_required);
+    }
+
+    /**
      * Archiver un véhicule le passe hors service ET le masque. Recocher
      * « Visible sur le site » doit annuler les deux, sinon la fiche réapparaît
      * dans la liste mais reste « non réservable ».

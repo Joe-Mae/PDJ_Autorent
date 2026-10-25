@@ -60,7 +60,7 @@ class VehicleController extends Controller
         $hasDates = $validated !== null && ! empty($validated['du']) && ! empty($validated['au']);
         $period = $hasDates ? $this->periodFrom($validated) : null;
         $isFree = $period ? $this->availability->isVehicleFree($vehicle, $period) : null;
-        $quote = $period ? $this->pricing->quote($vehicle->category, $period, (bool) ($validated['with_driver'] ?? false)) : null;
+        $quote = $period ? $this->pricing->quote($vehicle->category, $period, (bool) ($validated['with_driver'] ?? false), $vehicle->deposit_required) : null;
 
         return view('vehicles.show', [
             'vehicle' => $vehicle->load(['category', 'media']),

@@ -12,7 +12,7 @@
      */
     $locale = app()->getLocale();
     $money = fn (int $amount) => app(\App\Services\SettingsService::class)->money($amount);
-    $quote = app(\App\Services\PricingService::class)->quote($vehicle->category, $period, $withDriver);
+    $quote = app(\App\Services\PricingService::class)->quote($vehicle->category, $period, $withDriver, $vehicle->deposit_required);
     $params = request()->query();
     $bookingParams = [
         'locale' => $locale,
@@ -72,7 +72,9 @@
             {{ __('general.per_day', ['price' => $money($quote->dailyPrice)]) }}<br>
             {{ __('general.for_period', ['days' => $quote->days]) }}
         </div>
-        <div class="deposit">{{ __('general.deposit', ['price' => $money($quote->deposit)]) }}</div>
+        @if ($quote->deposit > 0)
+            <div class="deposit">{{ __('general.deposit', ['price' => $money($quote->deposit)]) }}</div>
+        @endif
         <a class="btn btn-primary btn-sm w-100 mt-2"
            href="{{ route('booking.guest.create', $bookingParams) }}">
             {{ __('general.book') }}

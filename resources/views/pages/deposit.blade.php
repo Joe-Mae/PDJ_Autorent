@@ -30,6 +30,7 @@
             @endforeach
         </tbody>
     </table>
+    <p class="text-muted small">{{ __('page.deposit_vehicle_exception') }}</p>
 
     <div class="section-title">{{ __('page.deposit_deductions') }}</div>
     <ul class="mb-3">

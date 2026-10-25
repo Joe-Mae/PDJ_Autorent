@@ -21,8 +21,9 @@ class PricingService
 
     /**
      * @param  bool  $withDriver  état de la case chauffeur, pour renvoyer le bon total
+     * @param  bool  $depositRequired  décision de l'agence pour ce véhicule précis
      */
-    public function quote(VehicleCategory $category, BookingPeriod $period, bool $withDriver = false): PriceQuote
+    public function quote(VehicleCategory $category, BookingPeriod $period, bool $withDriver = false, bool $depositRequired = true): PriceQuote
     {
         $days = max($this->settings->int('booking.min_days'), $period->days());
         $holidays = $this->holidaysIn($period);
@@ -48,6 +49,8 @@ class PricingService
             $priceDriver = 0;
         }
 
+        $deposit = $depositRequired ? $category->deposit() : 0;
+
         return new PriceQuote(
             days: $days,
             dailyPrice: $dailyPrice,
@@ -59,8 +62,8 @@ class PricingService
             driverDailyPrice: $driverDailyPrice,
             priceDriver: $priceDriver,
             priceTotal: $priceRental + $priceDriver,
-            deposit: $category->deposit(),
-            amountToCarry: $priceRental + $priceDriver + $category->deposit(),
+            deposit: $deposit,
+            amountToCarry: $priceRental + $priceDriver + $deposit,
             lines: $this->buildLines($period, $dailyPrice, $holidays, $category),
             holidayDays: count($holidays),
             appliedRule: null,

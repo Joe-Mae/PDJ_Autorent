@@ -51,6 +51,7 @@ class SaveVehicleRequest extends FormRequest
             'description_fr' => ['nullable', 'string', 'max:1000'],
             'description_en' => ['nullable', 'string', 'max:1000'],
             'is_active' => ['nullable', 'boolean'],
+            'deposit_required' => ['nullable', 'boolean'],
 
             // Le format et la taille sont vérifiés ici, et non laissés au
             // serveur. Sans ces règles, une photo de téléphone trop lourde est

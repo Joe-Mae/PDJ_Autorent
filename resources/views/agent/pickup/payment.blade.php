@@ -29,6 +29,10 @@
                 </div>
             </div>
 
+            @unless ($booking->requiresDeposit())
+                <div class="alert alert-info small">{{ __('agent.no_deposit_required') }}</div>
+            @endunless
+
             <form method="POST" action="{{ route('agent.pickup.payment.store', $booking) }}">
                 @csrf
                 <div class="pdj-card mb-3">
