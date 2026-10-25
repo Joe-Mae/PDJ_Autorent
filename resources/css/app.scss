@@ -119,6 +119,19 @@ body {
     }
 }
 
+// Colonne pleine hauteur : sur une page courte (consulter une réservation,
+// connexion…), le pied de page reste collé en bas au lieu de flotter au
+// milieu de l'écran et de laisser un vide de la couleur du fond en dessous.
+body.site-shell {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+
+    > main {
+        flex: 1 0 auto;
+    }
+}
+
 // Les titres portent la voix du site : Outfit, plus grande taille, et un
 // dégradé discret sur les accroches pour qu'elles ne soient plus du texte plat.
 h1, h2, h3, h4, h5, .display-6, .display-5, .display-4 {

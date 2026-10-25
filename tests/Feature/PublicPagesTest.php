@@ -170,7 +170,7 @@ class PublicPagesTest extends TestCase
     {
         $this->get('/fr/faq')
             ->assertOk()
-            ->assertSee('class="public-site structured-pages"', escape: false)
+            ->assertSee('class="site-shell public-site structured-pages"', escape: false)
             ->assertSee('page-content', escape: false)
             ->assertSee('container-fluid', escape: false)
             ->assertSee('Questions fréquentes');

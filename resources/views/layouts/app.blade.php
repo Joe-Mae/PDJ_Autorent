@@ -49,6 +49,7 @@
     @vite(['resources/css/app.scss', 'resources/js/app.js'])
 </head>
 <body @class([
+    'site-shell',
     'public-site' => ! request()->routeIs('account.*', 'admin.*'),
     'structured-pages' => ! request()->routeIs('vehicles.index'),
     'home-page' => request()->routeIs('home'),
