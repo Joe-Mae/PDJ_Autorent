@@ -188,9 +188,15 @@ explanation ne revient pas.
 
 Parcours de retrait verrouillé dans l'ordre, une action par écran :
 
-1. contrôle de la pièce d'identité → 2. état des lieux (4 photos minimum) →
+1. contrôle de la pièce d'identité → 2. état des lieux (photos seulement si dommage) →
 3. encaissement de la location → 4. caution, sur un reçu séparé →
 5. contrat signé au doigt → 6. contrôle du permis, photo et remise des clés
+
+L'état des lieux est d'abord visuel : l'agent fait le tour de la voiture. Si
+elle est intacte, aucune photo n'est demandée. Dès qu'une rayure ou un choc
+est constaté, la description et **quatre photos** deviennent obligatoires ;
+elles sont conservées sur la réservation et servent de preuve en cas de
+litige. La même règle s'applique au retour, pour comparer avec le départ.
 
 Le permis du locataire n'est pas vérifié à distance : la caissière contrôle
 l'original au guichet, le photographie, et cette photo est enregistrée sur la

@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
 #[Fillable([
     'reference', 'user_id', 'vehicle_id', 'category_id', 'driver_id',
@@ -35,12 +37,32 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
     'customer_name', 'customer_phone', 'customer_email', 'customer_comment',
     'guest_access_token_hash',
 ])]
-class Booking extends Model
+class Booking extends Model implements HasMedia
 {
     /** @use HasFactory<BookingFactory> */
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
+
+    /**
+     * Photos de l'état des lieux, prises au retrait ou au retour. Elles
+     * servent de preuve : quatre photos obligatoires dès qu'un dommage est
+     * constaté, aucune sinon.
+     */
+    public const MEDIA_CONDITION_REPORT = 'etat_des_lieux';
+
+    /** Signature manuscrite du contrat, saisie sur la tablette. */
+    public const MEDIA_SIGNATURE = 'signature';
 
     protected $hidden = ['guest_access_token_hash'];
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection(self::MEDIA_CONDITION_REPORT)
+            ->useDisk('documents');
+
+        $this->addMediaCollection(self::MEDIA_SIGNATURE)
+            ->useDisk('documents')
+            ->singleFile();
+    }
 
     public function getRouteKeyName(): string
     {

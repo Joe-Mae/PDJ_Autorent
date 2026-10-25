@@ -20,7 +20,6 @@ use App\Http\Requests\Agent\StorePickupPaymentRequest;
 use App\Models\Booking;
 use App\Models\CustomerDocument;
 use App\Models\Payment;
-use App\Models\Vehicle;
 use App\Services\BookingService;
 use App\Services\DocumentStorageService;
 use App\Services\SettingsService;
@@ -154,17 +153,21 @@ class PickupController extends Controller
     {
         $data = $request->validated();
 
-        foreach ($data['photos'] as $index => $photo) {
+        // Les photos ne sont demandées que si l'agent a constaté un dommage :
+        // une voiture intacte n'a rien à prouver, une rayure si.
+        foreach ($data['photos'] ?? [] as $index => $photo) {
             $booking->addMedia($photo)
                 ->preservingOriginal()
                 ->usingFileName($booking->reference.'-retrait-'.$index.'.jpg')
-                ->toMediaCollection(Vehicle::MEDIA_STATE_OF_VEHICLE, 'documents');
+                ->toMediaCollection(Booking::MEDIA_CONDITION_REPORT);
         }
 
         $booking->update([
             'mileage_at_pickup' => $data['mileage'],
             'fuel_level_pickup' => $data['fuel_level'],
-            'pickup_notes' => $data['damage_reported'] ?? null,
+            'pickup_notes' => $request->boolean('damage_present')
+                ? ($data['damage_reported'] ?? null)
+                : null,
         ]);
 
         $booking->vehicle?->update(['mileage' => $data['mileage']]);
@@ -249,7 +252,7 @@ class PickupController extends Controller
 
         $booking->addMediaFromString($data['signature'])
             ->usingFileName($booking->reference.'-signature.svg')
-            ->toMediaCollection('signature', 'documents');
+            ->toMediaCollection(Booking::MEDIA_SIGNATURE);
 
         return redirect()->route('agent.pickup.keys', $booking);
     }

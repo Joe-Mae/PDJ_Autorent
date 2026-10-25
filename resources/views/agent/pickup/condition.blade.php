@@ -34,18 +34,35 @@
                 </div>
 
                 <div class="pdj-card mb-3">
-                    <label class="form-label">{{ __('agent.photos_mandatory') }}</label>
-                    <input type="file" class="form-control" name="photos[]" accept=".jpg,.jpeg,.png" multiple required>
-                    <div class="form-text">{{ __('agent.photos_mandatory_hint') }}</div>
+                    <label class="form-label d-block">{{ __('agent.visual_inspection') }}</label>
+                    <div class="d-flex flex-wrap gap-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="damage_present" id="damage-no"
+                                   value="0" @checked(old('damage_present', '0') === '0') required>
+                            <label class="form-check-label" for="damage-no">{{ __('agent.no_damage') }}</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="damage_present" id="damage-yes"
+                                   value="1" @checked(old('damage_present') === '1')>
+                            <label class="form-check-label" for="damage-yes">{{ __('agent.damage_found') }}</label>
+                        </div>
+                    </div>
+                    <div class="form-text">{{ __('agent.inspection_hint') }}</div>
+                </div>
+
+                <div class="pdj-card mb-3" id="damage-block" @if (old('damage_present') !== '1') hidden @endif>
+                    <label class="form-label" for="damage_reported">{{ __('agent.existing_damage') }}</label>
+                    <textarea class="form-control mb-3" id="damage_reported" name="damage_reported" rows="2"
+                              placeholder="{{ __('agent.damage_placeholder') }}">{{ old('damage_reported') }}</textarea>
+
+                    <label class="form-label" for="damage-photos">{{ __('agent.damage_photos') }}</label>
+                    <input type="file" class="form-control" id="damage-photos" name="photos[]"
+                           accept=".jpg,.jpeg,.png" multiple
+                           @if (old('damage_present') === '1') required @endif>
+                    <div class="form-text">{{ __('agent.damage_photos_hint') }}</div>
                     <div class="small text-muted mt-2">
                         1. 4 coins w 2. tableau de bord w 3. compteur w 4. jauge de carburant
                     </div>
-                </div>
-
-                <div class="pdj-card mb-3">
-                    <label class="form-label" for="damage_reported">{{ __('agent.existing_damage') }}</label>
-                    <textarea class="form-control" id="damage_reported" name="damage_reported" rows="2"
-                              placeholder="{{ __('agent.damage_placeholder') }}"></textarea>
                 </div>
 
                 <div class="d-grid gap-2">
@@ -55,4 +72,29 @@
             </form>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            const damageBlock = document.getElementById('damage-block');
+            const damagePhotos = document.getElementById('damage-photos');
+            const damageNote = document.getElementById('damage_reported');
+
+            const toggleDamage = () => {
+                const damaged = document.getElementById('damage-yes').checked;
+
+                damageBlock.hidden = ! damaged;
+                damagePhotos.required = damaged;
+                damageNote.required = damaged;
+
+                if (! damaged) {
+                    damagePhotos.value = '';
+                }
+            };
+
+            document.querySelectorAll('input[name="damage_present"]')
+                .forEach((input) => input.addEventListener('change', toggleDamage));
+
+            toggleDamage();
+        </script>
+    @endpush
 @endsection

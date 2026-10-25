@@ -30,8 +30,6 @@ class Vehicle extends Model implements HasMedia
 
     public const MEDIA_GALLERY = 'gallery';
 
-    public const MEDIA_STATE_OF_VEHICLE = 'etat_des_lieux';
-
     public function getRouteKeyName(): string
     {
         return 'id';

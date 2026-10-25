@@ -10,7 +10,6 @@ use App\Http\Requests\Agent\RefundDepositRequest;
 use App\Http\Requests\Agent\StoreReturnRequest;
 use App\Models\Booking;
 use App\Models\Payment;
-use App\Models\Vehicle;
 use App\Services\BookingService;
 use App\Services\SettingsService;
 use Illuminate\Contracts\View\View;
@@ -57,17 +56,21 @@ class ReturnController extends Controller
     {
         $data = $request->validated();
 
-        foreach ($data['photos'] as $index => $photo) {
+        // Comme au retrait : quatre photos seulement si un dommage est
+        // constaté. C'est la preuve comparée à l'état des lieux de départ.
+        foreach ($data['photos'] ?? [] as $index => $photo) {
             $booking->addMedia($photo)
                 ->preservingOriginal()
                 ->usingFileName($booking->reference.'-retour-'.$index.'.jpg')
-                ->toMediaCollection(Vehicle::MEDIA_STATE_OF_VEHICLE, 'documents');
+                ->toMediaCollection(Booking::MEDIA_CONDITION_REPORT);
         }
 
         $booking->update([
             'mileage_at_return' => $data['mileage'],
             'fuel_level_return' => $data['fuel_level'],
-            'return_notes' => $data['damage_note'] ?? null,
+            'return_notes' => $request->boolean('damage_present')
+                ? ($data['damage_note'] ?? null)
+                : null,
         ]);
 
         $booking->vehicle?->update(['mileage' => $data['mileage']]);
