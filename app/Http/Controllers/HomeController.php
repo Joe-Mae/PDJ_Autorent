@@ -62,8 +62,7 @@ class HomeController extends Controller
                 ->get(),
             'heroImages' => $uploadedHeroImages
                 ->concat($heroVehicles
-                    ->map(fn (Vehicle $vehicle): ?string => $vehicle->mainPhotoUrl())
-                    ->filter())
+                    ->flatMap(fn (Vehicle $vehicle) => $vehicle->galleryPhotos()->map->getUrl()))
                 ->filter()
                 ->unique()
                 ->take(4)

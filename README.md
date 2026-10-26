@@ -264,7 +264,9 @@ nombre de réservations actives, seuil de blocage pour absence, devise
 L'identité visuelle se règle depuis `/admin/apparence` : couleurs, monogramme,
 nom affiché, et le logo de l'agence (JPG, PNG ou WebP, 2 Mo maximum), stocké
 sur le disque public et affiché partout — en-tête, pied de page, panneau
-d'administration. Sans logo, le monogramme sert de repli.
+d'administration. Sans logo, le monogramme sert de repli. Le diaporama de
+l'accueil reprend toutes les photos d'un véhicule sélectionné (quatre au
+total), et la fiche d'un véhicule affiche l'intégralité de sa galerie.
 
 Les textes du bloc chauffeur de l'accueil — badge « Options premium », titre,
 arguments (mariages compris), bouton et introduction de la page chauffeur —

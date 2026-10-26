@@ -129,6 +129,35 @@ class PublicPagesTest extends TestCase
             ->assertSee('Mettre le diaporama en pause');
     }
 
+    /**
+     * L'écran d'apparence promet « les photos des véhicules » : sélectionner
+     * une voiture doit reprendre toute sa galerie, pas seulement sa photo
+     * principale. Sinon quatre photos importées ne donnent qu'une slide.
+     */
+    public function test_le_diaporama_reprend_toutes_les_photos_d_un_vehicule_selectionne(): void
+    {
+        Storage::fake('fleet');
+        $vehicle = $this->vehicle();
+
+        foreach (['avant.jpg', 'arriere.jpg', 'interieur.jpg', 'cote.jpg'] as $photo) {
+            $vehicle->addMedia(UploadedFile::fake()->image($photo))
+                ->toMediaCollection(Vehicle::MEDIA_GALLERY, 'fleet');
+        }
+
+        $this->settings()->put('site.hero_vehicle_ids', [$vehicle->id]);
+        $this->settings()->put('site.hero_uploaded_images', []);
+
+        $response = $this->get('/fr')->assertOk();
+        $html = $response->getContent();
+
+        $this->assertSame(4, substr_count($html, 'data-hero-slide'));
+        $this->assertSame(4, substr_count($html, 'data-hero-dot='));
+
+        foreach ($vehicle->fresh()->galleryPhotos() as $media) {
+            $response->assertSee($media->getUrl(), escape: false);
+        }
+    }
+
     public function test_homepage_does_not_add_vehicle_photos_to_an_unconfigured_slideshow(): void
     {
         Storage::fake('fleet');
@@ -308,6 +337,31 @@ class PublicPagesTest extends TestCase
     public function test_une_langue_inconnue_ne_serit_pas_interpretee_comme_un_chemin(): void
     {
         $this->get('/de/vehicules')->assertNotFound();
+    }
+
+    /**
+     * Une voiture peut avoir quatre photos : la fiche doit les montrer
+     * toutes, et pas seulement la photo principale.
+     */
+    public function test_la_fiche_vehicule_affiche_toute_la_galerie(): void
+    {
+        Storage::fake('fleet');
+        $vehicle = $this->vehicle();
+
+        foreach (['avant.jpg', 'arriere.jpg', 'interieur.jpg', 'cote.jpg'] as $photo) {
+            $vehicle->addMedia(UploadedFile::fake()->image($photo))
+                ->toMediaCollection(Vehicle::MEDIA_GALLERY, 'fleet');
+        }
+
+        $response = $this->get('/fr/vehicules/'.$vehicle->id)->assertOk();
+        $html = $response->getContent();
+
+        $this->assertSame(4, substr_count($html, 'class="gallery-thumb '));
+        $this->assertSame(4, substr_count($html, 'data-gallery-thumb='));
+
+        foreach ($vehicle->fresh()->galleryPhotos() as $media) {
+            $response->assertSee($media->getUrl(), escape: false);
+        }
     }
 
     public function test_la_fiche_vehicule_repond_200_avec_les_dates_de_recherche(): void

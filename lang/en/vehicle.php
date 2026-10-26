@@ -33,6 +33,7 @@ return [
     'period' => 'Your period',
     'choose_dates_to_see_price' => 'Choose your dates to see the price and availability.',
     'similar' => 'Similar cars',
+    'gallery_photo' => 'View photo :number of :total',
     'not_free' => 'This vehicle is not free on those dates. Pick another period, or see the whole fleet.',
 
     // The seven conditions shown on the vehicle page, always visible,

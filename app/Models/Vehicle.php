@@ -12,9 +12,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 #[Fillable([
     'category_id', 'brand', 'model', 'plate', 'year',
@@ -91,13 +93,23 @@ class Vehicle extends Model implements HasMedia
         return Str::slug($this->brand.'-'.$this->model.'-'.$this->year);
     }
 
+    /**
+     * Photos de la galerie, dans l'ordre choisi par l'agence : la principale
+     * d'abord, puis les suivantes. C'est cette liste que la fiche et le
+     * diaporama parcourent, pour ne jamais se contenter d'une seule image.
+     *
+     * @return Collection<int, Media>
+     */
+    public function galleryPhotos(): Collection
+    {
+        return $this->getMedia(self::MEDIA_GALLERY)
+            ->sortBy([['order_column', 'desc'], ['id', 'desc']])
+            ->values();
+    }
+
     public function mainPhotoUrl(): ?string
     {
-        $media = $this->getMedia(self::MEDIA_GALLERY)
-            ->sortBy([['order_column', 'desc'], ['id', 'desc']])
-            ->first();
-
-        return $media?->getUrl();
+        return $this->galleryPhotos()->first()?->getUrl();
     }
 
     public function isBookable(): bool

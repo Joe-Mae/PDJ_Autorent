@@ -18,20 +18,26 @@
 
     <div class="row g-4">
         <div class="col-lg-7">
+            @php
+                $photos = $vehicle->galleryPhotos();
+            @endphp
+
             <div data-gallery>
                 <div class="gallery-main">
                     <img data-gallery-main
-                         src="{{ $vehicle->mainPhotoUrl() ?: asset('images/vehicle-placeholder.svg') }}"
+                         src="{{ $photos->first()?->getUrl() ?: asset('images/vehicle-placeholder.svg') }}"
                          alt="{{ $vehicle->fullName() }}"
                          width="800" height="500">
                 </div>
-                @if ($vehicle->media->count() > 1)
+                @if ($photos->count() > 1)
                     <div class="gallery-thumbs">
-                        @foreach ($vehicle->media->sortByDesc('order_column') as $index => $media)
-                            <img src="{{ $media->getUrl() }}"
-                                 data-gallery-thumb="{{ $media->getUrl() }}"
-                                 class="{{ $index === 0 ? 'is-active' : '' }}"
-                                 alt="" loading="lazy">
+                        @foreach ($photos as $index => $media)
+                            <button type="button"
+                                    class="gallery-thumb {{ $index === 0 ? 'is-active' : '' }}"
+                                    data-gallery-thumb="{{ $media->getUrl() }}"
+                                    aria-label="{{ __('vehicle.gallery_photo', ['number' => $index + 1, 'total' => $photos->count()]) }}">
+                                <img src="{{ $media->getUrl() }}" alt="" loading="lazy">
+                            </button>
                         @endforeach
                     </div>
                 @endif
