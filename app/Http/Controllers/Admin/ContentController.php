@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\ReviewStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SaveContentRequest;
+use App\Http\Requests\Admin\SaveDriverContentRequest;
 use App\Models\Banner;
 use App\Models\Faq;
 use App\Models\Holiday;
 use App\Models\Review;
+use App\Services\SettingsService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,6 +32,8 @@ class ContentController extends Controller
         'feries' => ['label' => 'Jours fériés', 'model' => Holiday::class, 'title' => 'label_fr', 'body' => 'label_en'],
     ];
 
+    public function __construct(private readonly SettingsService $settings) {}
+
     public function index(): View
     {
         return view('admin.contents.index', [
@@ -39,6 +43,39 @@ class ContentController extends Controller
                 'count' => $type['model']::query()->count(),
             ]),
         ]);
+    }
+
+    /**
+     * Textes du bloc chauffeur de l'accueil, avec le repli sur les traductions
+     * livrées : l'écran montre toujours ce que le visiteur voit réellement.
+     */
+    public function driver(): View
+    {
+        return view('admin.contents.driver', [
+            'values' => collect(array_keys(SaveDriverContentRequest::FIELDS))
+                ->mapWithKeys(fn (string $field) => [$field => [
+                    'fr' => $this->driverText($field, 'fr'),
+                    'en' => $this->driverText($field, 'en'),
+                ]])
+                ->all(),
+        ]);
+    }
+
+    public function updateDriver(SaveDriverContentRequest $request): RedirectResponse
+    {
+        $values = [];
+
+        foreach ($request->validated() as $field => $value) {
+            if (preg_match('/\A(.+)_(fr|en)\z/', $field, $matches) !== 1) {
+                continue;
+            }
+
+            $values["content.driver.{$matches[1]}.{$matches[2]}"] = (string) ($value ?? '');
+        }
+
+        $this->settings->putMany($values);
+
+        return to_route('admin.contents.driver.edit')->with('status', __('admin.content_saved'));
     }
 
     public function edit(string $type): View
@@ -101,6 +138,13 @@ class ContentController extends Controller
         abort_unless(array_key_exists($type, self::TYPES), 404);
 
         return self::TYPES[$type];
+    }
+
+    /** Texte enregistré, sinon la traduction livrée dans `lang/{locale}/driver.php`. */
+    private function driverText(string $field, string $locale): string
+    {
+        return $this->settings->string("content.driver.$field.$locale")
+            ?: trans('driver.'.$field, [], $locale);
     }
 
     /**

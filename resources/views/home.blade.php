@@ -194,22 +194,29 @@
         $soloDailyPrice = $driverSettings->int('driver.solo_daily_price');
         $soloDiscountPrice = $driverSettings->int('driver.solo_discount_daily_price');
         $soloDiscountAfterDays = $driverSettings->int('driver.solo_discount_after_days');
+        $driverCopy = fn (string $field): string => $driverSettings->string('content.driver.'.$field.'.'.$locale)
+            ?: __('driver.'.$field);
+        $driverPoint1 = str_replace(
+            ':price',
+            $driverSettings->money($driverSettings->int('driver.block_price')),
+            $driverCopy('point1'),
+        );
     @endphp
     <div class="container">
         <div class="pdj-card pdj-card--driver" data-reveal>
             <div class="row align-items-center g-4">
             <div class="col-lg-7">
-                <span class="badge-assurance">{{ __('driver.premium_badge') }}</span>
-                <h2 class="h4 fw-bold mt-2 mb-2">{{ __('driver.title') }}</h2>
-                <p class="mb-3">{{ __('driver.intro') }}</p>
+                <span class="badge-assurance">{{ $driverCopy('premium_badge') }}</span>
+                <h2 class="h4 fw-bold mt-2 mb-2">{{ $driverCopy('title') }}</h2>
+                <p class="mb-3">{{ $driverCopy('intro') }}</p>
                 <ul class="list-unstyled small mb-3">
-                    <li class="mb-1"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ __('driver.point1', ['price' => $driverSettings->money($driverSettings->int('driver.block_price'))]) }}</li>
-                    <li class="mb-1"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ __('driver.point2') }}</li>
-                    <li class="mb-1"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ __('driver.point3') }}</li>
-                    <li class="mb-0"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ __('driver.point4') }}</li>
+                    <li class="mb-1"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ $driverPoint1 }}</li>
+                    <li class="mb-1"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ $driverCopy('point2') }}</li>
+                    <li class="mb-1"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ $driverCopy('point3') }}</li>
+                    <li class="mb-0"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ $driverCopy('point4') }}</li>
                 </ul>
                 <a class="btn btn-primary" href="{{ route('page.driver', ['locale' => $locale]) }}">
-                    {{ __('driver.cta') }}
+                    {{ $driverCopy('cta') }}
                 </a>
             </div>
             <div class="col-lg-5 text-center">

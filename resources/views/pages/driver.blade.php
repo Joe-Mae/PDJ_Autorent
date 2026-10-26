@@ -11,12 +11,14 @@
         $startDate = today()->addDay()->toDateString();
         $returnDate = today()->addDay()->addDays(3)->toDateString();
         $hours = range($settings->openHour(), $settings->closeHour());
+        $pageIntro = $settings->string('content.driver.page_intro.'.app()->getLocale())
+            ?: __('driver.page_intro');
     @endphp
 
     <div class="driver-page">
         <header class="driver-page__header">
             <h1 class="h2 fw-bold mb-2">{{ __('driver.title_page') }}</h1>
-            <p class="text-muted mb-3">{{ __('driver.page_intro') }}</p>
+            <p class="text-muted mb-3">{{ $pageIntro }}</p>
             <div class="driver-page__rate">
                 <strong>{{ number_format($vehicleDailyPrice, 0, ' ', ' ') }} {{ __('driver.price_unit', ['currency' => $currency]) }}</strong>
             </div>

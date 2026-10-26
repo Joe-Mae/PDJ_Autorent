@@ -266,6 +266,12 @@ nom affiché, et le logo de l'agence (JPG, PNG ou WebP, 2 Mo maximum), stocké
 sur le disque public et affiché partout — en-tête, pied de page, panneau
 d'administration. Sans logo, le monogramme sert de repli.
 
+Les textes du bloc chauffeur de l'accueil — badge « Options premium », titre,
+arguments (mariages compris), bouton et introduction de la page chauffeur —
+se modifient depuis `/admin/contenus/bloc-chauffeur`, en français et en
+anglais. Un champ vidé réaffiche le texte livré avec l'application ; les
+montants restent dans `/admin/parametres`.
+
 Aucun montant n'est écrit en dur : tout affichage passe par
 `SettingsService::money()`, qui lit la devise en cours. Changer la devise sur
 `/admin/parametres` suffit à faire basculer le site entier — prix, cautions,

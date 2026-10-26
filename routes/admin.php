@@ -92,6 +92,8 @@ Route::prefix('admin')
 
             // Contenus éditables du site
             Route::get('/contenus', [Admin\ContentController::class, 'index'])->name('contents.index');
+            Route::get('/contenus/bloc-chauffeur', [Admin\ContentController::class, 'driver'])->name('contents.driver.edit');
+            Route::post('/contenus/bloc-chauffeur', [Admin\ContentController::class, 'updateDriver'])->name('contents.driver.update');
             Route::get('/contenus/{type}', [Admin\ContentController::class, 'edit'])->name('contents.edit');
             Route::post('/contenus/{type}', [Admin\ContentController::class, 'update'])->name('contents.update');
             Route::get('/contenus/{type}/{id}/modifier', [Admin\ContentController::class, 'form'])->name('contents.form');
