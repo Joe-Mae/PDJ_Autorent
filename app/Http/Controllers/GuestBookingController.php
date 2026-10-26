@@ -175,31 +175,33 @@ class GuestBookingController extends Controller
             'booking' => null,
             'driverOnlyBooking' => null,
             'matches' => collect(),
-            'query' => '',
+            'reference' => '',
+            'customerName' => '',
             'error' => null,
         ]);
     }
 
     public function lookupStore(LookupBookingRequest $request, string $locale): View
     {
-        $query = trim($request->validated()['query']);
-        $reference = Str::upper($query);
+        $data = $request->validated();
+        $reference = Str::upper(trim($data['reference'] ?? ''));
+        $customerName = trim($data['customer_name'] ?? '');
 
-        $bookings = Booking::query()
-            ->whereRaw('UPPER(reference) = ?', [$reference])
-            ->with(['vehicle.category', 'user'])
-            ->get();
+        if ($reference !== '') {
+            $bookings = Booking::query()
+                ->whereRaw('UPPER(reference) = ?', [$reference])
+                ->with(['vehicle.category', 'user'])
+                ->get();
 
-        // Une demande de chauffeur seul a sa propre table et sa propre référence.
-        $driverOnlyBookings = DriverOnlyBooking::query()
-            ->whereRaw('UPPER(reference) = ?', [$reference])
-            ->get();
-
-        // Le client n'a pas toujours sa référence sous la main : on accepte
-        // aussi son nom. Chaque mot saisi doit se retrouver dans le nom, ce qui
-        // marche dans les deux ordres (« Afi Mensah » ou « Mensah Afi »).
-        if ($bookings->isEmpty() && $driverOnlyBookings->isEmpty()) {
-            [$bookings, $driverOnlyBookings] = $this->searchByName($query);
+            // Une demande de chauffeur seul a sa propre table et sa propre référence.
+            $driverOnlyBookings = DriverOnlyBooking::query()
+                ->whereRaw('UPPER(reference) = ?', [$reference])
+                ->get();
+        } else {
+            // Le client n'a pas toujours sa référence sous la main : chaque mot
+            // de son nom doit se retrouver dans la réservation ou dans son
+            // compte, dans n'importe quel ordre (« Afi Mensah » ou « Mensah Afi »).
+            [$bookings, $driverOnlyBookings] = $this->searchByName($customerName);
         }
 
         $matches = $bookings
@@ -230,7 +232,8 @@ class GuestBookingController extends Controller
             'booking' => $matches->count() === 1 ? $bookings->first() : null,
             'driverOnlyBooking' => $matches->count() === 1 ? $driverOnlyBookings->first() : null,
             'matches' => $matches,
-            'query' => $query,
+            'reference' => $reference,
+            'customerName' => $customerName,
             'error' => $matches->isEmpty() ? __('booking.lookup.not_found') : null,
         ]);
     }

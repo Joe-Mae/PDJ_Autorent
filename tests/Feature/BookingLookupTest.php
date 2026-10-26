@@ -7,9 +7,9 @@ use App\Models\DriverOnlyBooking;
 use Tests\TestCase;
 
 /**
- * La page « Consulter ma réservation » accepte la référence ou le nom du
- * client. Un nom peut correspondre à plusieurs dossiers : on liste alors les
- * références au lieu d'afficher le détail de tous les homonymes.
+ * La page « Consulter ma réservation » accepte une référence ou le nom du
+ * réservateur. Un nom peut correspondre à plusieurs dossiers : on liste alors
+ * les références au lieu d'afficher le détail de tous les homonymes.
  */
 class BookingLookupTest extends TestCase
 {
@@ -18,7 +18,7 @@ class BookingLookupTest extends TestCase
         $booking = Booking::factory()->create(['customer_name' => 'Afi Mensah']);
 
         $this->post(route('booking.lookup.store', ['locale' => 'fr']), [
-            'query' => strtolower($booking->reference),
+            'reference' => strtolower($booking->reference),
         ])
             ->assertOk()
             ->assertSee($booking->reference)
@@ -31,7 +31,7 @@ class BookingLookupTest extends TestCase
         $booking = Booking::factory()->create(['customer_name' => 'Afi Mensah']);
 
         $this->post(route('booking.lookup.store', ['locale' => 'fr']), [
-            'query' => 'mensah',
+            'customer_name' => 'mensah',
         ])
             ->assertOk()
             ->assertSee($booking->reference)
@@ -44,7 +44,7 @@ class BookingLookupTest extends TestCase
         $booking = Booking::factory()->create(['customer_name' => 'Afi Mensah']);
 
         $this->post(route('booking.lookup.store', ['locale' => 'fr']), [
-            'query' => 'Mensah Afi',
+            'customer_name' => 'Mensah Afi',
         ])
             ->assertOk()
             ->assertSee($booking->reference);
@@ -64,7 +64,7 @@ class BookingLookupTest extends TestCase
         ]);
 
         $this->post(route('booking.lookup.store', ['locale' => 'fr']), [
-            'query' => 'amegan',
+            'customer_name' => 'amegan',
         ])
             ->assertOk()
             ->assertSee($booking->reference)
@@ -77,7 +77,7 @@ class BookingLookupTest extends TestCase
         $second = Booking::factory()->create(['customer_name' => 'Afi Mensah']);
 
         $this->post(route('booking.lookup.store', ['locale' => 'fr']), [
-            'query' => 'afi',
+            'customer_name' => 'afi',
         ])
             ->assertOk()
             ->assertSee(__('booking.lookup.results_title'))
@@ -91,7 +91,7 @@ class BookingLookupTest extends TestCase
         $booking = DriverOnlyBooking::factory()->create(['customer_name' => 'Afi Mensah']);
 
         $this->post(route('booking.lookup.store', ['locale' => 'fr']), [
-            'query' => 'afi mensah',
+            'customer_name' => 'afi mensah',
         ])
             ->assertOk()
             ->assertSee($booking->reference)
@@ -101,16 +101,38 @@ class BookingLookupTest extends TestCase
     public function test_une_recherche_sans_correspondance_affiche_un_message(): void
     {
         $this->post(route('booking.lookup.store', ['locale' => 'fr']), [
-            'query' => 'Personne Inconnue',
+            'customer_name' => 'Personne Inconnue',
         ])
             ->assertOk()
             ->assertSee(__('booking.lookup.not_found'));
     }
 
+    public function test_les_deux_champs_sont_facultatifs_mais_l_un_des_deux_est_requis(): void
+    {
+        $this->post(route('booking.lookup.store', ['locale' => 'fr']), [])
+            ->assertSessionHasErrors([
+                'reference' => __('booking.lookup.identifier_required'),
+            ]);
+    }
+
+    public function test_la_reference_prime_sur_le_nom_quand_les_deux_sont_remplis(): void
+    {
+        $byReference = Booking::factory()->create(['customer_name' => 'Afi Mensah']);
+        $other = Booking::factory()->create(['customer_name' => 'Kodjo Amegan']);
+
+        $this->post(route('booking.lookup.store', ['locale' => 'fr']), [
+            'reference' => $byReference->reference,
+            'customer_name' => 'Kodjo',
+        ])
+            ->assertOk()
+            ->assertSee($byReference->reference)
+            ->assertDontSee($other->reference);
+    }
+
     public function test_une_recherche_trop_courte_est_refusee(): void
     {
         $this->post(route('booking.lookup.store', ['locale' => 'fr']), [
-            'query' => 'ab',
-        ])->assertSessionHasErrors('query');
+            'reference' => 'ab',
+        ])->assertSessionHasErrors('reference');
     }
 }

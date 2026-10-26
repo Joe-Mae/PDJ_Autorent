@@ -9,20 +9,29 @@
 
     <form method="POST" action="{{ route('booking.lookup.store', ['locale' => $locale]) }}" class="pdj-card mb-4">
         @csrf
-        <div class="row g-2 align-items-end">
-            <div class="col">
-                <label for="query" class="form-label">{{ __('booking.lookup.search_label') }}</label>
-                <input type="text" class="form-control" id="query" name="query"
-                       value="{{ $query ?? '' }}" placeholder="{{ __('booking.lookup.placeholder') }}"
-                       maxlength="100" autocomplete="off" required>
+        <div class="row g-3 align-items-end">
+            <div class="col-12 col-sm-4">
+                <label for="reference" class="form-label">{{ __('booking.lookup.reference_label') }}</label>
+                <input type="text" class="form-control font-monospace text-uppercase" id="reference" name="reference"
+                       value="{{ $reference ?? '' }}" placeholder="PDJ-XXXXXX" maxlength="20" autocomplete="off">
+                @error('reference')
+                    <div class="text-danger small mt-1">{{ $message }}</div>
+                @enderror
             </div>
-            <div class="col-auto">
-                <button type="submit" class="btn btn-primary">{{ __('booking.lookup.submit') }}</button>
+            <div class="col-12 col-sm-5">
+                <label for="customer_name" class="form-label">{{ __('booking.lookup.name_label') }}</label>
+                <input type="text" class="form-control" id="customer_name" name="customer_name"
+                       value="{{ $customerName ?? '' }}" placeholder="{{ __('booking.lookup.name_placeholder') }}"
+                       maxlength="100" autocomplete="name">
+                @error('customer_name')
+                    <div class="text-danger small mt-1">{{ $message }}</div>
+                @enderror
+            </div>
+            <div class="col-12 col-sm-auto">
+                <button type="submit" class="btn btn-primary w-100">{{ __('booking.lookup.submit') }}</button>
             </div>
         </div>
-        @error('query')
-            <div class="text-danger small mt-2">{{ $message }}</div>
-        @enderror
+        <p class="form-text mb-0 mt-2">{{ __('booking.lookup.search_hint') }}</p>
     </form>
 
     @if ($error)
@@ -48,7 +57,7 @@
                             <span class="badge bg-{{ $match['color'] }}">{{ $match['status'] }}</span>
                             <form method="POST" action="{{ route('booking.lookup.store', ['locale' => $locale]) }}">
                                 @csrf
-                                <input type="hidden" name="query" value="{{ $match['reference'] }}">
+                                <input type="hidden" name="reference" value="{{ $match['reference'] }}">
                                 <button type="submit" class="btn btn-sm btn-outline-primary">
                                     {{ __('booking.lookup.details') }}
                                 </button>

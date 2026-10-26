@@ -5,7 +5,8 @@ namespace App\Http\Requests\Site;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Formulaire de recherche d'une réservation, par référence ou par nom du client.
+ * Formulaire de recherche d'une réservation : par référence ou par nom du
+ * réservateur. L'un des deux champs suffit.
  */
 class LookupBookingRequest extends FormRequest
 {
@@ -19,7 +20,18 @@ class LookupBookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'query' => ['required', 'string', 'min:3', 'max:100'],
+            'reference' => ['nullable', 'string', 'min:3', 'max:20', 'required_without:customer_name'],
+            'customer_name' => ['nullable', 'string', 'min:3', 'max:100'],
+        ];
+    }
+
+    /** @return array<string, string> */
+    public function messages(): array
+    {
+        return [
+            'reference.required_without' => __('booking.lookup.identifier_required'),
+            'reference.min' => __('booking.lookup.reference_min'),
+            'customer_name.min' => __('booking.lookup.name_min'),
         ];
     }
 }

@@ -145,7 +145,7 @@ class DriverOnlyBookingTest extends TestCase
         ]);
 
         $this->post(route('booking.lookup.store', ['locale' => 'fr']), [
-            'query' => strtolower($booking->reference),
+            'reference' => strtolower($booking->reference),
         ])
             ->assertOk()
             ->assertSee($booking->reference)
