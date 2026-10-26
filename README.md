@@ -145,6 +145,13 @@ C'est le gros gain de conversion de l'option : le client n'a qu'une pièce à
 envoyer au lieu de deux, et la case chauffeur se pré-coche au-delà de cinq
 jours de location.
 
+### Avec ou sans voiture
+
+Le chauffeur se réserve aussi seul, à la journée : rendez-vous, transferts,
+mariages ou soirées. L'accueil présente les deux tarifs — avec une voiture de
+l'agence, ou chauffeur seul avec un tarif dégressif au-delà de quelques jours.
+Les montants se règlent dans les paramètres de l'agence.
+
 ## Disponibilité et anti-double réservation
 
 Un créneau est pris si `debut_demande < fin_existante ET fin_demandee > debut_existant`,

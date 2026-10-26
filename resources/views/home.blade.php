@@ -6,7 +6,9 @@
 @section('content')
 
 {{-- ── Bandeau d'accueil ───────────────────────────────────────────────────── --}}
-@php($hero = $banners->first())
+@php
+    $hero = $banners->first();
+@endphp
 <section class="pdj-hero home-hero" data-hero-carousel>
     <div class="home-hero__slides" aria-hidden="true">
         @foreach ($heroImages as $image)
@@ -184,19 +186,27 @@
     </section>
 @endif
 
-{{-- ── Avec chauffeur ──────────────────────────────────────────────────────── --}}
+{{-- ── Avec chauffeur, avec ou sans voiture ────────────────────────────────── --}}
 <section class="pdj-band pdj-band--flagged">
+    @php
+        $driverSettings = app(\App\Services\SettingsService::class);
+        $driverCurrency = $driverSettings->currency();
+        $soloDailyPrice = $driverSettings->int('driver.solo_daily_price');
+        $soloDiscountPrice = $driverSettings->int('driver.solo_discount_daily_price');
+        $soloDiscountAfterDays = $driverSettings->int('driver.solo_discount_after_days');
+    @endphp
     <div class="container">
         <div class="pdj-card pdj-card--driver" data-reveal>
-        <div class="row align-items-center g-4">
+            <div class="row align-items-center g-4">
             <div class="col-lg-7">
-                <span class="badge-assurance">{{ __('driver.badge') }}</span>
+                <span class="badge-assurance">{{ __('driver.premium_badge') }}</span>
                 <h2 class="h4 fw-bold mt-2 mb-2">{{ __('driver.title') }}</h2>
                 <p class="mb-3">{{ __('driver.intro') }}</p>
                 <ul class="list-unstyled small mb-3">
-                    <li class="mb-1"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ __('driver.point1', ['price' => app(\App\Services\SettingsService::class)->money(app(\App\Services\SettingsService::class)->int('driver.block_price'))]) }}</li>
+                    <li class="mb-1"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ __('driver.point1', ['price' => $driverSettings->money($driverSettings->int('driver.block_price'))]) }}</li>
                     <li class="mb-1"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ __('driver.point2') }}</li>
-                    <li class="mb-0"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ __('driver.point3') }}</li>
+                    <li class="mb-1"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ __('driver.point3') }}</li>
+                    <li class="mb-0"><i class="bi bi-check2 me-1" style="color: var(--pdj-green);"></i>{{ __('driver.point4') }}</li>
                 </ul>
                 <a class="btn btn-primary" href="{{ route('page.driver', ['locale' => $locale]) }}">
                     {{ __('driver.cta') }}
@@ -204,9 +214,26 @@
             </div>
             <div class="col-lg-5 text-center">
                 <div class="display-4 fw-bold" style="color: var(--pdj-green);">
-                    {{ number_format(app(\App\Services\SettingsService::class)->int('driver.block_price'), 0, ' ', ' ') }}
+                    {{ number_format($driverSettings->int('driver.block_price'), 0, ' ', ' ') }}
                 </div>
-                <div class="text-muted">{{ __('driver.price_unit', ['currency' => app(\App\Services\SettingsService::class)->currency()]) }}</div>
+                <div class="text-muted">{{ __('driver.price_unit', ['currency' => $driverCurrency]) }}</div>
+
+                <div class="mt-3 pt-3 border-top">
+                    <div class="small fw-bold text-uppercase text-muted mb-1">{{ __('driver.solo_title') }}</div>
+                    <div class="h4 fw-bold mb-0" style="color: var(--pdj-green);">
+                        {{ number_format($soloDailyPrice, 0, ' ', ' ') }}
+                    </div>
+                    <div class="text-muted">{{ __('driver.solo_price_unit', ['currency' => $driverCurrency]) }}</div>
+                    @if ($soloDiscountPrice > 0 && $soloDiscountPrice < $soloDailyPrice)
+                        <div class="small text-muted">
+                            {{ __('driver.solo_price_discount', [
+                                'price' => $driverSettings->money($soloDiscountPrice),
+                                'days' => $soloDiscountAfterDays,
+                            ]) }}
+                        </div>
+                    @endif
+                </div>
+            </div>
             </div>
         </div>
     </div>

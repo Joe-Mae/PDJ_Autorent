@@ -144,6 +144,34 @@ class PublicPagesTest extends TestCase
             ->assertDontSee('data-hero-next', escape: false);
     }
 
+    /**
+     * Le chauffeur se réserve aussi sans voiture : l'accueil doit le dire
+     * noir sur blanc, mariages compris, avec les deux tarifs.
+     */
+    public function test_l_accueil_presente_le_chauffeur_avec_ou_sans_voiture(): void
+    {
+        $this->settings()->put('driver.block_price', 7000);
+        $this->settings()->put('driver.solo_daily_price', 15000);
+        $this->settings()->put('driver.solo_discount_daily_price', 13000);
+        $this->settings()->put('driver.solo_discount_after_days', 3);
+
+        $this->get('/fr')
+            ->assertOk()
+            ->assertSee(__('driver.premium_badge'))
+            ->assertSee(__('driver.title'))
+            ->assertSee('Mariages et grandes occasions')
+            ->assertSee('nous sommes disponibles')
+            ->assertSee('7 000')
+            ->assertSee('15 000')
+            ->assertSee('13 000')
+            ->assertSee(route('page.driver', ['locale' => 'fr']));
+
+        $this->get('/en')
+            ->assertOk()
+            ->assertSee(__('driver.premium_badge'))
+            ->assertSee('Weddings and big occasions');
+    }
+
     public static function contactLocales(): array
     {
         return [
