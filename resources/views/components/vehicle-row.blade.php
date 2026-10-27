@@ -53,19 +53,10 @@
         </div>
 
         <div class="mt-auto">
-            <div class="mb-2">
-                <span class="badge-assurance"><i class="bi bi-shield-check me-1"></i>{{ __('general.reassurance.insurance') }}</span>
-                @unless ($withDriver)
-                    <span class="badge-assurance ms-1">{{ __('general.identity_only') }}</span>
-                @endunless
-            </div>
-
-            {{-- Le bouton reste avec les informations du véhicule, sous les
-                 caractéristiques, plutôt que dans la colonne de prix. --}}
-            <a class="btn btn-primary btn-sm px-4"
-               href="{{ route('booking.guest.create', $bookingParams) }}">
-                {{ __('general.book') }}
-            </a>
+            <span class="badge-assurance"><i class="bi bi-shield-check me-1"></i>{{ __('general.reassurance.insurance') }}</span>
+            @unless ($withDriver)
+                <span class="badge-assurance ms-1">{{ __('general.identity_only') }}</span>
+            @endunless
         </div>
     </div>
 
@@ -84,5 +75,9 @@
         @if ($quote->deposit > 0)
             <div class="deposit">{{ __('general.deposit', ['price' => $money($quote->deposit)]) }}</div>
         @endif
+        <a class="btn btn-primary btn-sm w-100 mt-2"
+           href="{{ route('booking.guest.create', $bookingParams) }}">
+            {{ __('general.book') }}
+        </a>
     </div>
 </div>
