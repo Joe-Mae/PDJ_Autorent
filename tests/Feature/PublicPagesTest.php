@@ -298,6 +298,103 @@ class PublicPagesTest extends TestCase
         $this->assertSame(2, substr_count($donnees['html'], 'vehicle-row__name'));
     }
 
+    public function test_le_filtre_ajax_par_categorie_ne_garde_que_la_categorie_choisie(): void
+    {
+        $citadines = $this->category(['slug' => 'citadines', 'name_fr' => 'Citadines', 'name_en' => 'City cars']);
+        $luxe = $this->category([
+            'slug' => 'luxe', 'name_fr' => 'Luxe', 'name_en' => 'Luxury', 'daily_price' => 150000,
+        ]);
+
+        $this->vehicle($citadines, ['brand' => 'Toyota', 'model' => 'Vitz']);
+        $this->vehicle($luxe, ['brand' => 'Mercedes', 'model' => 'Classe E']);
+
+        $donnees = json_decode(
+            $this->post('/fr/vehicules/filtres', ['categorie' => 'citadines'])->assertOk()->getContent(),
+            true,
+        );
+
+        $this->assertSame(1, $donnees['count']);
+        $this->assertStringContainsString('Toyota Vitz', $donnees['html']);
+        $this->assertStringNotContainsString('Mercedes Classe E', $donnees['html']);
+    }
+
+    public function test_le_tri_par_prix_decroissant_classe_les_plus_chers_d_abord(): void
+    {
+        $citadines = $this->category(['slug' => 'citadines', 'name_fr' => 'Citadines', 'name_en' => 'City cars']);
+        $luxe = $this->category([
+            'slug' => 'luxe', 'name_fr' => 'Luxe', 'name_en' => 'Luxury', 'daily_price' => 150000,
+        ]);
+
+        $this->vehicle($citadines, ['brand' => 'Toyota', 'model' => 'Vitz']);
+        $this->vehicle($luxe, ['brand' => 'Mercedes', 'model' => 'Classe E']);
+
+        $donnees = json_decode(
+            $this->post('/fr/vehicules/filtres', ['tri' => 'prix-desc'])->assertOk()->getContent(),
+            true,
+        );
+
+        $this->assertSame(2, $donnees['count']);
+        $this->assertLessThan(
+            strpos($donnees['html'], 'Toyota Vitz'),
+            strpos($donnees['html'], 'Mercedes Classe E'),
+        );
+    }
+
+    public function test_le_filtre_categorie_s_applique_au_chargement_de_la_page(): void
+    {
+        $citadines = $this->category(['slug' => 'citadines', 'name_fr' => 'Citadines', 'name_en' => 'City cars']);
+        $luxe = $this->category([
+            'slug' => 'luxe', 'name_fr' => 'Luxe', 'name_en' => 'Luxury', 'daily_price' => 150000,
+        ]);
+
+        $this->vehicle($citadines, ['brand' => 'Toyota', 'model' => 'Vitz']);
+        $this->vehicle($luxe, ['brand' => 'Mercedes', 'model' => 'Classe E']);
+
+        $this->get('/fr/vehicules?categorie=citadines')
+            ->assertOk()
+            ->assertSee('Toyota Vitz')
+            ->assertDontSee('Mercedes Classe E');
+    }
+
+    public function test_la_page_d_une_categorie_ne_montre_que_ses_vehicules(): void
+    {
+        $citadines = $this->category(['slug' => 'citadines', 'name_fr' => 'Citadines', 'name_en' => 'City cars']);
+        $luxe = $this->category([
+            'slug' => 'luxe', 'name_fr' => 'Luxe', 'name_en' => 'Luxury', 'daily_price' => 150000,
+        ]);
+
+        $this->vehicle($citadines, ['brand' => 'Toyota', 'model' => 'Vitz']);
+        $this->vehicle($luxe, ['brand' => 'Mercedes', 'model' => 'Classe E']);
+
+        $this->get('/fr/vehicules/categorie/citadines')
+            ->assertOk()
+            ->assertSee('Toyota Vitz')
+            ->assertDontSee('Mercedes Classe E');
+    }
+
+    public function test_le_formulaire_de_filtres_vise_l_endpoint_ajax_et_ouvre_le_panneau_mobile(): void
+    {
+        $this->vehicle();
+
+        $this->get('/fr/vehicules')
+            ->assertOk()
+            ->assertSee('data-filters-url="'.route('vehicles.filter', ['locale' => 'fr']).'"', escape: false)
+            ->assertSee('data-filters-panel', escape: false);
+    }
+
+    public function test_un_filtre_sans_resultat_renvoie_l_etat_vide(): void
+    {
+        $this->vehicle(null, ['transmission' => 'manuelle']);
+
+        $donnees = json_decode(
+            $this->post('/fr/vehicules/filtres', ['transmission' => 'automatique'])->assertOk()->getContent(),
+            true,
+        );
+
+        $this->assertSame(0, $donnees['count']);
+        $this->assertStringContainsString(__('general.results_empty_title'), $donnees['html']);
+    }
+
     public function test_la_flotte_sans_dates_annonce_la_periode_par_defaut(): void
     {
         $this->category();

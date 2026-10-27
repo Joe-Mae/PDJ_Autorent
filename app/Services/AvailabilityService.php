@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Driver;
 use App\Models\DriverOnlyBooking;
 use App\Models\Vehicle;
+use App\Models\VehicleCategory;
 use App\Support\BookingPeriod;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -196,10 +197,11 @@ class AvailabilityService
                     fn (Builder $c) => $c->where('daily_price', '>=', (int) $min),
                 ),
             )
-            ->when(
-                ($filters['sort'] ?? null) === 'price_desc',
-                fn (Builder $q) => $q->whereHas('category', fn (Builder $c) => $c->orderByDesc('daily_price')),
-                fn (Builder $q) => $q->whereHas('category', fn (Builder $c) => $c->orderBy('daily_price')),
+            ->orderBy(
+                VehicleCategory::query()
+                    ->select('daily_price')
+                    ->whereColumn('vehicle_categories.id', 'vehicles.category_id'),
+                ($filters['sort'] ?? null) === 'prix-desc' ? 'desc' : 'asc',
             )
             ->get();
     }

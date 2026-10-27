@@ -13,6 +13,11 @@ avec ses originaux. **Rien n'est payé en ligne** : le site affiche le montant
 à préparer — caution comprise quand le véhicule en exige une — et
 l'encaissement se fait au guichet.
 
+Le Garage filtre la flotte sans rechargement : catégorie, boîte de vitesses,
+places, carburant, prix et tri passent par `/vehicules/filtres`, et seuls les
+résultats changent. L'URL reste partageable, et une page catégorie ne montre
+que les véhicules de cette catégorie.
+
 ## Les cinq règles qui structurent tout
 
 1. **Le site ne montre que ce qui est réellement libre.** Pas de véhicule

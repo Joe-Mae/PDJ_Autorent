@@ -31,8 +31,10 @@
                     </button>
                 </div>
 
-                <div id="filtersPanel" class="d-none d-lg-block filters">
-                    <form action="{{ request()->path() }}" method="GET" data-filters-form>
+                <div id="filtersPanel" class="d-none d-lg-block filters" data-filters-panel>
+                    <form action="{{ route('vehicles.index', ['locale' => $locale]) }}" method="GET"
+                          data-filters-form
+                          data-filters-url="{{ route('vehicles.filter', ['locale' => $locale]) }}">
                         {{-- Les dates et l'option chauffeur sont hors du formulaire de filtre :
                              elles ont déjà été envoyées, on les conserve. --}}
                         <input type="hidden" name="du" value="{{ $period->startsAtDate() }}">
@@ -67,15 +69,16 @@
                                 @foreach ($categories as $item)
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="categorie" id="cat-{{ $item->slug }}"
-                                               value="{{ $item->slug }}" @checked(($filters['category'] ?? null) === $item->slug)>
+                                               value="{{ $item->slug }}" @checked(($filters['categorie'] ?? null) === $item->slug)>
                                         <label class="form-check-label" for="cat-{{ $item->slug }}">
                                             {{ $item->name($locale) }}
                                             <span class="count">({{ $item->vehicles_count }})</span>
                                         </label>
                                     </div>
                                 @endforeach
-                                @if ($filters['category'] ?? null)
-                                    <a class="small d-inline-block mt-1" href="{{ request()->fullUrlWithoutQuery(['categorie']) }}">
+                                @if ($filters['categorie'] ?? null)
+                                    <a class="small d-inline-block mt-1"
+                                       href="{{ route('vehicles.index', ['locale' => $locale] + array_diff_key(request()->query(), ['categorie' => true])) }}">
                                         {{ __('nav.clear') }}
                                     </a>
                                 @endif
@@ -151,50 +154,15 @@
                     <div class="spinner-border spinner-border-sm text-success" role="status"></div>
                 </div>
 
-                @if ($vehicles->isEmpty())
-                    <div class="pdj-card text-center py-5">
-                        <i class="bi bi-calendar-x fs-1 text-muted"></i>
-                        <h2 class="h5 fw-bold mt-3">{{ __('general.results_empty_title') }}</h2>
-                        <p class="text-muted">{{ __('general.results_empty_intro') }}</p>
-
-                        @if ($alternatives->isNotEmpty())
-                            <div class="row g-2 mt-2 text-start">
-                                @foreach ($alternatives as $row)
-                                    <div class="col-md-4">
-                                        <a class="d-block pdj-card h-100 text-decoration-none text-reset"
-                                           href="{{ route('vehicles.index', [
-                                               'locale' => $locale,
-                                               'du' => $row['next']->startsAtDate(),
-                                               'au' => $row['next']->endsAtDate(),
-                                               'heure_depart' => $row['next']->startsAtHour(),
-                                               'heure_retour' => $row['next']->endsAtHour(),
-                                           ]) }}">
-                                            <div class="fw-bold small">{{ $row['vehicle']->displayName() }}</div>
-                                            <div class="small text-muted">
-                                                {{ __('general.free_from', ['date' => $row['next']->startsAt->translatedFormat('D d M')]) }}
-                                            </div>
-                                        </a>
-                                    </div>
-                                @endforeach
-                            </div>
-                        @endif
-
-                        <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
-                            <a class="btn btn-outline-primary" href="{{ route('vehicles.index', ['locale' => $locale]) }}">
-                                {{ __('general.results_empty_all') }}
-                            </a>
-                            <a class="btn btn-accent"
-                               href="https://wa.me/{{ $whatsapp }}?text={{ rawurlencode(__('general.whatsapp_help')) }}"
-                               target="_blank" rel="noopener">
-                                <i class="bi bi-whatsapp me-1"></i>{{ __('general.results_empty_whatsapp') }}
-                            </a>
-                        </div>
-                    </div>
-                @else
-                    <div data-results>
-                        @include('vehicles.partials.rows', ['vehicles' => $vehicles, 'period' => $period])
-                    </div>
-                @endif
+                <div data-results>
+                    @include('vehicles.partials.results', [
+                        'vehicles' => $vehicles,
+                        'period' => $period,
+                        'locale' => $locale,
+                        'alternatives' => $alternatives,
+                        'whatsapp' => $whatsapp,
+                    ])
+                </div>
             </div>
         </div>
 </div>

@@ -101,18 +101,35 @@ if (filtersForm) {
     const results = document.querySelector('[data-results]');
     const counter = document.querySelector('[data-results-count]');
     const overlay = document.querySelector('[data-results-loading]');
+    const endpoint = filtersForm.dataset.filtersUrl;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
     let debounce;
 
     const refresh = async (push = true) => {
+        // L'endpoint renvoie du JSON. Interroger la page elle-même renvoyait
+        // du HTML, et le `response.json()` échouait sans rien mettre à jour.
+        if (!endpoint) return;
+
         overlay?.classList.remove('d-none');
 
-        const params = new URLSearchParams(new FormData(filtersForm));
-        const query = params.toString();
+        const formData = new FormData(filtersForm);
+        const query = new URLSearchParams(formData).toString();
 
         try {
-            const response = await fetch(`${window.location.pathname}?${query}`, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    Accept: 'application/json',
+                    ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+                },
+                body: formData,
             });
+
+            if (!response.ok) {
+                throw new Error(`Filtres indisponibles (${response.status})`);
+            }
+
             const data = await response.json();
 
             if (results) results.innerHTML = data.html;
@@ -122,12 +139,14 @@ if (filtersForm) {
             if (push) {
                 window.history.replaceState({}, '', query ? `${window.location.pathname}?${query}` : window.location.pathname);
             }
+        } catch (error) {
+            console.error(error);
         } finally {
             overlay?.classList.add('d-none');
         }
     };
 
-    filtersForm.addEventListener('change', (event) => {
+    filtersForm.addEventListener('change', () => {
         clearTimeout(debounce);
         debounce = setTimeout(() => refresh(), 220);
     });

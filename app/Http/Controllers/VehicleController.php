@@ -38,13 +38,22 @@ class VehicleController extends Controller
         // arrivait par la porte sans dates et repartait sans rien.
         $period = $validated !== null ? $this->periodFrom($validated) : $this->defaultPeriod();
 
-        $vehicles = $this->availability->searchVehicles($validated ?? [], $period);
+        // Les filtres s'appliquent même sans dates : une URL partageable
+        // comme /vehicules?categorie=luxe doit garder sa catégorie. Sans cette
+        // clé, /vehicules/categorie/luxe affichait aussi toute la flotte.
+        $filters = $this->normalizeFilters($request->validated());
+
+        if ($category && blank($filters['categorie'] ?? null)) {
+            $filters['categorie'] = $category->slug;
+        }
+
+        $vehicles = $this->availability->searchVehicles($filters, $period);
         $driverAvailable = $this->availability->canOfferDriver($period);
 
         return view('vehicles.index', [
             'vehicles' => $vehicles,
             'period' => $period,
-            'filters' => $validated ?? [],
+            'filters' => $filters,
             'category' => $category,
             'categories' => VehicleCategory::query()->active()->withCount(['vehicles' => fn ($q) => $q->bookable()])->orderBy('sort_order')->get(),
             'priceBounds' => $this->availability->priceBounds(),
@@ -91,9 +100,7 @@ class VehicleController extends Controller
      */
     public function filter(SearchVehiclesRequest $request, string $locale): JsonResponse
     {
-        $validated = $this->searchData($request->validated()) ?? $request->only([
-            'category', 'transmission', 'fuel', 'seats_min', 'price_min', 'price_max', 'with_driver', 'sort',
-        ]);
+        $validated = $this->normalizeFilters($request->validated());
 
         // Même règle que index() : sans dates, on filtre sur le créneau par
         // défaut. Passer un tableau sans `du` ici faisait planter
@@ -104,10 +111,12 @@ class VehicleController extends Controller
         return response()->json([
             'count' => $vehicles->count(),
             'url' => request()->fullUrlWithQuery([]),
-            'html' => view('vehicles.partials.rows', [
+            'html' => view('vehicles.partials.results', [
                 'vehicles' => $vehicles,
                 'period' => $period,
-                'pricing' => $this->pricing,
+                'locale' => $locale,
+                'alternatives' => $vehicles->isEmpty() ? $this->alternatives($period) : collect(),
+                'whatsapp' => $this->settings->whatsappNumber(),
             ])->render(),
         ]);
     }
@@ -127,6 +136,19 @@ class VehicleController extends Controller
             return null;
         }
 
+        return $this->normalizeFilters($data);
+    }
+
+    /**
+     * Traduit les noms de champs du formulaire vers ceux lus par
+     * AvailabilityService. L'endpoint AJAX n'a pas besoin de savoir si des
+     * dates ont été fournies : il filtre toujours sur un créneau.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function normalizeFilters(array $data): array
+    {
         return array_merge($data, [
             'seats_min' => $data['places_min'] ?? null,
             'price_min' => $data['prix_min'] ?? null,
