@@ -64,6 +64,12 @@
             @if ($quote)
                 <x-price-ticket :quote="$quote" />
             @endif
+
+            {{-- Le bouton reste sous le prix, dans la même colonne : le
+                 descendre dans la rangée suivante créait un grand vide. --}}
+            <div class="d-none d-lg-block mt-3">
+                @include('vehicles.partials.book-box')
+            </div>
         </div>
     </div>
 
@@ -107,12 +113,8 @@
             @endif
         </div>
 
-        {{-- ── Colonne de réservation ─────────────────────────────────────── --}}
+        {{-- ── Véhicules similaires ───────────────────────────────────────── --}}
         <div class="col-lg-5">
-            <div class="d-none d-lg-block">
-                @include('vehicles.partials.book-box')
-            </div>
-
             @if ($similar->isNotEmpty())
                 <div class="mt-4">
                     <div class="section-title">{{ __('vehicle.similar') }}</div>
