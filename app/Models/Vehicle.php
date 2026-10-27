@@ -88,6 +88,23 @@ class Vehicle extends Model implements HasMedia
         return "{$this->displayName()} ({$this->year})";
     }
 
+    /**
+     * Description saisie dans l'administration, dans la langue du visiteur.
+     * Si la traduction manque, on sert l'autre langue plutôt qu'un blanc :
+     * mieux vaut un texte en français qu'une fiche muette.
+     */
+    public function description(?string $locale = null): ?string
+    {
+        $locale ??= app()->getLocale();
+        $localized = $locale === 'en' ? $this->description_en : $this->description_fr;
+
+        if (filled($localized)) {
+            return $localized;
+        }
+
+        return filled($this->description_fr) ? $this->description_fr : $this->description_en;
+    }
+
     public function slug(): string
     {
         return Str::slug($this->brand.'-'.$this->model.'-'.$this->year);

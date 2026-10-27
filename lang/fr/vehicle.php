@@ -29,6 +29,7 @@ return [
     'plate' => 'Immatriculation',
     'insurance_subtitle' => 'RC, vol, incendie, bris de vitres — franchise :amount',
 
+    'about' => 'À propos de ce véhicule',
     'conditions' => 'Conditions de location',
     'period' => 'Votre période',
     'choose_dates_to_see_price' => 'Choisissez vos dates pour voir le prix et la disponibilité.',

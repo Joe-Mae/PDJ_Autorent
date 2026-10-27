@@ -9,7 +9,7 @@
 @php
     $hero = $banners->first();
 @endphp
-<section class="pdj-hero home-hero" data-hero-carousel>
+<section class="pdj-hero home-hero" data-hero-carousel data-hero-interval="5000">
     <div class="home-hero__slides" aria-hidden="true">
         @foreach ($heroImages as $image)
             <div class="home-hero__slide {{ $loop->first ? 'is-active' : '' }}"

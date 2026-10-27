@@ -266,7 +266,15 @@ nom affiché, et le logo de l'agence (JPG, PNG ou WebP, 2 Mo maximum), stocké
 sur le disque public et affiché partout — en-tête, pied de page, panneau
 d'administration. Sans logo, le monogramme sert de repli. Le diaporama de
 l'accueil reprend toutes les photos d'un véhicule sélectionné (quatre au
-total), et la fiche d'un véhicule affiche l'intégralité de sa galerie.
+total), et la fiche d'un véhicule affiche l'intégralité de sa galerie. Les deux
+font défiler les images toutes les cinq secondes ; la galerie se met en pause
+au survol, au focus et lorsque l'onglet est masqué, et respecte
+`prefers-reduced-motion`.
+
+La description saisie sur la fiche d'un véhicule s'affiche aux visiteurs dans
+un bloc « À propos de ce véhicule ». Elle existe en français et en anglais ;
+si la traduction manquante correspond à la langue du visiteur, l'autre langue
+est servie plutôt qu'un bloc vide.
 
 Les textes du bloc chauffeur de l'accueil — badge « Options premium », titre,
 arguments (mariages compris), bouton et introduction de la page chauffeur —

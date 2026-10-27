@@ -262,17 +262,70 @@ if (driverToggle) {
 }
 
 // ─── Galerie de la fiche véhicule ─────────────────────────────────────────
+// Les photos défilent seules toutes les cinq secondes. Le survol et le focus
+// mettent la rotation en pause : on ne change pas l'image sous les yeux de
+// quelqu'un qui est en train de la regarder. Un clic sur une vignette reprend
+// la main et relance le compte à rebours.
 const gallery = document.querySelector('[data-gallery]');
 
 if (gallery) {
     const main = gallery.querySelector('[data-gallery-main]');
-    gallery.querySelectorAll('[data-gallery-thumb]').forEach((thumb) => {
+    const thumbs = Array.from(gallery.querySelectorAll('[data-gallery-thumb]'));
+    const interval = Number(gallery.dataset.galleryInterval) || 5000;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let activeIndex = Math.max(0, thumbs.findIndex((thumb) => thumb.classList.contains('is-active')));
+    let paused = false;
+    let timer;
+
+    const showPhoto = (index) => {
+        if (!main || thumbs.length === 0) return;
+
+        activeIndex = (index + thumbs.length) % thumbs.length;
+        main.src = thumbs[activeIndex].dataset.galleryThumb;
+        thumbs.forEach((thumb, thumbIndex) => {
+            thumb.classList.toggle('is-active', thumbIndex === activeIndex);
+        });
+    };
+
+    const stopRotation = () => window.clearInterval(timer);
+
+    const startRotation = () => {
+        stopRotation();
+
+        if (thumbs.length < 2 || reducedMotion || paused || document.hidden) return;
+
+        timer = window.setInterval(() => showPhoto(activeIndex + 1), interval);
+    };
+
+    thumbs.forEach((thumb, index) => {
         thumb.addEventListener('click', () => {
-            main.src = thumb.dataset.galleryThumb;
-            gallery.querySelectorAll('[data-gallery-thumb]').forEach((t) => t.classList.remove('is-active'));
-            thumb.classList.add('is-active');
+            showPhoto(index);
+            startRotation();
         });
     });
+
+    gallery.addEventListener('mouseenter', () => {
+        paused = true;
+        stopRotation();
+    });
+
+    gallery.addEventListener('mouseleave', () => {
+        paused = false;
+        startRotation();
+    });
+
+    gallery.addEventListener('focusin', () => {
+        paused = true;
+        stopRotation();
+    });
+
+    gallery.addEventListener('focusout', () => {
+        paused = false;
+        startRotation();
+    });
+
+    document.addEventListener('visibilitychange', startRotation);
+    startRotation();
 }
 
 // ─── Aperçu du fichier avant envoi ────────────────────────────────────────
@@ -509,6 +562,7 @@ if (heroCarousel) {
     const previous = heroCarousel.querySelector('[data-hero-previous]');
     const next = heroCarousel.querySelector('[data-hero-next]');
     const rotationToggle = heroCarousel.querySelector('[data-hero-toggle]');
+    const interval = Number(heroCarousel.dataset.heroInterval) || 5000;
     let activeIndex = Math.max(0, slides.findIndex((slide) => slide.classList.contains('is-active')));
     let rotationPaused = false;
     let timer;
@@ -543,7 +597,7 @@ if (heroCarousel) {
             return;
         }
 
-        timer = window.setInterval(() => showSlide(activeIndex + 1), 10000);
+        timer = window.setInterval(() => showSlide(activeIndex + 1), interval);
     };
 
     if (slides.length > 1) {

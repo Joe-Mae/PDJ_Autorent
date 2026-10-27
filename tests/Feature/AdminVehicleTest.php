@@ -413,6 +413,45 @@ class AdminVehicleTest extends TestCase
 
     // ── Utilitaires ──────────────────────────────────────────────────────────
 
+    public function test_la_description_est_enregistree_et_affichee_dans_les_deux_langues(): void
+    {
+        $this->actingAs($this->staff('gestionnaire'))
+            ->post('/admin/vehicules', $this->payload([
+                'description_fr' => 'Description française du véhicule.',
+                'description_en' => 'English description of the vehicle.',
+            ]))
+            ->assertRedirect();
+
+        $vehicle = Vehicle::query()->latest('id')->firstOrFail();
+
+        $this->assertSame('Description française du véhicule.', $vehicle->description_fr);
+        $this->assertSame('English description of the vehicle.', $vehicle->description_en);
+
+        $this->get('/fr/vehicules/'.$vehicle->id)
+            ->assertOk()
+            ->assertSee('Description française du véhicule.');
+
+        $this->get('/en/vehicules/'.$vehicle->id)
+            ->assertOk()
+            ->assertSee('English description of the vehicle.');
+    }
+
+    public function test_le_formulaire_propose_la_description_dans_les_deux_langues(): void
+    {
+        $vehicle = $this->vehicle(null, [
+            'description_fr' => 'Texte français.',
+            'description_en' => 'English text.',
+        ]);
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->get('/admin/vehicules/'.$vehicle->id.'/edit')
+            ->assertOk()
+            ->assertSee('name="description_fr"', escape: false)
+            ->assertSee('name="description_en"', escape: false)
+            ->assertSee('Texte français.')
+            ->assertSee('English text.');
+    }
+
     /** @return array<string, mixed> */
     protected function payload(array $ajouts = []): array
     {

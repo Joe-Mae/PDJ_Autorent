@@ -364,6 +364,49 @@ class PublicPagesTest extends TestCase
         }
     }
 
+    public function test_la_fiche_vehicule_affiche_sa_description_dans_la_langue_du_visiteur(): void
+    {
+        $vehicle = $this->vehicle(null, [
+            'description_fr' => 'Une voiture confortable pour Lomé.',
+            'description_en' => 'A comfortable car for Lomé.',
+        ]);
+
+        $this->get('/fr/vehicules/'.$vehicle->id)
+            ->assertOk()
+            ->assertSee('À propos de ce véhicule')
+            ->assertSee('Une voiture confortable pour Lomé.');
+
+        $this->get('/en/vehicules/'.$vehicle->id)
+            ->assertOk()
+            ->assertSee('About this vehicle')
+            ->assertSee('A comfortable car for Lomé.');
+    }
+
+    public function test_une_description_anglaise_vide_retombe_sur_le_francais(): void
+    {
+        $vehicle = $this->vehicle(null, [
+            'description_fr' => 'Texte français de secours.',
+            'description_en' => null,
+        ]);
+
+        $this->get('/en/vehicules/'.$vehicle->id)
+            ->assertOk()
+            ->assertSee('Texte français de secours.');
+    }
+
+    public function test_les_images_defilent_toutes_les_cinq_secondes(): void
+    {
+        $vehicle = $this->vehicle();
+
+        $this->get('/fr/vehicules/'.$vehicle->id)
+            ->assertOk()
+            ->assertSee('data-gallery-interval="5000"', escape: false);
+
+        $this->get('/fr')
+            ->assertOk()
+            ->assertSee('data-hero-interval="5000"', escape: false);
+    }
+
     public function test_la_fiche_vehicule_repond_200_avec_les_dates_de_recherche(): void
     {
         $vehicle = $this->vehicle();

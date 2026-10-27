@@ -5,6 +5,11 @@
 
 @section('content')
 
+@php
+    $photos = $vehicle->galleryPhotos();
+    $description = $vehicle->description($locale);
+@endphp
+
 <div class="container py-4">
     <nav aria-label="breadcrumb" class="small text-muted mb-3">
         <a href="{{ route('home', ['locale' => $locale]) }}">{{ __('nav.home') }}</a>
@@ -18,11 +23,7 @@
 
     <div class="row g-4">
         <div class="col-lg-7">
-            @php
-                $photos = $vehicle->galleryPhotos();
-            @endphp
-
-            <div data-gallery>
+            <div data-gallery data-gallery-interval="5000">
                 <div class="gallery-main">
                     <img data-gallery-main
                          src="{{ $photos->first()?->getUrl() ?: asset('images/vehicle-placeholder.svg') }}"
@@ -69,6 +70,13 @@
     <div class="row g-4 mt-1">
         {{-- ── Réservation : un seul bouton, un seul but ───────────────────── --}}
         <div class="col-lg-7">
+            @if (filled($description))
+                <div class="pdj-card mb-4">
+                    <div class="section-title">{{ __('vehicle.about') }}</div>
+                    <p class="mb-0" style="white-space: pre-line;">{{ $description }}</p>
+                </div>
+            @endif
+
             <div class="pdj-card mb-4">
                 <div class="section-title">{{ __('vehicle.conditions') }}</div>
                 <ul class="condition-list mb-0 ps-3">

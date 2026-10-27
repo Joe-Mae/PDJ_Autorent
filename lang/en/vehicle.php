@@ -29,6 +29,7 @@ return [
     'plate' => 'Registration',
     'insurance_subtitle' => 'Third party, theft, fire, glass — :amount excess',
 
+    'about' => 'About this vehicle',
     'conditions' => 'Rental conditions',
     'period' => 'Your period',
     'choose_dates_to_see_price' => 'Choose your dates to see the price and availability.',

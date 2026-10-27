@@ -95,9 +95,13 @@
                                 <label class="form-check-label" for="air_conditioning">{{ __('vehicle.air_con') }}</label>
                             </div>
                         </div>
-                        <div class="col-12">
-                            <label class="form-label" for="description_fr">{{ __('admin.description') }}</label>
-                            <textarea class="form-control" id="description_fr" name="description_fr" rows="3">{{ old('description_fr', $vehicle->description_fr) }}</textarea>
+                        <div class="col-md-6">
+                            <label class="form-label" for="description_fr">{{ __('admin.description') }} — Français</label>
+                            <textarea class="form-control" id="description_fr" name="description_fr" rows="4">{{ old('description_fr', $vehicle->description_fr) }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" for="description_en">{{ __('admin.description') }} — English</label>
+                            <textarea class="form-control" id="description_en" name="description_en" rows="4">{{ old('description_en', $vehicle->description_en) }}</textarea>
                         </div>
                     </div>
                 </div>
