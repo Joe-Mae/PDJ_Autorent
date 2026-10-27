@@ -42,6 +42,14 @@ class ReturnController extends Controller
                 ->where('ends_at', '<', now())
                 ->with(['vehicle', 'user'])
                 ->get(),
+            // Les retours déjà confirmés mais pas encore partis : l'agent peut
+            // préparer la journée sans attendre que la voiture soit sortie.
+            'upcoming' => Booking::query()
+                ->where('status', BookingStatus::Confirmee->value)
+                ->with(['vehicle', 'user'])
+                ->orderBy('ends_at')
+                ->limit(12)
+                ->get(),
         ]);
     }
 

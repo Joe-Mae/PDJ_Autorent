@@ -33,6 +33,9 @@
             'links' => [
                 ['route' => 'admin.dashboard', 'active' => 'admin.dashboard', 'label' => __('admin.dashboard_title'), 'icon' => 'grid-1x2', 'tier' => StaffTier::AgentAccueil],
                 ['route' => 'admin.bookings.index', 'active' => 'admin.bookings.*', 'label' => __('admin.bookings'), 'icon' => 'calendar-check', 'tier' => StaffTier::AgentAccueil],
+                // Le retour est un écran du guichet, mais tout le personnel doit
+                // pouvoir y entrer sans passer par le tableau de bord.
+                ['route' => 'agent.return.index', 'active' => 'agent.return.*', 'label' => __('admin.returns'), 'icon' => 'box-arrow-in-left', 'tier' => StaffTier::AgentAccueil],
             ],
         ],
         [

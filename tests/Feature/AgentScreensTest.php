@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Services\SettingsService;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -60,6 +61,75 @@ class AgentScreensTest extends TestCase
         ] as $url) {
             $this->actingAs($agent)->get($url)->assertOk();
         }
+    }
+
+    public function test_la_page_retour_liste_les_vehicules_sortis_avec_leur_controle(): void
+    {
+        $booking = $this->bookingOnRoad();
+
+        $this->actingAs($this->staff())
+            ->get(route('agent.return.index'))
+            ->assertOk()
+            ->assertSee($booking->vehicle->displayName())
+            ->assertSee($booking->vehicle->plate)
+            ->assertSee(route('agent.return.control', $booking), false)
+            ->assertSee(__('agent.return_control'))
+            ->assertDontSee(__('agent.no_vehicle_out'));
+    }
+
+    public function test_la_page_retour_annonce_les_retours_a_venir(): void
+    {
+        $booking = $this->confirmedBooking();
+
+        $this->actingAs($this->staff())
+            ->get(route('agent.return.index'))
+            ->assertOk()
+            ->assertSee(__('agent.upcoming_returns'))
+            ->assertSee(__('agent.not_out_yet'))
+            ->assertSee($booking->vehicle->plate);
+    }
+
+    public function test_la_page_retour_vide_renvoie_vers_les_reservations(): void
+    {
+        $this->actingAs($this->staff())
+            ->get(route('agent.return.index'))
+            ->assertOk()
+            ->assertSee(__('agent.no_vehicle_out'))
+            ->assertSee(route('admin.bookings.index'), false);
+    }
+
+    /**
+     * Le retour se pilote au guichet, mais chaque rôle doit pouvoir l'ouvrir
+     * depuis son propre menu, sans repasser par le tableau de bord.
+     */
+    #[DataProvider('roles')]
+    public function test_le_menu_admin_donne_acces_aux_retours(string $role): void
+    {
+        $response = $this->actingAs($this->staff($role))->get(route('admin.dashboard'));
+
+        $response->assertOk();
+
+        $html = $response->getContent();
+        $start = strpos($html, 'id="adminSidebar"');
+        $this->assertNotFalse($start, 'La barre latérale est absente du tableau de bord.');
+
+        $end = strpos($html, '</aside>', $start);
+        $this->assertNotFalse($end, 'La barre latérale n\'est pas refermée.');
+
+        $sidebar = substr($html, $start, $end - $start);
+
+        $this->assertStringContainsString(route('agent.return.index'), $sidebar);
+        $this->assertStringContainsString(__('admin.returns'), $sidebar);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function roles(): array
+    {
+        return [
+            'agent d\'accueil' => ['agent_accueil'],
+            'gestionnaire' => ['gestionnaire'],
+            'super admin' => ['super_admin'],
+        ];
     }
 
     private function confirmedBooking(bool $withDriver = false): Booking
