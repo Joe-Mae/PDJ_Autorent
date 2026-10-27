@@ -19,13 +19,14 @@ enum DriverOnlyBookingStatus: string
         return trans("driver.solo_status.{$this->value}");
     }
 
+    /** Teinte du badge, définie dans `app.scss` (bloc « Couleurs de statut »). */
     public function color(): string
     {
         return match ($this) {
-            self::EnAttente => 'warning',
-            self::Confirmee => 'success',
-            self::Refusee => 'danger',
-            self::Annulee => 'secondary',
+            self::EnAttente => 'attente',
+            self::Confirmee => 'confirmee',
+            self::Refusee => 'refusee',
+            self::Annulee => 'annulee',
         };
     }
 

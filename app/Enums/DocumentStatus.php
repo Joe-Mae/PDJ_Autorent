@@ -26,13 +26,13 @@ enum DocumentStatus: string
         return trans("document.status.{$this->value}");
     }
 
+    /** Teinte du badge, définie dans `app.scss` (bloc « Couleurs de statut »). */
     public function color(): string
     {
         return match ($this) {
-            self::EnAttente => 'warning',
-            self::Conforme, self::Presente => 'success',
-            self::NonConforme, self::Expire => 'danger',
-            self::ARelever => 'secondary',
+            self::EnAttente, self::ARelever => 'attente',
+            self::Conforme, self::Presente => 'valide',
+            self::NonConforme, self::Expire => 'refusee',
         };
     }
 

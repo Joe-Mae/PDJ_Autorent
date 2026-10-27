@@ -48,15 +48,15 @@ enum VehicleStatus: string
         return array_column(self::cases(), 'value');
     }
 
-    /** Classe Bootstrap du badge affiche dans l'admin. */
+    /** Teinte du badge, définie dans `app.scss` (bloc « Couleurs de statut »). */
     public function color(): string
     {
         return match ($this) {
-            self::Disponible => 'success',
-            self::Reserve => 'warning',
-            self::EnLocation => 'primary',
-            self::EnMaintenance => 'secondary',
-            self::HorsService => 'dark',
+            self::Disponible => 'valide',
+            self::Reserve => 'attente',
+            self::EnLocation => 'encours',
+            self::EnMaintenance => 'maintenance',
+            self::HorsService => 'refusee',
         };
     }
 }

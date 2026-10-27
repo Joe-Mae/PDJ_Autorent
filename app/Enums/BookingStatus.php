@@ -56,16 +56,23 @@ enum BookingStatus: string
         return trans("booking.status.{$this->value}");
     }
 
+    /**
+     * Teinte du badge, définie dans `app.scss` (bloc « Couleurs de statut »).
+     *
+     * Le vert de la marque ne peut pas distinguer « confirmé » de « terminé » :
+     * chaque étape a donc sa propre couleur, et les issues défavorables
+     * (refus, absence) restent rouges ou anthracite.
+     */
     public function color(): string
     {
         return match ($this) {
-            self::EnAttente => 'warning',
-            self::Confirmee => 'success',
-            self::EnCours => 'primary',
-            self::Terminee => 'success',
-            self::Annulee => 'secondary',
-            self::Refusee => 'danger',
-            self::NonPresente => 'dark',
+            self::EnAttente => 'attente',
+            self::Confirmee => 'confirmee',
+            self::EnCours => 'encours',
+            self::Terminee => 'terminee',
+            self::Annulee => 'annulee',
+            self::Refusee => 'refusee',
+            self::NonPresente => 'absence',
         };
     }
 

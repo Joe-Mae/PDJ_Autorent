@@ -14,12 +14,14 @@ enum DocumentVerificationStatus: string
         return trans("document.verification_status.{$this->value}");
     }
 
+    /** Teinte du badge, définie dans `app.scss` (bloc « Couleurs de statut »). */
     public function color(): string
     {
         return match ($this) {
-            self::NonRequis, self::Conforme => 'success',
-            self::EnAttente => 'warning',
-            self::NonConforme => 'danger',
+            self::NonRequis => 'terminee',
+            self::EnAttente => 'attente',
+            self::Conforme => 'valide',
+            self::NonConforme => 'refusee',
         };
     }
 

@@ -32,7 +32,7 @@
                             <div class="fw-bold">{{ $booking->vehicle->displayName() }}</div>
                             <div class="small text-muted font-monospace">{{ $booking->vehicle->plate }}</div>
                         </div>
-                        <span class="badge bg-primary">{{ __('agent.out') }}</span>
+                        <span class="badge bg-encours">{{ __('agent.out') }}</span>
                     </div>
 
                     <div class="small text-muted mt-2">
@@ -78,7 +78,7 @@
                                 <div class="fw-bold">{{ $booking->vehicle->displayName() }}</div>
                                 <div class="small text-muted font-monospace">{{ $booking->vehicle->plate }}</div>
                             </div>
-                            <span class="badge bg-secondary">{{ __('agent.not_out_yet') }}</span>
+                            <span class="badge bg-confirmee">{{ __('agent.not_out_yet') }}</span>
                         </div>
 
                         <div class="small text-muted mt-2">

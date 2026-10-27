@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\BookingStatus;
 use App\Models\Booking;
 use Tests\TestCase;
 
@@ -39,5 +40,21 @@ class AdminBookingListTest extends TestCase
             ->assertOk()
             ->assertSee($booking->status->label())
             ->assertDontSee('admin.document_verification');
+    }
+
+    public function test_chaque_statut_de_la_liste_porte_sa_propre_couleur(): void
+    {
+        Booking::factory()->create([
+            'reference' => 'PDJ-REFUSE',
+            'status' => BookingStatus::Refusee,
+        ]);
+        Booking::factory()->started()->create(['reference' => 'PDJ-SORTI']);
+
+        $this->actingAs($this->staff('agent_accueil'))
+            ->get('/admin/reservations')
+            ->assertOk()
+            ->assertSee('bg-refusee', false)
+            ->assertSee('bg-encours', false)
+            ->assertDontSee('bg-success', false);
     }
 }

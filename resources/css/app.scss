@@ -70,6 +70,33 @@ $shadow-green: 0 10px 26px -10px rgba($green, 0.5);
 // ligne, les 23 icônes de la page d'accueil restent des carrés vides.
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
+// ─── Couleurs de statut ────────────────────────────────────────────────────
+// Le vert est la couleur de la marque : il ne peut pas servir à distinguer
+// « confirmé » de « terminé ». Chaque état porte donc sa propre teinte, assez
+// sombre pour que le texte blanc du badge reste lisible. Refusé et annulé
+// tirent vers le rouge et le gris, une location en cours vers le bleu.
+$status-colors: (
+    'attente': #b45309,
+    'confirmee': #0f766e,
+    'encours': #1d4ed8,
+    'terminee': #475569,
+    'annulee': #64748b,
+    'refusee': #b91c1c,
+    'absence': #334155,
+    'valide': #15803d,
+    'maintenance': #6d28d9,
+);
+
+@each $name, $color in $status-colors {
+    .bg-#{$name} {
+        background-color: $color !important;
+    }
+
+    .badge.bg-#{$name} {
+        color: #fff;
+    }
+}
+
 // ─── Palette propre à la marque ────────────────────────────────────────────
 :root {
     --pdj-green: #{$green};
