@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\VehicleStatus;
 use Database\Factories\VehicleCategoryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -49,7 +50,7 @@ class VehicleCategory extends Model
     public function scopeBookable(Builder $query): Builder
     {
         return $query->where('vehicles.is_active', true)
-            ->whereIn('vehicles.status', ['disponible', 'reserve', 'en_location']);
+            ->whereIn('vehicles.status', VehicleStatus::bookableValues());
     }
 
     public function name(string $locale = 'fr'): string
