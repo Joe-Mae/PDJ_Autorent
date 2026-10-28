@@ -2933,6 +2933,7 @@ body.public-site {
         background: #fff;
 
         &__icon {
+            position: relative;
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -2945,10 +2946,29 @@ body.public-site {
             font-size: 1.65rem;
         }
 
+        // Le conducteur, posé en pastille sur la voiture : deux glyphes
+        // plutôt qu'un seul, faute d'icône « voiture avec chauffeur » dans
+        // la police d'icônes.
+        &__icon-badge {
+            position: absolute;
+            right: -0.3rem;
+            bottom: -0.3rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.4rem;
+            height: 1.4rem;
+            border-radius: 50%;
+            background: var(--pdj-public-yellow);
+            box-shadow: 0 0 0 2px #fff;
+            color: $ink;
+            font-size: 0.78rem;
+        }
+
         &__icon--solo {
             width: auto;
-            height: auto;
-            margin-bottom: 1.35rem;
+            height: 3.5rem;
+            margin-bottom: 1.25rem;
             border-radius: 0;
             background: none;
             color: $ink;

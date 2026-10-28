@@ -42,8 +42,11 @@
              ci-dessous pour le chauffeur seul). --}}
         <div class="driver-offers">
             <article class="driver-offer">
+                {{-- La voiture et son conducteur : le petit badge doré dit
+                     « avec chauffeur » là où la seule voiture ne le ferait pas. --}}
                 <span class="driver-offer__icon">
                     <i class="bi bi-car-front-fill" aria-hidden="true"></i>
+                    <i class="bi bi-person-fill driver-offer__icon-badge" aria-hidden="true"></i>
                 </span>
                 <h2>{{ __('driver.offer_vehicle_title') }}</h2>
                 <p class="driver-offer__text">{{ __('driver.offer_vehicle_text') }}</p>
@@ -61,7 +64,7 @@
 
             <article class="driver-offer">
                 <span class="driver-offer__icon driver-offer__icon--solo">
-                    <i class="bi bi-key-fill" aria-hidden="true"></i>
+                    <i class="bi bi-person-badge-fill" aria-hidden="true"></i>
                 </span>
                 <h2>{{ __('driver.offer_solo_title') }}</h2>
                 <p class="driver-offer__text">{{ __('driver.offer_solo_text') }}</p>
