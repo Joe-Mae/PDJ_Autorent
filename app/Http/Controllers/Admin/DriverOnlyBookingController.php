@@ -76,7 +76,7 @@ class DriverOnlyBookingController extends Controller
     {
         DB::transaction(function () use ($driverOnlyBooking): void {
             $booking = DriverOnlyBooking::query()->whereKey($driverOnlyBooking->id)->lockForUpdate()->firstOrFail();
-            abort_unless($booking->status->isActive(), 422);
+            abort_unless($booking->status->canBeRefused(), 422);
 
             $booking->update([
                 'status' => DriverOnlyBookingStatus::Refusee,
@@ -85,6 +85,87 @@ class DriverOnlyBookingController extends Controller
         });
 
         return back()->with('status', __('driver.solo_refused'));
+    }
+
+    /** Le chauffeur est parti : la prestation est en cours, il reste bloqué. */
+    public function start(DriverOnlyBooking $driverOnlyBooking): RedirectResponse
+    {
+        return $this->transition(
+            $driverOnlyBooking,
+            DriverOnlyBookingStatus::EnCours,
+            'driver.solo_started',
+        );
+    }
+
+    /** Prestation terminée : le chauffeur redevient disponible. */
+    public function finish(DriverOnlyBooking $driverOnlyBooking): RedirectResponse
+    {
+        return $this->transition(
+            $driverOnlyBooking,
+            DriverOnlyBookingStatus::Terminee,
+            'driver.solo_finished',
+        );
+    }
+
+    /** Annulation avec motif : la fiche garde toujours l'explication. */
+    public function cancel(Request $request, DriverOnlyBooking $driverOnlyBooking): RedirectResponse
+    {
+        $data = $request->validate([
+            'motif' => ['required', 'string', 'max:255'],
+        ]);
+
+        $cancelled = DB::transaction(function () use ($driverOnlyBooking, $data): bool {
+            $booking = DriverOnlyBooking::query()->whereKey($driverOnlyBooking->id)->lockForUpdate()->firstOrFail();
+
+            if (! $booking->status->canBeCancelled()) {
+                return false;
+            }
+
+            $booking->update([
+                'status' => DriverOnlyBookingStatus::Annulee,
+                'status_reason' => $data['motif'],
+            ]);
+
+            return true;
+        });
+
+        return $cancelled
+            ? back()->with('status', __('driver.solo_cancelled'))
+            : back()->with('error', __('driver.solo_invalid_transition'));
+    }
+
+    /**
+     * Change le statut d'une demande dont la transition est autorisée.
+     *
+     * Le verrou de ligne évite que deux agents cliquent « démarrer » et
+     * « annuler » en même temps sur la même demande.
+     */
+    private function transition(
+        DriverOnlyBooking $driverOnlyBooking,
+        DriverOnlyBookingStatus $target,
+        string $message,
+    ): RedirectResponse {
+        $changed = DB::transaction(function () use ($driverOnlyBooking, $target): bool {
+            $booking = DriverOnlyBooking::query()->whereKey($driverOnlyBooking->id)->lockForUpdate()->firstOrFail();
+
+            $allowed = match ($target) {
+                DriverOnlyBookingStatus::EnCours => $booking->status->canStart(),
+                DriverOnlyBookingStatus::Terminee => $booking->status->canFinish(),
+                default => false,
+            };
+
+            if (! $allowed) {
+                return false;
+            }
+
+            $booking->update(['status' => $target]);
+
+            return true;
+        });
+
+        return $changed
+            ? back()->with('status', __($message))
+            : back()->with('error', __('driver.solo_invalid_transition'));
     }
 
     public function assign(AssignDriverRequest $request, DriverOnlyBooking $driverOnlyBooking): RedirectResponse

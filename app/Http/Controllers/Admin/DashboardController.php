@@ -266,7 +266,10 @@ class DashboardController extends Controller
             ]);
 
         $solo = DriverOnlyBooking::query()
-            ->where('status', DriverOnlyBookingStatus::Confirmee->value)
+            ->whereIn('status', [
+                DriverOnlyBookingStatus::Confirmee->value,
+                DriverOnlyBookingStatus::EnCours->value,
+            ])
             ->whereBetween('starts_at', [$from, $to])
             ->with('driver')
             ->get()

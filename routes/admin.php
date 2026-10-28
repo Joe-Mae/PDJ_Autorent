@@ -87,6 +87,12 @@ Route::prefix('admin')
                 ->name('driver-only-bookings.confirm');
             Route::post('/reservations-chauffeur-seul/{driverOnlyBooking}/refuser', [Admin\DriverOnlyBookingController::class, 'refuse'])
                 ->name('driver-only-bookings.refuse');
+            Route::post('/reservations-chauffeur-seul/{driverOnlyBooking}/demarrer', [Admin\DriverOnlyBookingController::class, 'start'])
+                ->name('driver-only-bookings.start');
+            Route::post('/reservations-chauffeur-seul/{driverOnlyBooking}/terminer', [Admin\DriverOnlyBookingController::class, 'finish'])
+                ->name('driver-only-bookings.finish');
+            Route::post('/reservations-chauffeur-seul/{driverOnlyBooking}/annuler', [Admin\DriverOnlyBookingController::class, 'cancel'])
+                ->name('driver-only-bookings.cancel');
             Route::post('/reservations-chauffeur-seul/{driverOnlyBooking}/chauffeur', [Admin\DriverOnlyBookingController::class, 'assign'])
                 ->name('driver-only-bookings.assign');
 

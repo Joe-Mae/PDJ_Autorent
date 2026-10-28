@@ -100,14 +100,6 @@
                 </thead>
                 <tbody>
                     @forelse ($bookings as $booking)
-                        @php
-                            $tone = match ($booking->status) {
-                                \App\Enums\DriverOnlyBookingStatus::EnAttente => 'warning',
-                                \App\Enums\DriverOnlyBookingStatus::Confirmee => 'success',
-                                \App\Enums\DriverOnlyBookingStatus::Refusee => 'danger',
-                                default => 'secondary',
-                            };
-                        @endphp
                         <tr>
                             <td class="fw-semibold text-nowrap">{{ $booking->reference }}</td>
                             <td class="small">
@@ -140,9 +132,12 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="badge rounded-pill bg-{{ $tone }}-subtle text-{{ $tone }}-emphasis border border-{{ $tone }}-subtle">
+                                <span class="badge rounded-pill bg-{{ $booking->status->color() }}">
                                     {{ $booking->status->label() }}
                                 </span>
+                                @if ($booking->status_reason)
+                                    <div class="small text-muted mt-1">{{ $booking->status_reason }}</div>
+                                @endif
                             </td>
                             <td>
                                 <div class="d-flex flex-wrap justify-content-end gap-1">
@@ -172,6 +167,27 @@
                                                 <span class="small text-muted">{{ __('admin.no_driver') }}</span>
                                             @endif
                                         </form>
+                                        <form method="POST" action="{{ route('admin.driver-only-bookings.start', $booking) }}">
+                                            @csrf
+                                            <button class="btn btn-sm btn-outline-primary">{{ __('driver.solo_start') }}</button>
+                                        </form>
+                                        <button type="button" class="btn btn-sm btn-outline-danger solo-cancel"
+                                                data-bs-toggle="modal" data-bs-target="#soloCancelModal"
+                                                data-cancel-url="{{ route('admin.driver-only-bookings.cancel', $booking) }}"
+                                                data-reference="{{ $booking->reference }}">
+                                            {{ __('driver.solo_cancel') }}
+                                        </button>
+                                    @elseif ($booking->status === \App\Enums\DriverOnlyBookingStatus::EnCours)
+                                        <form method="POST" action="{{ route('admin.driver-only-bookings.finish', $booking) }}">
+                                            @csrf
+                                            <button class="btn btn-sm btn-outline-success">{{ __('driver.solo_finish') }}</button>
+                                        </form>
+                                        <button type="button" class="btn btn-sm btn-outline-danger solo-cancel"
+                                                data-bs-toggle="modal" data-bs-target="#soloCancelModal"
+                                                data-cancel-url="{{ route('admin.driver-only-bookings.cancel', $booking) }}"
+                                                data-reference="{{ $booking->reference }}">
+                                            {{ __('driver.solo_cancel') }}
+                                        </button>
                                     @else
                                         <span class="small text-muted">—</span>
                                     @endif
@@ -194,4 +210,51 @@
     </div>
 
     <div class="mt-3">{{ $bookings->links() }}</div>
+
+    {{-- Un seul formulaire d'annulation partagé : le bouton de la ligne lui
+         transmet l'URL de la demande et sa référence, puis le motif est saisi
+         au calme dans une fenêtre plutôt que dans une cellule de tableau. --}}
+    <div class="modal fade" id="soloCancelModal" tabindex="-1" aria-labelledby="soloCancelModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="POST" id="soloCancelForm"
+                      data-intro="{{ __('driver.solo_cancel_intro', ['ref' => '__REF__']) }}">
+                    @csrf
+                    <div class="modal-header">
+                        <h2 class="modal-title h5" id="soloCancelModalLabel">{{ __('driver.solo_cancel_title') }}</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('admin.close') }}"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="small text-muted" id="soloCancelIntro">{{ __('driver.solo_cancel_intro', ['ref' => '']) }}</p>
+                        <label class="form-label" for="solo-cancel-motif">{{ __('admin.reason') }}</label>
+                        <input type="text" class="form-control" id="solo-cancel-motif" name="motif"
+                               required maxlength="255" placeholder="{{ __('driver.solo_cancel_reason_hint') }}">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light border" data-bs-dismiss="modal">
+                            {{ __('admin.back') }}
+                        </button>
+                        <button class="btn btn-danger">{{ __('driver.solo_cancel') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+        <script>
+            // Chaque bouton « Annuler » porte sa propre URL : le formulaire de
+            // la fenêtre est réutilisé, jamais dupliqué par ligne.
+            document.querySelectorAll('.solo-cancel').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const form = document.getElementById('soloCancelForm');
+                    const intro = document.getElementById('soloCancelIntro');
+
+                    form.action = button.dataset.cancelUrl;
+                    form.reset();
+                    intro.textContent = form.dataset.intro.replace('__REF__', button.dataset.reference);
+                });
+            });
+        </script>
+    @endpush
 @endsection

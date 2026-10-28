@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'reference', 'customer_name', 'phone', 'starts_at', 'ends_at', 'days',
-    'daily_price', 'price_total', 'status', 'driver_id',
+    'daily_price', 'price_total', 'status', 'status_reason', 'driver_id',
 ])]
 class DriverOnlyBooking extends Model
 {
@@ -55,6 +55,7 @@ class DriverOnlyBooking extends Model
         return $query->whereIn('status', [
             DriverOnlyBookingStatus::EnAttente->value,
             DriverOnlyBookingStatus::Confirmee->value,
+            DriverOnlyBookingStatus::EnCours->value,
         ]);
     }
 

@@ -252,4 +252,71 @@ class DriverOnlyBookingTest extends TestCase
 
         $this->assertDatabaseCount('driver_only_bookings', 0);
     }
+
+    public function test_manager_moves_a_solo_request_through_its_statuses(): void
+    {
+        $manager = $this->staff('gestionnaire');
+        $booking = DriverOnlyBooking::factory()->create();
+        $driver = $this->driver();
+
+        $this->actingAs($manager)
+            ->post(route('admin.driver-only-bookings.confirm', $booking))
+            ->assertRedirect();
+
+        $this->actingAs($manager)
+            ->post(route('admin.driver-only-bookings.assign', $booking), ['driver' => $driver->id])
+            ->assertRedirect();
+
+        $this->actingAs($manager)
+            ->post(route('admin.driver-only-bookings.start', $booking))
+            ->assertRedirect();
+
+        $this->assertSame(DriverOnlyBookingStatus::EnCours, $booking->refresh()->status);
+
+        $this->actingAs($manager)
+            ->post(route('admin.driver-only-bookings.finish', $booking))
+            ->assertRedirect();
+
+        $this->assertSame(DriverOnlyBookingStatus::Terminee, $booking->refresh()->status);
+    }
+
+    public function test_a_solo_request_is_cancelled_with_a_reason(): void
+    {
+        $manager = $this->staff('gestionnaire');
+        $booking = DriverOnlyBooking::factory()->create([
+            'status' => DriverOnlyBookingStatus::Confirmee,
+        ]);
+
+        $this->actingAs($manager)
+            ->post(route('admin.driver-only-bookings.cancel', $booking), ['motif' => 'Client malade'])
+            ->assertRedirect();
+
+        $booking->refresh();
+        $this->assertSame(DriverOnlyBookingStatus::Annulee, $booking->status);
+        $this->assertSame('Client malade', $booking->status_reason);
+    }
+
+    public function test_an_impossible_solo_status_change_is_refused(): void
+    {
+        $manager = $this->staff('gestionnaire');
+        $booking = DriverOnlyBooking::factory()->create();
+
+        $this->actingAs($manager)
+            ->post(route('admin.driver-only-bookings.finish', $booking))
+            ->assertSessionHas('error');
+
+        $this->assertSame(DriverOnlyBookingStatus::EnAttente, $booking->refresh()->status);
+    }
+
+    public function test_admin_sees_the_status_actions_for_a_confirmed_solo_request(): void
+    {
+        $manager = $this->staff('gestionnaire');
+        DriverOnlyBooking::factory()->create(['status' => DriverOnlyBookingStatus::Confirmee]);
+
+        $this->actingAs($manager)
+            ->get(route('admin.driver-only-bookings.index'))
+            ->assertOk()
+            ->assertSee(__('driver.solo_start'))
+            ->assertSee(__('driver.solo_cancel'));
+    }
 }
