@@ -2861,89 +2861,31 @@ body.public-site {
         padding-top: 0;
     }
 
+    // Page « Location avec chauffeur » : les deux formules côte à côte, puis
+    // les occasions. Le contenu occupe toute la largeur de la page : une
+    // colonne étroite au centre donnait l'impression d'une page vide.
     .driver-page {
         width: 100%;
-        max-width: 36rem;
-        margin-inline: auto;
 
         &__header {
-            margin-bottom: 1.5rem;
-        }
+            max-width: 54rem;
+            margin: 0 auto 2.75rem;
+            text-align: center;
 
-        &__rate {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.65rem 0.9rem;
-            border-radius: 0.65rem;
-            background: #e6f4ed;
-            color: #087744;
-            font-size: 0.9rem;
-        }
-
-        &__tabs {
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 0.25rem;
-            padding: 0.25rem;
-            border-radius: 0.75rem;
-            background: #eaeae8;
-
-            .nav-item {
-                flex: 1 1 0;
-                min-width: 0;
+            h1 {
+                margin-bottom: 0.85rem;
+                font-size: clamp(2rem, 4vw, 3rem);
+                font-weight: 800;
+                letter-spacing: -0.025em;
+                line-height: 1.08;
             }
 
-            .nav-link {
-                width: 100%;
-                height: 100%;
-                padding: 0.7rem 0.5rem;
-                border-radius: 0.55rem;
-                color: #5c6269;
-                font-size: 0.9rem;
-                font-weight: 600;
-
-                &.active {
-                    background: #151515;
-                    color: #fff;
-                }
+            p {
+                margin-bottom: 0;
+                color: #5a6470;
+                font-size: clamp(1rem, 1.3vw, 1.1rem);
+                line-height: 1.55;
             }
-        }
-
-        &__card {
-            padding: 1.35rem;
-            border: 1px solid #e3e5e8;
-            border-top: 4px solid var(--pdj-public-yellow);
-            border-radius: 1rem;
-            background: #fff;
-            box-shadow: 0 12px 34px rgba(20, 22, 26, 0.06);
-
-            .search-panel__label {
-                color: #715600;
-            }
-        }
-
-        &__date-group {
-            margin-bottom: 1.4rem;
-
-            .form-label {
-                color: #53606a;
-            }
-
-            .form-control,
-            .form-select {
-                min-height: 3rem;
-            }
-        }
-
-        &__solo-rates {
-            display: grid;
-            gap: 0.5rem;
-            padding: 0.9rem;
-            border-radius: 0.75rem;
-            background: #e6f4ed;
-            color: #087744;
-            font-size: 0.9rem;
-            font-weight: 600;
         }
 
         &__price-preview {
@@ -2970,21 +2912,227 @@ body.public-site {
         }
     }
 
+    .driver-offers {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3.5rem;
+
+        @media (max-width: 767.98px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .driver-offer {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: clamp(1.5rem, 2.4vw, 2rem);
+        border: 1px solid #e4e6e9;
+        border-radius: 1rem;
+        background: #fff;
+
+        &__icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 3.5rem;
+            height: 3.5rem;
+            margin-bottom: 1.25rem;
+            border-radius: 1rem;
+            background: #e4edfc;
+            color: #b07d00;
+            font-size: 1.65rem;
+        }
+
+        &__icon--solo {
+            width: auto;
+            height: auto;
+            margin-bottom: 1.35rem;
+            border-radius: 0;
+            background: none;
+            color: $ink;
+            font-size: 1.9rem;
+        }
+
+        h2 {
+            margin-bottom: 0.75rem;
+            font-size: clamp(1.3rem, 2vw, 1.55rem);
+            font-weight: 700;
+        }
+
+        &__text {
+            margin-bottom: 1rem;
+            color: #4d5763;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        &__price {
+            margin-bottom: 0.4rem;
+            color: #b07d00;
+            font-size: 1.2rem;
+            font-weight: 700;
+
+            span {
+                font-weight: 500;
+            }
+        }
+
+        &__note {
+            margin-bottom: 1.5rem;
+            color: #0f7a4a;
+            font-size: 0.875rem;
+            line-height: 1.45;
+        }
+
+        &__cta {
+            margin-top: auto;
+            padding: 0.65rem 1.25rem;
+            border: 0;
+            border-radius: 0.6rem;
+            font-weight: 600;
+        }
+
+        &__cta--accent {
+            color: #171a1e;
+            background: var(--pdj-public-yellow);
+
+            &:hover,
+            &:focus-visible {
+                color: #171a1e;
+                background: color-mix(in srgb, var(--pdj-public-yellow), #fff 16%);
+            }
+        }
+
+        &__cta--dark {
+            color: #fff;
+            background: $ink;
+
+            &:hover,
+            &:focus-visible {
+                color: #fff;
+                background: lighten($ink, 6%);
+            }
+        }
+    }
+
+    .driver-occasions {
+        margin-bottom: 3.5rem;
+
+        &__title {
+            margin-bottom: 1.75rem;
+            text-align: center;
+            font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+            font-weight: 700;
+        }
+    }
+
+    .driver-occasion {
+        height: 100%;
+        padding: 1.5rem;
+        border: 1px solid #e5e5e1;
+        border-radius: 1rem;
+        background: #f6f6f3;
+
+        i {
+            display: block;
+            margin-bottom: 0.9rem;
+            color: #b07d00;
+            font-size: 1.75rem;
+        }
+
+        h3 {
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        p {
+            margin-bottom: 0;
+            color: #5a6470;
+            font-size: 0.9rem;
+            line-height: 1.55;
+        }
+    }
+
+    .driver-booking {
+        display: grid;
+        grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+        gap: clamp(1.5rem, 3vw, 3rem);
+        padding: clamp(1.5rem, 3vw, 2.5rem);
+        border: 1px solid #e4e6e9;
+        border-top: 4px solid var(--pdj-public-yellow);
+        border-radius: 1rem;
+        background: #fff;
+        scroll-margin-top: 6rem;
+
+        @media (max-width: 991.98px) {
+            grid-template-columns: 1fr;
+        }
+
+        // Bootstrap annule les gouttières du `.row` par des marges négatives :
+        // dans la carte, on les remet à zéro pour que les champs restent dans
+        // la zone de padding au lieu de mordre sur le bord droit.
+        > form {
+            margin-inline: 0;
+        }
+
+        &__eyebrow {
+            display: inline-block;
+            margin-bottom: 0.5rem;
+            color: #715600;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            margin-bottom: 0.75rem;
+        }
+
+        &__intro {
+            color: #4d5763;
+            line-height: 1.6;
+        }
+
+        &__rates {
+            display: grid;
+            gap: 0.5rem;
+            margin: 1.25rem 0 0;
+            padding: 0;
+            list-style: none;
+
+            li {
+                display: flex;
+                gap: 0.5rem;
+                color: #0f7a4a;
+                font-size: 0.92rem;
+                font-weight: 600;
+
+                i {
+                    flex-shrink: 0;
+                    margin-top: 0.1rem;
+                }
+            }
+        }
+    }
+
     @media (max-width: 575.98px) {
-        .driver-page {
-            &__card {
-                padding: 1.1rem;
-            }
+        .driver-page__price-preview {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
 
-            &__tabs .nav-link {
-                font-size: 0.82rem;
-            }
+        .driver-offers {
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+        }
 
-            &__price-preview {
-                align-items: flex-start;
-                flex-direction: column;
-                gap: 0.25rem;
-            }
+        .driver-occasions {
+            margin-bottom: 2.5rem;
         }
     }
 

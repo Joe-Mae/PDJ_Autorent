@@ -62,6 +62,24 @@ class PublicPagesTest extends TestCase
             ->assertSee($fleetLabel);
     }
 
+    public function test_la_page_chauffeur_presente_les_deux_formules_et_leurs_actions(): void
+    {
+        $this->get('/fr/location-avec-chauffeur')
+            ->assertOk()
+            ->assertSee(__('driver.offer_vehicle_title'))
+            ->assertSee(__('driver.offer_solo_title'))
+            ->assertSee(__('driver.occasions_title'))
+            // « Choisir un véhicule » mène à la flotte, chauffeur activé.
+            ->assertSee(
+                'href="'.route('vehicles.index', ['locale' => 'fr', 'avec_chauffeur' => 1]).'"',
+                escape: false,
+            )
+            // « Demander un chauffeur » mène au formulaire de la même page.
+            ->assertSee('href="#chauffeur-seul"', escape: false)
+            ->assertSee('id="chauffeur-seul"', escape: false)
+            ->assertSee('name="identity_document"', escape: false);
+    }
+
     public function test_navigation_ne_displays_plus_le_bouton_de_connexion(): void
     {
         $this->get('/fr')

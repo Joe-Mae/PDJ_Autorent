@@ -4,24 +4,23 @@
 
 @section('pageContent')
     @php
-        $activeTab = $errors->any() || session('driver_only_booking_reference') ? 'driver-only' : 'vehicle-driver';
         $settings = app(\App\Services\SettingsService::class);
         $money = fn (int $amount) => $settings->money($amount);
         $currency = $settings->currency();
-        $startDate = today()->addDay()->toDateString();
-        $returnDate = today()->addDay()->addDays(3)->toDateString();
-        $hours = range($settings->openHour(), $settings->closeHour());
         $pageIntro = $settings->string('content.driver.page_intro.'.app()->getLocale())
             ?: __('driver.page_intro');
+        $occasions = [
+            ['icon' => 'heart-fill', 'key' => 'wedding'],
+            ['icon' => 'stars', 'key' => 'events'],
+            ['icon' => 'briefcase-fill', 'key' => 'business'],
+            ['icon' => 'cart3', 'key' => 'errands'],
+        ];
     @endphp
 
     <div class="driver-page">
         <header class="driver-page__header">
-            <h1 class="h2 fw-bold mb-2">{{ __('driver.title_page') }}</h1>
-            <p class="text-muted mb-3">{{ $pageIntro }}</p>
-            <div class="driver-page__rate">
-                <strong>{{ number_format($vehicleDailyPrice, 0, ' ', ' ') }} {{ __('driver.price_unit', ['currency' => $currency]) }}</strong>
-            </div>
+            <h1>{{ __('driver.hero_title') }}</h1>
+            <p>{{ $pageIntro }}</p>
         </header>
 
         @if (session('driver_only_booking_reference'))
@@ -38,220 +37,166 @@
             </div>
         @endif
 
-        <ul class="nav nav-pills driver-page__tabs mb-3" role="tablist" aria-label="{{ __('driver.title_page') }}">
-            <li class="nav-item" role="presentation">
-                <button
-                    class="nav-link {{ $activeTab === 'vehicle-driver' ? 'active' : '' }}"
-                    id="vehicle-driver-tab"
-                    data-bs-toggle="pill"
-                    data-bs-target="#vehicle-driver-panel"
-                    type="button"
-                    role="tab"
-                    aria-controls="vehicle-driver-panel"
-                    aria-selected="{{ $activeTab === 'vehicle-driver' ? 'true' : 'false' }}"
+        {{-- Les deux formules, côte à côte : chacune mène directement à son
+             parcours (la flotte pour la voiture avec chauffeur, le formulaire
+             ci-dessous pour le chauffeur seul). --}}
+        <div class="driver-offers">
+            <article class="driver-offer">
+                <span class="driver-offer__icon">
+                    <i class="bi bi-car-front-fill" aria-hidden="true"></i>
+                </span>
+                <h2>{{ __('driver.offer_vehicle_title') }}</h2>
+                <p class="driver-offer__text">{{ __('driver.offer_vehicle_text') }}</p>
+                <p class="driver-offer__price">
+                    + {{ $money($vehicleDailyPrice) }} <span>/ {{ __('driver.per_day') }}</span>
+                </p>
+                <p class="driver-offer__note">{{ __('driver.offer_vehicle_note') }}</p>
+                <a
+                    class="btn driver-offer__cta driver-offer__cta--accent"
+                    href="{{ route('vehicles.index', ['locale' => $locale, 'avec_chauffeur' => 1]) }}"
                 >
-                    {{ __('driver.with_vehicle_tab') }}
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button
-                    class="nav-link {{ $activeTab === 'driver-only' ? 'active' : '' }}"
-                    id="driver-only-tab"
-                    data-bs-toggle="pill"
-                    data-bs-target="#driver-only-panel"
-                    type="button"
-                    role="tab"
-                    aria-controls="driver-only-panel"
-                    aria-selected="{{ $activeTab === 'driver-only' ? 'true' : 'false' }}"
-                >
-                    {{ __('driver.solo_title') }}
-                </button>
-            </li>
-        </ul>
+                    {{ __('driver.offer_vehicle_cta') }}
+                </a>
+            </article>
 
-        <div class="tab-content">
-            <section
-                class="tab-pane fade {{ $activeTab === 'vehicle-driver' ? 'show active' : '' }}"
-                id="vehicle-driver-panel"
-                role="tabpanel"
-                aria-labelledby="vehicle-driver-tab"
-                tabindex="0"
-            >
-                <div class="driver-page__card">
-                    <div class="search-panel__label">{{ __('driver.with_vehicle_search_title') }}</div>
-                    <p class="small text-muted mb-3">{{ __('driver.with_vehicle_search_intro') }}</p>
-
-                    <form action="{{ route('vehicles.index', ['locale' => $locale]) }}" method="GET" data-driver-price-form>
-                        <input type="hidden" name="avec_chauffeur" value="1">
-
-                        <div class="driver-page__date-group">
-                            <h2 class="h6 fw-bold mb-3">{{ __('general.search_pickup') }}</h2>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <label class="form-label small text-uppercase" for="driver-start-date">{{ __('driver.date_label') }}</label>
-                                    <input
-                                        class="form-control"
-                                        id="driver-start-date"
-                                        name="du"
-                                        data-price-start
-                                        type="date"
-                                        value="{{ request('du', $startDate) }}"
-                                        min="{{ today()->toDateString() }}"
-                                        required
-                                    >
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small text-uppercase" for="driver-start-hour">{{ __('driver.time_label') }}</label>
-                                    <select class="form-select" id="driver-start-hour" name="heure_depart">
-                                        @foreach ($hours as $hour)
-                                            <option value="{{ $hour }}" @selected((int) request('heure_depart', $settings->openHour()) === $hour)>
-                                                {{ sprintf('%02dh00', $hour) }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="driver-page__date-group">
-                            <h2 class="h6 fw-bold mb-3">{{ __('general.search_return') }}</h2>
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <label class="form-label small text-uppercase" for="driver-return-date">{{ __('driver.date_label') }}</label>
-                                    <input
-                                        class="form-control"
-                                        id="driver-return-date"
-                                        name="au"
-                                        data-price-end
-                                        type="date"
-                                        value="{{ request('au', $returnDate) }}"
-                                        min="{{ request('du', $startDate) }}"
-                                        required
-                                    >
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small text-uppercase" for="driver-return-hour">{{ __('driver.time_label') }}</label>
-                                    <select class="form-select" id="driver-return-hour" name="heure_retour">
-                                        @foreach ($hours as $hour)
-                                            <option value="{{ $hour }}" @selected((int) request('heure_retour', $settings->closeHour()) === $hour)>
-                                                {{ sprintf('%02dh00', $hour) }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div
-                            class="driver-page__price-preview mb-3"
-                            data-driver-price-preview
-                            data-daily-rate="{{ $vehicleDailyPrice }}"
-                            data-daily-label="{{ __('driver.price_calculation', ['days' => '__DAYS__', 'daily_price' => '__DAILY__', 'currency' => $currency]) }}"
-                            data-empty-label="{{ __('driver.price_select_dates') }}"
-                            data-currency="{{ $currency }}"
-                            aria-live="polite"
-                        >
-                            <span class="driver-page__price-empty" data-price-empty>{{ __('driver.price_select_dates') }}</span>
-                            <span data-price-breakdown hidden></span>
-                            <strong data-price-total hidden></strong>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100 py-3">
-                            {{ __('general.search_cta') }} <i class="bi bi-arrow-right"></i>
-                        </button>
-                    </form>
-
-                    <p class="small text-muted text-center mt-3 mb-0">
-                        <i class="bi bi-geo-alt me-1"></i>{{ __('general.search_agency_note', ['city' => 'Lomé']) }}
-                    </p>
-                </div>
-            </section>
-
-            <section
-                class="tab-pane fade {{ $activeTab === 'driver-only' ? 'show active' : '' }}"
-                id="driver-only-panel"
-                role="tabpanel"
-                aria-labelledby="driver-only-tab"
-                tabindex="0"
-            >
-                <div class="driver-page__card">
-                    <div class="search-panel__label">{{ __('driver.solo_form_title') }}</div>
-                    <p class="small text-muted mb-3">
-                        {{ __('driver.solo_intro', [
-                            'days' => $soloDiscountAfterDays,
-                            'price' => $money($soloDailyPrice),
+            <article class="driver-offer">
+                <span class="driver-offer__icon driver-offer__icon--solo">
+                    <i class="bi bi-key-fill" aria-hidden="true"></i>
+                </span>
+                <h2>{{ __('driver.offer_solo_title') }}</h2>
+                <p class="driver-offer__text">{{ __('driver.offer_solo_text') }}</p>
+                <p class="driver-offer__price">
+                    {{ $money($soloDailyPrice) }} <span>/ {{ __('driver.per_day') }}</span>
+                </p>
+                @if ($soloDiscountDailyPrice > 0 && $soloDiscountDailyPrice < $soloDailyPrice)
+                    <p class="driver-offer__note">
+                        <i class="bi bi-percent" aria-hidden="true"></i>
+                        {{ __('driver.offer_solo_note', [
                             'discount' => $money($soloDiscountDailyPrice),
+                            'days' => $soloDiscountAfterDays + 1,
                         ]) }}
                     </p>
+                @endif
+                <a class="btn driver-offer__cta driver-offer__cta--dark" href="#chauffeur-seul">
+                    {{ __('driver.offer_solo_cta') }}
+                </a>
+            </article>
+        </div>
 
-                    <div class="driver-page__solo-rates mb-4">
-                        <span>{{ __('driver.solo_rate_standard', [
+        <section class="driver-occasions" aria-labelledby="driver-occasions-title">
+            <h2 class="driver-occasions__title" id="driver-occasions-title">
+                {{ __('driver.occasions_title') }}
+            </h2>
+
+            <div class="row g-3">
+                @foreach ($occasions as $occasion)
+                    <div class="col-12 col-sm-6 col-xl-3">
+                        <article class="driver-occasion">
+                            <i class="bi bi-{{ $occasion['icon'] }}" aria-hidden="true"></i>
+                            <h3>{{ __('driver.occasion_'.$occasion['key'].'_title') }}</h3>
+                            <p>{{ __('driver.occasion_'.$occasion['key'].'_text') }}</p>
+                        </article>
+                    </div>
+                @endforeach
+            </div>
+        </section>
+
+        <section class="driver-booking" id="chauffeur-seul" aria-labelledby="driver-booking-title">
+            <div class="driver-booking__pitch">
+                <span class="driver-booking__eyebrow">{{ __('driver.offer_solo_title') }}</span>
+                <h2 class="h3 fw-bold" id="driver-booking-title">{{ __('driver.solo_form_title') }}</h2>
+                <p class="driver-booking__intro">{{ __('driver.solo_intro') }}</p>
+
+                <ul class="driver-booking__rates">
+                    <li>
+                        <i class="bi bi-check2" aria-hidden="true"></i>
+                        {{ __('driver.solo_rate_standard', [
                             'days' => $soloDiscountAfterDays,
                             'price' => $money($soloDailyPrice),
-                        ]) }}</span>
-                        <span>{{ __('driver.solo_rate_discount', [
+                        ]) }}
+                    </li>
+                    <li>
+                        <i class="bi bi-check2" aria-hidden="true"></i>
+                        {{ __('driver.solo_rate_discount', [
                             'days' => $soloDiscountAfterDays + 1,
                             'price' => $money($soloDiscountDailyPrice),
-                        ]) }}</span>
-                    </div>
+                        ]) }}
+                    </li>
+                </ul>
+            </div>
 
-                    <form action="{{ route('driver-only-bookings.store', ['locale' => $locale]) }}" method="POST" class="row g-3" enctype="multipart/form-data" data-driver-price-form>
-                        @csrf
-                        <div class="col-12">
-                            <label class="form-label" for="solo-name">{{ __('driver.solo_name') }}</label>
-                            <input class="form-control @error('name') is-invalid @enderror" id="solo-name"
-                                   name="name" value="{{ old('name') }}" maxlength="120" required>
-                            @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label" for="solo-phone">{{ __('driver.solo_phone') }}</label>
-                            <input class="form-control @error('phone') is-invalid @enderror" id="solo-phone"
-                                   name="phone" type="tel" value="{{ old('phone') }}" required>
-                            @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label" for="solo-start">{{ __('driver.solo_start_date') }}</label>
-                            <input class="form-control @error('du') is-invalid @enderror" id="solo-start"
-                                   name="du" type="date" data-price-start value="{{ old('du') }}"
-                                   min="{{ today()->toDateString() }}" required>
-                            @error('du') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label" for="solo-end">{{ __('driver.solo_end_date') }}</label>
-                            <input class="form-control @error('au') is-invalid @enderror" id="solo-end"
-                                   name="au" type="date" data-price-end value="{{ old('au') }}"
-                                   min="{{ old('du', today()->toDateString()) }}" required>
-                            @error('au') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label" for="solo-identity">{{ __('driver.solo_identity') }}</label>
-                            <input class="form-control @error('identity_document') is-invalid @enderror" id="solo-identity"
-                                   name="identity_document" type="file"
-                                   accept="image/jpeg,image/png,application/pdf" required>
-                            <div class="form-text">{{ __('driver.solo_identity_hint') }}</div>
-                            @error('identity_document') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        </div>
-                        <div
-                            class="col-12 driver-page__price-preview"
-                            data-driver-price-preview
-                            data-daily-rate="{{ $soloDailyPrice }}"
-                            data-discount-daily-rate="{{ $soloDiscountDailyPrice }}"
-                            data-discount-after-days="{{ $soloDiscountAfterDays }}"
-                            data-daily-label="{{ __('driver.price_calculation', ['days' => '__DAYS__', 'daily_price' => '__DAILY__', 'currency' => $currency]) }}"
-                            data-empty-label="{{ __('driver.price_select_dates') }}"
-                            data-currency="{{ $currency }}"
-                            aria-live="polite"
-                        >
-                            <span class="driver-page__price-empty" data-price-empty>{{ __('driver.price_select_dates') }}</span>
-                            <span data-price-breakdown hidden></span>
-                            <strong data-price-total hidden></strong>
-                        </div>
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary w-100">{{ __('driver.solo_submit') }}</button>
-                        </div>
-                    </form>
+            <form
+                action="{{ route('driver-only-bookings.store', ['locale' => $locale]) }}"
+                method="POST"
+                class="row g-3"
+                enctype="multipart/form-data"
+                data-driver-price-form
+            >
+                @csrf
+                <div class="col-12 col-md-6">
+                    <label class="form-label" for="solo-name">{{ __('driver.solo_name') }}</label>
+                    <input class="form-control @error('name') is-invalid @enderror" id="solo-name"
+                           name="name" value="{{ old('name') }}" maxlength="120" required>
+                    @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                 </div>
-            </section>
-        </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label" for="solo-phone">{{ __('driver.solo_phone') }}</label>
+                    <input class="form-control @error('phone') is-invalid @enderror" id="solo-phone"
+                           name="phone" type="tel" value="{{ old('phone') }}" required>
+                    @error('phone') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label" for="solo-start">{{ __('driver.solo_start_date') }}</label>
+                    <input class="form-control @error('du') is-invalid @enderror" id="solo-start"
+                           name="du" type="date" data-price-start value="{{ old('du') }}"
+                           min="{{ today()->toDateString() }}" required>
+                    @error('du') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-12 col-md-6">
+                    <label class="form-label" for="solo-end">{{ __('driver.solo_end_date') }}</label>
+                    <input class="form-control @error('au') is-invalid @enderror" id="solo-end"
+                           name="au" type="date" data-price-end value="{{ old('au') }}"
+                           min="{{ old('du', today()->toDateString()) }}" required>
+                    @error('au') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div class="col-12">
+                    <label class="form-label" for="solo-identity">{{ __('driver.solo_identity') }}</label>
+                    <input class="form-control @error('identity_document') is-invalid @enderror" id="solo-identity"
+                           name="identity_document" type="file"
+                           accept="image/jpeg,image/png,application/pdf" required>
+                    <div class="form-text">{{ __('driver.solo_identity_hint') }}</div>
+                    @error('identity_document') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+                <div
+                    class="col-12 driver-page__price-preview"
+                    data-driver-price-preview
+                    data-daily-rate="{{ $soloDailyPrice }}"
+                    data-discount-daily-rate="{{ $soloDiscountDailyPrice }}"
+                    data-discount-after-days="{{ $soloDiscountAfterDays }}"
+                    data-daily-label="{{ __('driver.price_calculation', ['days' => '__DAYS__', 'daily_price' => '__DAILY__', 'currency' => $currency]) }}"
+                    data-empty-label="{{ __('driver.price_select_dates') }}"
+                    data-currency="{{ $currency }}"
+                    aria-live="polite"
+                >
+                    <span class="driver-page__price-empty" data-price-empty>{{ __('driver.price_select_dates') }}</span>
+                    <span data-price-breakdown hidden></span>
+                    <strong data-price-total hidden></strong>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary w-100 py-3">{{ __('driver.solo_submit') }}</button>
+                </div>
+            </form>
+        </section>
     </div>
+
+    @if ($errors->any())
+        @push('scripts')
+            <script>
+                // Le formulaire vit sous les deux offres : après un refus de
+                // validation, on y amène directement le visiteur plutôt que de
+                // le laisser en haut de page sans voir les messages.
+                document.getElementById('chauffeur-seul')?.scrollIntoView({ block: 'start' });
+            </script>
+        @endpush
+    @endif
 @endsection
