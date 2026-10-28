@@ -62,11 +62,23 @@ class Vehicle extends Model implements HasMedia
         return $this->hasMany(Booking::class);
     }
 
+    /** Véhicules réservables maintenant : présents à l'agence et libres. */
     #[Scope]
     protected function bookable(Builder $query): Builder
     {
         return $query->where('vehicles.is_active', true)
             ->whereIn('vehicles.status', VehicleStatus::bookableValues());
+    }
+
+    /**
+     * Véhicules visibles dans la flotte publique, y compris ceux partis en
+     * location : ils restent au catalogue, avec un badge « indisponible ».
+     */
+    #[Scope]
+    protected function listed(Builder $query): Builder
+    {
+        return $query->where('vehicles.is_active', true)
+            ->whereIn('vehicles.status', VehicleStatus::listedValues());
     }
 
     #[Scope]

@@ -3,6 +3,10 @@
      * Le seul appel à l'action de la fiche. Un bouton, pas deux : « Réserver »
      * mène directement à l'étape 1 du tunnel avec les dates déjà figées.
      *
+     * Une voiture partie chez un client — ou déjà prise sur ces dates — garde
+     * son bouton, mais grisé : le client comprend qu'elle est au catalogue et
+     * qu'elle sera de nouveau libre plus tard.
+     *
      * @var bool $sticky
      */
     $sticky = $sticky ?? false;
@@ -10,19 +14,36 @@
     $query = $quote ? array_filter([
         'avec_chauffeur' => $quote->withDriver ? 1 : null,
     ], fn ($value) => $value !== null) : [];
+    $occupied = ! $vehicle->isBookable() || $isFree === false;
 @endphp
 
-@if (! $period)
+@if ($occupied)
+    <div class="{{ $sticky ? 'sticky-book' : 'pdj-card' }}">
+        @unless ($sticky)
+            @if ($period)
+                <div class="section-title">{{ __('vehicle.period') }}</div>
+                <p class="small mb-2">
+                    {{ $period->startsAt->translatedFormat('D d M') }} {{ sprintf('%02dh00', $period->startsAtHour()) }}
+                    <i class="bi bi-arrow-right mx-1"></i>
+                    {{ $period->endsAt->translatedFormat('D d M') }} {{ sprintf('%02dh00', $period->endsAtHour()) }}
+                </p>
+            @endif
+        @endunless
+
+        <button class="btn btn-secondary {{ $sticky ? 'w-100' : 'btn-lg w-100' }}" type="button" disabled>
+            {{ __('general.book') }}
+        </button>
+
+        <p class="small text-muted text-center mt-2 mb-0">
+            <i class="bi bi-clock me-1"></i>{{ __('vehicle.occupied') }}
+        </p>
+    </div>
+@elseif (! $period)
     <div class="{{ $sticky ?? false ? 'sticky-book' : 'pdj-card' }}">
         <a class="btn btn-primary {{ $sticky ?? false ? 'w-100' : 'btn-lg w-100' }}"
            href="{{ route('booking.guest.create', ['locale' => $locale, 'vehicle' => $vehicle]) }}">
             {{ __('general.book') }}
         </a>
-    </div>
-@else
-@if (! $isFree)
-    <div class="alert alert-warning">
-        <i class="bi bi-calendar-x me-1"></i>{{ __('vehicle.not_free') }}
     </div>
 @elseif ($sticky)
     <div class="sticky-book">
@@ -77,5 +98,4 @@
 
         <p class="small text-muted text-center mt-2 mb-0">{{ __('general.no_online_payment') }}</p>
     </div>
-@endif
 @endif

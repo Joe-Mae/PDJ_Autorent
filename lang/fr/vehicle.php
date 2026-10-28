@@ -36,6 +36,7 @@ return [
     'similar' => 'Véhicules similaires',
     'gallery_photo' => 'Voir la photo :number sur :total',
     'not_free' => 'Ce véhicule n\'est pas libre sur ces dates. Choisissez une autre période, ou voyez la flotte complète.',
+    'occupied' => 'Voiture occupée',
 
     // Les sept conditions affichées sur la fiche, toujours visibles,
     // jamais dans un onglet « CGU ».

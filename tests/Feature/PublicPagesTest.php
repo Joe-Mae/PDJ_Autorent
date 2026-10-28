@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\VehicleStatus;
+use App\Models\Booking;
 use App\Models\Vehicle;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -280,11 +281,12 @@ class PublicPagesTest extends TestCase
     }
 
     /**
-     * Une voiture partie avec un client ne doit plus être proposée à la
-     * réservation : elle n'est pas à l'agence. Le statut `en_location` est
-     * posé au retrait et retiré au retour, donc la flotte se met à jour seule.
+     * Une voiture partie avec un client reste au catalogue, avec un badge
+     * « indisponible » : le client sait qu'elle existe et reviendra quand elle
+     * sera libre. Le statut `en_location` est posé au retrait et retiré au
+     * retour, donc la flotte se met à jour seule.
      */
-    public function test_un_vehicule_en_location_ne_figure_plus_dans_la_flotte_disponible(): void
+    public function test_un_vehicule_en_location_reste_visible_mais_indisponible(): void
     {
         $sortie = $this->vehicle(null, [
             'brand' => 'BMW',
@@ -295,27 +297,50 @@ class PublicPagesTest extends TestCase
 
         $contenu = $this->get('/fr/vehicules')->assertOk()->getContent();
 
-        $this->assertStringNotContainsString('BMW X7', $contenu);
+        $this->assertStringContainsString('BMW X7', $contenu);
         $this->assertStringContainsString('Toyota Vitz', $contenu);
+        $this->assertStringContainsString(__('general.unavailable'), $contenu);
         $this->assertMatchesRegularExpression(
-            '/data-results-count>\s*1\s*</',
+            '/data-results-count>\s*2\s*</',
             $contenu,
-            'Seul le véhicule resté à l\'agence doit être compté.',
+            'Les deux voitures sont au catalogue, occupée ou non.',
         );
 
-        $this->get('/fr/vehicules/'.$sortie->id)->assertNotFound();
+        $this->get('/fr/vehicules/'.$sortie->id)
+            ->assertOk()
+            ->assertSee(__('vehicle.occupied'))
+            ->assertSee('disabled', false);
     }
 
-    public function test_un_vehicule_redevient_visible_des_son_retour(): void
+    public function test_un_vehicule_redevient_reservable_des_son_retour(): void
     {
         $vehicle = $this->vehicle(null, ['status' => VehicleStatus::EnLocation]);
 
-        $this->get('/fr/vehicules/'.$vehicle->id)->assertNotFound();
+        $this->get('/fr/vehicules/'.$vehicle->id)
+            ->assertOk()
+            ->assertSee(__('vehicle.occupied'));
 
         $vehicle->update(['status' => VehicleStatus::Disponible]);
 
-        $this->get('/fr/vehicules/'.$vehicle->id)->assertOk();
-        $this->get('/fr/vehicules')->assertOk()->assertSee($vehicle->displayName());
+        $this->get('/fr/vehicules/'.$vehicle->id)
+            ->assertOk()
+            ->assertDontSee(__('vehicle.occupied'));
+
+        $this->get('/fr/vehicules')
+            ->assertOk()
+            ->assertDontSee(__('general.unavailable'));
+    }
+
+    /** Une voiture déjà réservée sur les dates demandées est marquée occupée. */
+    public function test_un_vehicule_pris_sur_la_periode_porte_le_badge_indisponible(): void
+    {
+        $vehicle = $this->vehicle();
+        Booking::factory()->confirmed()->on($vehicle)->create();
+
+        $this->get('/fr/vehicules')
+            ->assertOk()
+            ->assertSee($vehicle->displayName())
+            ->assertSee(__('general.unavailable'));
     }
 
     /**
@@ -444,7 +469,8 @@ class PublicPagesTest extends TestCase
         // croire que le prix affiché vaut pour n'importe quand.
         $this->get('/fr/vehicules')
             ->assertOk()
-            ->assertSee('libre(s) sur vos dates');
+            ->assertSee(__('general.vehicles_free'))
+            ->assertSee(today()->addDay()->translatedFormat('D d M'));
     }
 
     public function test_une_categorie_sans_slug_connu_renvoie_404(): void

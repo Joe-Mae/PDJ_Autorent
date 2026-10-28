@@ -169,18 +169,22 @@ class AvailabilityService
             ));
     }
 
-    /** @return Collection<int, Vehicle> */
+    /**
+     * Flotte affichée sur le site.
+     *
+     * On montre aussi les voitures occupées sur la période, marquées
+     * `is_available = false` : le client voit qu'elles existent et pourra
+     * revenir plus tard, au lieu de croire que l'agence n'en a qu'une. Les
+     * voitures libres passent en tête de liste.
+     *
+     * @return Collection<int, Vehicle>
+     */
     public function searchVehicles(array $filters, BookingPeriod $period): Collection
     {
         $freeIds = $this->freeVehicleIds($period);
 
-        if ($freeIds === []) {
-            return collect();
-        }
-
         return Vehicle::query()
-            ->bookable()
-            ->whereIn('id', $freeIds)
+            ->listed()
             ->with(['category', 'media'])
             ->tap(fn (Builder $q) => $this->applyFilters($q, $filters))
             ->when(
@@ -203,14 +207,22 @@ class AvailabilityService
                     ->whereColumn('vehicle_categories.id', 'vehicles.category_id'),
                 ($filters['sort'] ?? null) === 'prix-desc' ? 'desc' : 'asc',
             )
-            ->get();
+            ->get()
+            ->each(fn (Vehicle $vehicle) => $vehicle->setAttribute(
+                'is_available',
+                in_array($vehicle->id, $freeIds, true),
+            ))
+            // Les libres d'abord ; le tri par prix reste intact à l'intérieur
+            // de chaque groupe (PHP 8 conserve l'ordre des éléments égaux).
+            ->sortByDesc('is_available')
+            ->values();
     }
 
-    /**bornes du curseur de prix, à partir du catalogue réel plutôt que d'une constante. */
+    /** Bornes du curseur de prix, sur toute la flotte affichée. */
     public function priceBounds(): array
     {
         $prices = Vehicle::query()
-            ->bookable()
+            ->listed()
             ->join('vehicle_categories', 'vehicles.category_id', '=', 'vehicle_categories.id')
             ->pluck('vehicle_categories.daily_price');
 

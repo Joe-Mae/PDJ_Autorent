@@ -36,6 +36,7 @@ return [
     'similar' => 'Similar cars',
     'gallery_photo' => 'View photo :number of :total',
     'not_free' => 'This vehicle is not free on those dates. Pick another period, or see the whole fleet.',
+    'occupied' => 'Vehicle is out',
 
     // The seven conditions shown on the vehicle page, always visible,
     // never hidden behind a "terms" tab.

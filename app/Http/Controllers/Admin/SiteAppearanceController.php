@@ -20,7 +20,7 @@ class SiteAppearanceController extends Controller
     public function edit(): View
     {
         $vehicles = Vehicle::query()
-            ->bookable()
+            ->listed()
             ->whereHas('media', fn ($query) => $query->where('collection_name', Vehicle::MEDIA_GALLERY))
             ->with(['media' => fn ($query) => $query->where('collection_name', Vehicle::MEDIA_GALLERY)])
             ->orderBy('brand')
@@ -88,7 +88,7 @@ class SiteAppearanceController extends Controller
         $heroVehicleIds = $data['hero_vehicle_ids'] ?? [];
         if ($heroVehicleIds !== []) {
             $validHeroVehicleCount = Vehicle::query()
-                ->bookable()
+                ->listed()
                 ->whereKey($heroVehicleIds)
                 ->whereHas('media', fn ($query) => $query->where('collection_name', Vehicle::MEDIA_GALLERY))
                 ->count();

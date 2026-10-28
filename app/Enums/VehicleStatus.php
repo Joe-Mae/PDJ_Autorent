@@ -11,16 +11,26 @@ enum VehicleStatus: string
     case HorsService = 'hors_service';
 
     /**
-     * Un véhicule réservable par le public.
+     * Un véhicule que le public peut réserver maintenant.
      *
-     * `EnLocation` est volontairement exclu : la voiture est chez le client,
-     * elle ne doit plus figurer dans la flotte disponible tant que l'agent
-     * n'a pas enregistré son retour. Le statut repasse à `Disponible` à ce
-     * moment-là, et la voiture réapparaît d'elle-même.
+     * `EnLocation` est exclu : la voiture est chez le client, on ne peut pas
+     * la promettre à quelqu'un d'autre tant qu'elle n'est pas revenue.
      */
     public function isBookable(): bool
     {
         return in_array($this, [self::Disponible, self::Reserve], true);
+    }
+
+    /**
+     * Un véhicule qui figure dans la flotte publique, même occupé.
+     *
+     * Une voiture partie reste visible avec un badge « indisponible » : le
+     * client sait qu'elle existe et pourra revenir quand elle sera libre. Seul
+     * ce qui est immobilisé (maintenance, hors service) sort du catalogue.
+     */
+    public function isListed(): bool
+    {
+        return in_array($this, [self::Disponible, self::Reserve, self::EnLocation], true);
     }
 
     /** @return list<string> */
@@ -29,6 +39,15 @@ enum VehicleStatus: string
         return array_values(array_map(
             static fn (self $case) => $case->value,
             array_filter(self::cases(), static fn (self $case) => $case->isBookable()),
+        ));
+    }
+
+    /** @return list<string> */
+    public static function listedValues(): array
+    {
+        return array_values(array_map(
+            static fn (self $case) => $case->value,
+            array_filter(self::cases(), static fn (self $case) => $case->isListed()),
         ));
     }
 

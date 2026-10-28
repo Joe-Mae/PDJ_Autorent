@@ -85,7 +85,8 @@ return [
     'agency_answer' => 'Réponse de l\'agence',
     'no_reviews_yet' => 'Pas encore d\'avis. Les premiers clients les laisseront.',
     'vehicles_count' => 'véhicules',
-    'vehicles_free' => 'libre(s) sur vos dates',
+    'vehicles_free' => 'véhicule(s) dans la flotte',
+    'unavailable' => 'Indisponible',
     'days' => 'jours',
     'all_faqs' => 'Toutes les questions',
 

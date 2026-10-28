@@ -14,13 +14,18 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class SearchVehiclesRequest extends FormRequest
 {
-    /** La fiche d'un véhicule retiré de la location renvoie 404 avant tout. */
+    /**
+     * La fiche reste consultable tant que la voiture est au catalogue, même
+     * occupée : le client doit pouvoir la voir et comprendre qu'elle est prise
+     * pour l'instant. Seuls les véhicules retirés (maintenance, hors service,
+     * inactifs) renvoient 404.
+     */
     public function authorize(): bool
     {
         $vehicle = $this->route('vehicle');
 
         if ($vehicle instanceof Vehicle) {
-            abort_unless($vehicle->isBookable(), 404);
+            abort_unless($vehicle->is_active && $vehicle->status->isListed(), 404);
         }
 
         return true;

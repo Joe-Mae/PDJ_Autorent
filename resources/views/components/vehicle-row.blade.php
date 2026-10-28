@@ -13,6 +13,9 @@
     $locale = app()->getLocale();
     $money = fn (int $amount) => app(\App\Services\SettingsService::class)->money($amount);
     $quote = app(\App\Services\PricingService::class)->quote($vehicle->category, $period, $withDriver, $vehicle->deposit_required);
+    // Absente pour les listes qui ne calculent pas de disponibilité (accueil) :
+    // dans ce cas la voiture est réservable.
+    $available = $vehicle->is_available ?? true;
     $params = request()->query();
     $bookingParams = [
         'locale' => $locale,
@@ -38,6 +41,9 @@
                href="{{ route('vehicles.show', ['locale' => $locale, 'vehicle' => $vehicle]) }}?{{ http_build_query($params) }}">
                 {{ $vehicle->displayName() }}
             </a>
+            @unless ($available)
+                <span class="badge bg-annulee align-middle ms-1">{{ __('general.unavailable') }}</span>
+            @endunless
         </h3>
 
         <div class="text-muted small">{{ $vehicle->category->name($locale) }} · {{ $vehicle->year }}</div>
@@ -75,9 +81,15 @@
         @if ($quote->deposit > 0)
             <div class="deposit">{{ __('general.deposit', ['price' => $money($quote->deposit)]) }}</div>
         @endif
-        <a class="btn btn-primary btn-sm w-100 mt-2"
-           href="{{ route('booking.guest.create', $bookingParams) }}">
-            {{ __('general.book') }}
-        </a>
+        @if ($available)
+            <a class="btn btn-primary btn-sm w-100 mt-2"
+               href="{{ route('booking.guest.create', $bookingParams) }}">
+                {{ __('general.book') }}
+            </a>
+        @else
+            <button class="btn btn-secondary btn-sm w-100 mt-2" type="button" disabled>
+                {{ __('general.book') }}
+            </button>
+        @endif
     </div>
 </div>

@@ -41,7 +41,7 @@ class HomeController extends Controller
 
         if ($selectedHeroVehicleIds !== []) {
             $vehiclesById = Vehicle::query()
-                ->bookable()
+                ->listed()
                 ->whereKey($selectedHeroVehicleIds)
                 ->whereHas('media', fn (Builder $query) => $query->where('collection_name', Vehicle::MEDIA_GALLERY))
                 ->with(['media' => fn (MorphMany $query) => $query->where('collection_name', Vehicle::MEDIA_GALLERY)])
@@ -69,7 +69,7 @@ class HomeController extends Controller
                 ->values(),
             'categories' => VehicleCategory::query()
                 ->active()
-                ->withCount(['vehicles' => fn ($q) => $q->bookable()])
+                ->withCount(['vehicles' => fn ($q) => $q->listed()])
                 ->orderBy('sort_order')
                 ->get(),
             'priceBounds' => $this->availability->priceBounds(),

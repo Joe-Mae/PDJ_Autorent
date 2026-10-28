@@ -85,7 +85,8 @@ return [
     'agency_answer' => 'Agency reply',
     'no_reviews_yet' => 'No reviews yet. The first customers will leave them.',
     'vehicles_count' => 'vehicles',
-    'vehicles_free' => 'free on your dates',
+    'vehicles_free' => 'vehicle(s) in the fleet',
+    'unavailable' => 'Unavailable',
     'days' => 'days',
     'all_faqs' => 'All questions',
 

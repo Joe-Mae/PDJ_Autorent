@@ -16,9 +16,11 @@ use Illuminate\Http\JsonResponse;
 /**
  * Recherche et fiche véhicule.
  *
- * Point important : on ne montre JAMAIS un véhicule indisponible. Le site
- * affiche le prix de ce qui est réellement réservable sur la période, et quand
- * rien ne sort, on propose des alternatives concrètes plutôt qu'une page d'erreur.
+ * La flotte montre tout ce qui est au catalogue, y compris les voitures
+ * occupées : elles portent un badge « indisponible » et leur bouton de
+ * réservation est désactivé, pour que le client sache qu'elles existent et
+ * revienne plus tard. Quand la flotte est vide (filtres trop stricts), on
+ * propose des alternatives concrètes plutôt qu'une page d'erreur.
  */
 class VehicleController extends Controller
 {
@@ -55,7 +57,7 @@ class VehicleController extends Controller
             'period' => $period,
             'filters' => $filters,
             'category' => $category,
-            'categories' => VehicleCategory::query()->active()->withCount(['vehicles' => fn ($q) => $q->bookable()])->orderBy('sort_order')->get(),
+            'categories' => VehicleCategory::query()->active()->withCount(['vehicles' => fn ($q) => $q->listed()])->orderBy('sort_order')->get(),
             'priceBounds' => $this->availability->priceBounds(),
             'driverAvailable' => $driverAvailable,
             'alternatives' => $vehicles->isEmpty() && $period ? $this->alternatives($period) : collect(),
