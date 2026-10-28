@@ -414,6 +414,8 @@ a {
         max-width: 160px;
         object-fit: contain;
         border-radius: 8px;
+        transform-origin: center;
+        transition: transform var(--pdj-base) var(--pdj-ease), filter var(--pdj-base) var(--pdj-ease);
     }
 
     .pdj-logo-mark {
@@ -430,7 +432,17 @@ a {
         transition: transform var(--pdj-base) var(--pdj-ease);
     }
 
-    &:hover .pdj-logo-mark {
+    // Le logo téléversé prend vie au survol : léger redressement et mise à
+    // l'échelle, comme le monogramme. Le focus clavier déclenche le même
+    // mouvement, sinon la marque paraît inerte pour qui navigue au clavier.
+    &:hover img.pdj-logo-img,
+    &:focus-visible img.pdj-logo-img {
+        transform: translateY(-2px) rotate(-2deg) scale(1.06);
+        filter: drop-shadow(0 6px 12px rgba($ink, 0.18));
+    }
+
+    &:hover .pdj-logo-mark,
+    &:focus-visible .pdj-logo-mark {
         transform: rotate(-6deg) scale(1.06);
     }
 }
@@ -1324,6 +1336,14 @@ a {
         color: #fff;
     }
 
+    // Le monogramme du panneau respire au survol du lien de marque : même
+    // geste que sur le site public, pour que les deux espaces se ressemblent.
+    &:hover .admin-brand__mark,
+    &:focus-visible .admin-brand__mark {
+        transform: translateY(-2px) rotate(-3deg) scale(1.05);
+        filter: drop-shadow(0 6px 14px rgba($yellow, 0.28));
+    }
+
     strong,
     small {
         display: block;
@@ -1354,6 +1374,7 @@ a {
     font-weight: 900;
     letter-spacing: -0.05em;
     box-shadow: 0 5px 15px rgba($yellow, 0.18);
+    transition: transform var(--pdj-base) var(--pdj-ease), filter var(--pdj-base) var(--pdj-ease);
 }
 
 img.admin-brand__mark {
@@ -3483,6 +3504,23 @@ body.public-site .pdj-card--driver {
     }
 
     .home-hero__slide.is-active img {
+        transform: none;
+    }
+
+    // Pas de secousse sur la marque pour qui a demandé moins d'animation :
+    // le changement de teinte suffit à signaler le survol.
+    .pdj-logo img.pdj-logo-img,
+    .pdj-logo .pdj-logo-mark,
+    .admin-brand .admin-brand__mark {
+        transition: filter var(--pdj-fast) var(--pdj-ease);
+    }
+
+    .pdj-logo:hover img.pdj-logo-img,
+    .pdj-logo:focus-visible img.pdj-logo-img,
+    .pdj-logo:hover .pdj-logo-mark,
+    .pdj-logo:focus-visible .pdj-logo-mark,
+    .admin-brand:hover .admin-brand__mark,
+    .admin-brand:focus-visible .admin-brand__mark {
         transform: none;
     }
 }

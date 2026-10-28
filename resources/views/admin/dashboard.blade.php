@@ -52,7 +52,7 @@
             </a>
         </x-admin.page-header>
 
-        {{-- â”€â”€ Indicateurs du parc et des rÃ©servations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        {{-- ── Indicateurs du parc et des réservations ───────────────────────── --}}
         <div class="row g-3 mb-3">
             @foreach ($operationalCards as [$label, $value, $icon, $tone, $url])
                 <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
@@ -72,7 +72,7 @@
             @endforeach
         </div>
 
-        {{-- â”€â”€ Argent et alertes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        {{-- ── Argent et alertes ─────────────────────────────────────────────── --}}
         <div class="row g-3 mb-4">
             @foreach ($alertCards as [$label, $value, $icon, $tone, $url])
                 <div class="col-6 col-lg-3">
@@ -116,7 +116,7 @@
             @endif
         </div>
 
-        {{-- â”€â”€ Graphique et rÃ©partition â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ --}}
+        {{-- ── Graphique et répartition ──────────────────────────────────────── --}}
         <div class="row g-4 mb-4">
             <div class="col-12 col-xl-8">
                 <section class="pdj-card h-100">
@@ -197,12 +197,12 @@
                                 <a class="fw-bold text-decoration-none" href="{{ route('admin.bookings.show', $booking) }}">
                                     {{ $booking->reference }}
                                 </a>
-                                <span class="text-muted mx-1">Â·</span>
+                                <span class="text-muted mx-1">·</span>
                                 <span>{{ $booking->vehicle->displayName() }}</span>
                                 <div class="small text-muted mt-1">
-                                    {{ $booking->user?->displayName() ?? $booking->customer_name ?? 'â€”' }}
-                                    Â· {{ $booking->user?->phone ?? $booking->customer_phone ?? 'â€”' }}
-                                    Â· {{ $booking->starts_at->translatedFormat('D d M H:i') }}
+                                    {{ $booking->user?->displayName() ?? $booking->customer_name ?? '—' }}
+                                    · {{ $booking->user?->phone ?? $booking->customer_phone ?? '—' }}
+                                    · {{ $booking->starts_at->translatedFormat('D d M H:i') }}
                                 </div>
                             </div>
                             <div class="d-flex flex-wrap gap-2">
@@ -255,9 +255,9 @@
                                                 {{ $booking->reference }}
                                             </a>
                                         </td>
-                                        <td>{{ $booking->user?->displayName() ?? $booking->customer_name ?? 'â€”' }}</td>
+                                        <td>{{ $booking->user?->displayName() ?? $booking->customer_name ?? '—' }}</td>
                                         <td>{{ $booking->vehicle->displayName() }}</td>
-                                        <td class="small text-nowrap">{{ $booking->starts_at->translatedFormat('d/m/Y') }} â€” {{ $booking->ends_at->translatedFormat('d/m/Y') }}</td>
+                                        <td class="small text-nowrap">{{ $booking->starts_at->translatedFormat('d/m/Y') }} — {{ $booking->ends_at->translatedFormat('d/m/Y') }}</td>
                                         <td class="text-end text-nowrap">{{ app(\App\Services\SettingsService::class)->money($booking->price_total) }}</td>
                                         <td>
                                             @if ($booking->isOverdue())
@@ -308,7 +308,7 @@
                                         <td>{{ sprintf('%02dh00', $booking->pickup_hour) }}</td>
                                         <td><a href="{{ route('admin.bookings.show', $booking) }}">{{ $booking->reference }}</a></td>
                                         <td>{{ $booking->vehicle->displayName() }}</td>
-                                        <td>{{ $booking->user?->displayName() ?? $booking->customer_name ?? 'â€”' }}</td>
+                                        <td>{{ $booking->user?->displayName() ?? $booking->customer_name ?? '—' }}</td>
                                         <td class="text-end">
                                             <a class="btn btn-sm btn-outline-primary" href="{{ route('agent.pickup.documents', $booking) }}">
                                                 {{ __('admin.pickup') }}
@@ -340,7 +340,7 @@
                                 <div class="admin-list-item__main">
                                     <a class="fw-bold" href="{{ route('admin.bookings.show', $booking) }}">{{ $booking->reference }}</a>
                                     <div class="small">{{ $booking->vehicle->displayName() }}</div>
-                                    <div class="small text-muted">{{ $booking->user?->displayName() ?? $booking->customer_name ?? 'â€”' }}</div>
+                                    <div class="small text-muted">{{ $booking->user?->displayName() ?? $booking->customer_name ?? '—' }}</div>
                                 </div>
                                 @if ($latePhone)
                                     <a class="btn btn-sm btn-danger" href="tel:{{ $latePhone }}" aria-label="{{ __('admin.call_customer') }}">
@@ -368,7 +368,7 @@
                             </span>
                             <span class="admin-prestation__main">
                                 <span class="fw-semibold">{{ $prestation['client'] }}</span>
-                                <small>{{ $prestation['resource'] }} Â· {{ $prestation['reference'] }}</small>
+                                <small>{{ $prestation['resource'] }} · {{ $prestation['reference'] }}</small>
                             </span>
                             <span class="admin-prestation__type">{{ __('admin.service_'.$prestation['type']) }}</span>
                         </a>
@@ -400,11 +400,11 @@
                                 @endif
                             </div>
                             <div class="small fw-semibold mt-1">{{ $booking->vehicle->displayName() }}</div>
-                            <div class="small text-muted">{{ $booking->ends_at->translatedFormat('D d M Â· H:i') }}</div>
+                            <div class="small text-muted">{{ $booking->ends_at->translatedFormat('D d M · H:i') }}</div>
                             <div class="small mt-1">
-                                {{ $booking->user?->displayName() ?? $booking->customer_name ?? 'â€”' }}
+                                {{ $booking->user?->displayName() ?? $booking->customer_name ?? '—' }}
                                 @if ($returnPhone)
-                                    Â· <a href="tel:{{ $returnPhone }}">{{ $returnPhone }}</a>
+                                    · <a href="tel:{{ $returnPhone }}">{{ $returnPhone }}</a>
                                 @endif
                             </div>
                         </article>
@@ -428,7 +428,7 @@
                         <i class="bi bi-cash-coin text-success fs-4"></i>
                     </div>
                     <div class="admin-cash-row"><span>{{ __('admin.rentals') }}</span><strong>{{ app(\App\Services\SettingsService::class)->money($cash['today_in']) }}</strong></div>
-                    <div class="admin-cash-row"><span>{{ __('admin.refunds') }}</span><strong>âˆ’ {{ app(\App\Services\SettingsService::class)->money($cash['today_out']) }}</strong></div>
+                    <div class="admin-cash-row"><span>{{ __('admin.refunds') }}</span><strong>− {{ app(\App\Services\SettingsService::class)->money($cash['today_out']) }}</strong></div>
                     <div class="admin-cash-row admin-cash-row--total"><span>{{ __('admin.deposits_held') }}</span><strong>{{ app(\App\Services\SettingsService::class)->money($cash['deposits_held']) }}</strong></div>
                     <a class="btn btn-sm btn-outline-primary w-100 mt-3" href="{{ route('agent.cash.index') }}">
                         {{ __('admin.open_cash') }}
@@ -446,7 +446,7 @@
                     @forelse ($pending['documents'] as $document)
                         <a class="admin-document-item text-decoration-none" href="{{ route('admin.documents.show', $document) }}">
                             <span class="admin-document-item__icon"><i class="bi bi-file-earmark-text"></i></span>
-                            <span><strong>{{ $document->type->label() }}</strong><small>{{ $document->user?->displayName() ?? 'â€”' }} @if ($document->booking) Â· {{ $document->booking->reference }} @endif</small></span>
+                            <span><strong>{{ $document->type->label() }}</strong><small>{{ $document->user?->displayName() ?? '—' }} @if ($document->booking) · {{ $document->booking->reference }} @endif</small></span>
                             <i class="bi bi-chevron-right"></i>
                         </a>
                     @empty
