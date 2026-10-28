@@ -8,6 +8,8 @@ use App\Enums\DriverOnlyBookingStatus;
 use App\Enums\PaymentKind;
 use App\Exceptions\BookingException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\CancelBookingRequest;
+use App\Http\Requests\Admin\ExtendPickupRequest;
 use App\Http\Requests\Admin\RefuseBookingRequest;
 use App\Http\Requests\Admin\UpdateBookingRequest;
 use App\Models\Booking;
@@ -18,6 +20,7 @@ use App\Models\Vehicle;
 use App\Services\BookingService;
 use App\Services\NotificationService;
 use App\Support\BookingPeriod;
+use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -127,14 +130,58 @@ class BookingController extends Controller
 
     public function cancel(Request $request, Booking $booking): RedirectResponse
     {
+        $data = $request->validate([
+            'motif' => ['nullable', 'string', 'max:255'],
+        ]);
+
         try {
-            $this->bookings->cancel($booking, $request->user(), 'agence');
+            $this->bookings->cancel($booking, $request->user(), 'agence', $data['motif'] ?? null);
             $this->notifications->sendBookingCancelled($booking, $booking->customer_email ?? $booking->user?->email);
         } catch (BookingException $e) {
             return back()->with('error', $e->getMessage());
         }
 
         return back()->with('status', __('admin.booking_cancelled', ['ref' => $booking->reference]));
+    }
+
+    /**
+     * Annulation depuis le pop-up d'absence : le motif est obligatoire, car il
+     * est la seule explication que le client et l'équipe garderont.
+     */
+    public function cancelNoShow(CancelBookingRequest $request, Booking $booking): RedirectResponse
+    {
+        try {
+            $this->bookings->cancel($booking, $request->user(), 'agence', $request->validated('motif'));
+            $this->notifications->sendBookingCancelled($booking, $booking->customer_email ?? $booking->user?->email);
+        } catch (BookingException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('status', __('admin.booking_cancelled', ['ref' => $booking->reference]));
+    }
+
+    /**
+     * Le client a appelé : il arrive plus tard. On décale l'heure de retrait
+     * convenue, ce qui repousse d'autant le rappel et l'annulation automatique.
+     */
+    public function extendPickup(ExtendPickupRequest $request, Booking $booking): RedirectResponse
+    {
+        $data = $request->validated();
+
+        $until = filled($data['pickup_at'] ?? null)
+            ? Carbon::parse($data['pickup_at'])
+            : now()->addHours((int) ($data['heures'] ?? 0));
+
+        try {
+            $this->bookings->extendPickup($booking, $until, $request->user());
+        } catch (BookingException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return back()->with('status', __('admin.booking_extended', [
+            'ref' => $booking->reference,
+            'heure' => $until->format('d/m/Y H:i'),
+        ]));
     }
 
     /** Re-dater une réservation : le prix est recalculé et réécrit. */

@@ -11,6 +11,7 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Support\BookingPeriod;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -92,9 +93,7 @@ class BookingService
                 'customer_email' => $data['customer_email'] ?? null,
                 'customer_comment' => $data['customer_comment'] ?? null,
                 'guest_access_token_hash' => $data['guest_access_token_hash'] ?? null,
-                'grace_expires_at' => $period->startsAt
-                    ->copy()
-                    ->addHours($this->settings->int('booking.grace_period_hours')),
+                'grace_expires_at' => $this->graceDeadlineFrom($period->startsAt),
                 'public_token' => $data['public_token'] ?? bin2hex(random_bytes(20)),
             ]);
 
@@ -165,9 +164,11 @@ class BookingService
                 'driver_blocks' => $quote->driverBlocks,
                 'driver_hours' => $quote->driverHours,
                 ...$quote->toAmounts(),
-                'grace_expires_at' => $period->startsAt
-                    ->copy()
-                    ->addHours($this->settings->int('booking.grace_period_hours')),
+                // Les dates changent : un décalage de retrait négocié sur
+                // l'ancien créneau n'a plus de sens, on repart de la nouvelle
+                // heure de début.
+                'pickup_extended_until' => null,
+                'grace_expires_at' => $this->graceDeadlineFrom($period->startsAt),
             ]);
 
             $this->log('booking.repriced', $booking, ['total' => $quote->priceTotal]);
@@ -224,7 +225,7 @@ class BookingService
         return $booking->refresh();
     }
 
-    public function cancel(Booking $booking, User $actor, string $by = 'client'): Booking
+    public function cancel(Booking $booking, User $actor, string $by = 'client', ?string $reason = null): Booking
     {
         if (! $booking->status->canBeCancelled()) {
             throw new BookingException(
@@ -236,9 +237,46 @@ class BookingService
             'status' => BookingStatus::Annulee,
             'cancelled_at' => now(),
             'cancelled_by' => $by,
+            // Le motif saisi par l'agent reste visible sur la fiche : sans lui,
+            // le client ne comprend pas pourquoi sa réservation a disparu.
+            'status_reason' => $reason ?? $booking->status_reason,
         ]);
 
-        $this->log('booking.cancelled', $booking, ['par' => $by], $actor);
+        $this->log('booking.cancelled', $booking, array_filter([
+            'par' => $by,
+            'motif' => $reason,
+        ]), $actor);
+
+        return $booking->refresh();
+    }
+
+    /**
+     * Décale l'heure de retrait convenue après un appel du client.
+     *
+     * La location en elle-même ne bouge pas — dates et prix restent figés —
+     * seul le compte à rebours de l'absence repart de la nouvelle heure : le
+     * rappel à 2 h et l'annulation automatique à 5 h sont recalculés.
+     */
+    public function extendPickup(Booking $booking, CarbonInterface $until, User $agent): Booking
+    {
+        if ($booking->status !== BookingStatus::Confirmee) {
+            throw new BookingException(
+                __('booking.error.cannot_extend', ['status' => $booking->status->label()]),
+            );
+        }
+
+        if ($until->getTimestamp() <= $booking->effectivePickupAt()->getTimestamp()) {
+            throw new BookingException(__('booking.error.extend_must_be_later'));
+        }
+
+        $booking->update([
+            'pickup_extended_until' => $until,
+            'grace_expires_at' => $this->graceDeadlineFrom($until),
+        ]);
+
+        $this->log('booking.pickup_extended', $booking, [
+            'nouvelle_heure' => $until->format('d/m/Y H:i'),
+        ], $agent);
 
         return $booking->refresh();
     }
@@ -314,6 +352,10 @@ class BookingService
         $booking->update([
             'status' => BookingStatus::NonPresente,
             'status_reason' => __('booking.status_reason.no_show'),
+            // L'absence est une annulation de fait : on l'horodate comme telle
+            // pour que les rapports et la fiche restent cohérents.
+            'cancelled_at' => $booking->cancelled_at ?? now(),
+            'cancelled_by' => $booking->cancelled_by ?? 'systeme',
         ]);
 
         $booking->vehicle?->update(['status' => VehicleStatus::Disponible]);
@@ -420,6 +462,12 @@ class BookingService
         if ($user->age() !== null && $user->age() < $minAge) {
             throw new BookingException(__('booking.error.too_young', ['age' => $minAge]));
         }
+    }
+
+    /** Échéance d'absence : heure convenue + délai de grâce réglé par l'agence. */
+    private function graceDeadlineFrom(CarbonInterface $pickupAt): CarbonInterface
+    {
+        return $pickupAt->copy()->addHours($this->settings->int('booking.grace_period_hours'));
     }
 
     private function assertTransition(Booking $booking, BookingStatus $target): void

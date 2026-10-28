@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -33,7 +34,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
     'mileage_at_pickup', 'mileage_at_return', 'fuel_level_pickup', 'fuel_level_return',
     'pickup_notes', 'return_notes',
     'phone_verified_at', 'reminder_sent_at', 'client_confirmed_presence_at',
-    'grace_expires_at', 'public_token',
+    'grace_expires_at', 'pickup_extended_until', 'public_token',
     'customer_name', 'customer_phone', 'customer_email', 'customer_comment',
     'guest_access_token_hash',
 ])]
@@ -82,6 +83,7 @@ class Booking extends Model implements HasMedia
             'reminder_sent_at' => 'datetime',
             'client_confirmed_presence_at' => 'datetime',
             'grace_expires_at' => 'datetime',
+            'pickup_extended_until' => 'datetime',
             'with_driver' => 'boolean',
             'status' => BookingStatus::class,
             'document_verification_status' => DocumentVerificationStatus::class,
@@ -163,6 +165,37 @@ class Booking extends Model implements HasMedia
     protected function today(Builder $query): Builder
     {
         return $query->whereDate('starts_at', today());
+    }
+
+    /**
+     * Réservations confirmées dont l'heure de retrait est dépassée de plus de
+     * `$alertHours`, sans être encore arrivées à l'annulation automatique.
+     *
+     * C'est la file d'attente du pop-up d'absence : l'agent a le temps de
+     * joindre le client, de décaler le retrait ou d'annuler avec un motif.
+     */
+    #[Scope]
+    protected function awaitingPickup(Builder $query, int $alertHours): Builder
+    {
+        return $query
+            ->where('status', BookingStatus::Confirmee->value)
+            ->whereRaw('COALESCE(pickup_extended_until, starts_at) <= ?', [now()->subHours($alertHours)])
+            ->where(fn (Builder $late) => $late
+                ->whereNull('grace_expires_at')
+                ->orWhere('grace_expires_at', '>', now()));
+    }
+
+    /** Heure de retrait convenue : la date de début, sauf si l'agence l'a décalée. */
+    public function effectivePickupAt(): Carbon
+    {
+        return $this->pickup_extended_until ?? $this->starts_at;
+    }
+
+    /** L'heure de retrait a-t-elle été décalée par un agent ? */
+    public function hasExtendedPickup(): bool
+    {
+        return $this->pickup_extended_until !== null
+            && ! $this->pickup_extended_until->equalTo($this->starts_at);
     }
 
     public function isBlocking(): bool

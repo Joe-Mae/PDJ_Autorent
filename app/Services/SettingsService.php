@@ -27,7 +27,8 @@ class SettingsService
         'general.currency' => 'FCFA',
 
         'booking.turnaround_hours' => '2',
-        'booking.grace_period_hours' => '2',
+        'booking.grace_period_hours' => '5',
+        'booking.no_show_alert_hours' => '2',
         'booking.max_active_bookings' => '2',
         'booking.min_age' => '18',
         'booking.min_license_years' => '1',

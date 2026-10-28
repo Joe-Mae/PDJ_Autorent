@@ -49,16 +49,34 @@
         @elseif ($booking->status->value === 'confirmee')
             <div class="pdj-card mb-4">
                 <h2 class="h6 fw-bold mb-3">{{ __('admin.pickup_actions') }}</h2>
-                <div class="d-flex flex-wrap gap-2">
+
+                <p class="small text-muted mb-3">
+                    {{ __('admin.no_show_agreed_pickup') }} :
+                    <strong>{{ $booking->effectivePickupAt()->translatedFormat('D d M, H:i') }}</strong>
+                    @if ($booking->hasExtendedPickup())
+                        <span class="d-block">
+                            {{ __('admin.no_show_original_pickup', [
+                                'heure' => $booking->starts_at->translatedFormat('D d M, H:i'),
+                            ]) }}
+                        </span>
+                    @endif
+                    @if ($booking->grace_expires_at)
+                        <span class="d-block">
+                            {{ __('admin.no_show_deadline', [
+                                'heure' => $booking->grace_expires_at->translatedFormat('H:i'),
+                                'dans' => $booking->grace_expires_at->diffForHumans(),
+                            ]) }}
+                        </span>
+                    @endif
+                </p>
+
+                <div class="d-flex flex-wrap gap-2 mb-3">
                     <a class="btn btn-primary" href="{{ route('agent.pickup.documents', $booking) }}">
                         {{ __('admin.start_pickup') }}
                     </a>
-                    <form action="{{ route('admin.bookings.cancel', $booking) }}" method="POST"
-                          onsubmit="return confirm('{{ __('admin.confirm_cancel') }}')">
-                        @csrf
-                        <button class="btn btn-outline-danger">{{ __('admin.cancel_booking') }}</button>
-                    </form>
                 </div>
+
+                <x-admin.pickup-actions :booking="$booking" />
             </div>
         @endif
 

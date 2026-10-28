@@ -8,17 +8,22 @@ use App\Services\BookingService;
 use Illuminate\Console\Command;
 
 /**
- * Passe en « Non présenté » les réservations dont le délai de grâce est écoulé.
+ * Annule les réservations dont le client ne s'est pas présenté au retrait.
  *
- * Le délai de grâce est porté par la colonne grace_expires_at, posée à la
- * création puis recalculée à chaque modification de dates : pas de calcul à
- * refaire ici, la commande se contente de lire la colonne.
+ * Deux temps : un rappel est affiché aux agents 2 h après l'heure convenue
+ * (pop-up d'absence), puis la réservation est annulée automatiquement à
+ * l'échéance de grâce — 5 h par défaut. Le véhicule redevient disponible et
+ * l'absence est comptée au client.
+ *
+ * L'échéance est portée par la colonne grace_expires_at, posée à la création,
+ * recalculée à chaque modification de dates et repoussée quand un agent décale
+ * l'heure de retrait : pas de calcul à refaire ici.
  */
 class MarkNoShows extends Command
 {
     protected $signature = 'bookings:mark-no-shows';
 
-    protected $description = 'Passe en « Non présenté » les réservations confirmées non honorées';
+    protected $description = 'Annule les réservations confirmées non honorées après le délai de grâce';
 
     public function handle(BookingService $bookings): int
     {

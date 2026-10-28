@@ -101,9 +101,19 @@
 
     // Les alertes de la barre haute sont des compteurs, pas un flux : elles
     // répondent à « qu'est-ce qui m'attend maintenant ? ».
-    $alerts = ['pending' => 0, 'documents' => 0, 'overdue' => 0];
+    $alerts = ['pending' => 0, 'documents' => 0, 'overdue' => 0, 'no_show' => 0];
+    $noShowAlertHours = $settings->int('booking.no_show_alert_hours');
+    $lateBookings = collect();
 
     if (! $singleAction) {
+        // Clients attendus au retrait il y a plus de deux heures : la fenêtre
+        // est ouverte pour les joindre avant l'annulation automatique à 5 h.
+        $lateBookings = Booking::query()
+            ->awaitingPickup($noShowAlertHours)
+            ->with(['vehicle', 'user'])
+            ->orderBy('starts_at')
+            ->get();
+
         $alerts = [
             'pending' => Booking::query()->where('status', BookingStatus::EnAttente->value)->count(),
             'documents' => CustomerDocument::query()->pending()->count(),
@@ -111,6 +121,7 @@
                 ->where('status', BookingStatus::EnCours->value)
                 ->where('ends_at', '<', now())
                 ->count(),
+            'no_show' => $lateBookings->count(),
         ];
     }
 
@@ -209,6 +220,7 @@
                             @else
                                 @foreach ([
                                     ['count' => $alerts['pending'], 'label' => __('admin.pending_bookings'), 'url' => route('admin.bookings.index', ['statut' => BookingStatus::EnAttente->value]), 'icon' => 'hourglass-split', 'tone' => 'warning'],
+                                    ['count' => $alerts['no_show'], 'label' => __('admin.no_show_bell'), 'url' => route('admin.bookings.index', ['statut' => BookingStatus::Confirmee->value]), 'icon' => 'person-dash', 'tone' => 'warning'],
                                     ['count' => $alerts['documents'], 'label' => __('admin.documents_to_check'), 'url' => route('admin.documents.index'), 'icon' => 'file-earmark-check', 'tone' => 'info'],
                                     ['count' => $alerts['overdue'], 'label' => __('admin.overdue_rentals'), 'url' => route('admin.bookings.index', ['statut' => BookingStatus::EnCours->value]), 'icon' => 'exclamation-triangle', 'tone' => 'danger'],
                                 ] as $alert)
@@ -324,6 +336,121 @@
         </form>
     </div>
 </div>
+
+@if ($lateBookings->isNotEmpty())
+    {{-- Pop-up d'absence : deux heures après l'heure de retrait convenue, les
+         agents doivent pouvoir joindre le client. Sans action de leur part,
+         la réservation s'annule seule à l'échéance de grâce (5 h par défaut). --}}
+    <button type="button" id="noShowTrigger" class="d-none" data-bs-toggle="modal" data-bs-target="#noShowModal"
+            aria-hidden="true" tabindex="-1"></button>
+
+    <div class="modal fade" id="noShowModal" tabindex="-1" aria-labelledby="noShowModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5" id="noShowModalLabel">
+                        <i class="bi bi-person-dash me-2 text-warning"></i>{{ __('admin.no_show_title') }}
+                    </h2>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('admin.close') }}"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p class="small text-muted">{{ __('admin.no_show_intro', ['hours' => $noShowAlertHours]) }}</p>
+
+                    @foreach ($lateBookings as $late)
+                        @php
+                            $clientPhone = $late->user?->phone ?? $late->customer_phone;
+                            $clientName = $late->user?->displayName() ?? $late->customer_name ?? $late->reference;
+                        @endphp
+
+                        <div class="pdj-card mb-3">
+                            <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+                                <div>
+                                    <div class="fw-semibold">{{ $clientName }}</div>
+                                    <div class="small text-muted">
+                                        {{ $late->reference }} · {{ $late->vehicle?->displayName() }}
+                                    </div>
+                                </div>
+                                <div class="text-end small">
+                                    <div class="fw-semibold">{{ $late->effectivePickupAt()->translatedFormat('D d M, H:i') }}</div>
+                                    <div class="text-muted">{{ __('admin.no_show_agreed_pickup') }}</div>
+                                </div>
+                            </div>
+
+                            @if ($clientPhone)
+                                <a class="btn btn-sm btn-outline-primary mb-2" href="tel:{{ preg_replace('/\D/', '', $clientPhone) }}">
+                                    <i class="bi bi-telephone me-1"></i>{{ $clientPhone }}
+                                </a>
+                            @endif
+
+                            @if ($late->hasExtendedPickup())
+                                <div class="small text-muted mb-2">
+                                    {{ __('admin.no_show_original_pickup', [
+                                        'heure' => $late->starts_at->translatedFormat('D d M, H:i'),
+                                    ]) }}
+                                </div>
+                            @endif
+
+                            <div class="small mb-3">
+                                <i class="bi bi-hourglass-split me-1"></i>
+                                {{ __('admin.no_show_deadline', [
+                                    'heure' => $late->grace_expires_at?->translatedFormat('H:i') ?? '—',
+                                    'dans' => $late->grace_expires_at?->diffForHumans() ?? '—',
+                                ]) }}
+                            </div>
+
+                            <x-admin.pickup-actions :booking="$late" />
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">
+                        {{ __('admin.no_show_later') }}
+                    </button>
+                    <a class="btn btn-primary" href="{{ route('admin.bookings.index', ['statut' => BookingStatus::Confirmee->value]) }}">
+                        {{ __('admin.no_show_see_all') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+        <script>
+            // Le pop-up revient à chaque connexion, mais pas à chaque page tant
+            // que le même lot de clients est concerné : l'agent peut fermer la
+            // fenêtre et continuer son travail sans être relancé en boucle.
+            document.addEventListener('DOMContentLoaded', () => {
+                const trigger = document.getElementById('noShowTrigger');
+                const signature = @json($lateBookings->pluck('reference')->sort()->values());
+                const key = 'pdj.noShowDismissed';
+                let dismissed = [];
+
+                try {
+                    dismissed = JSON.parse(sessionStorage.getItem(key) || '[]');
+                } catch (error) {
+                    dismissed = [];
+                }
+
+                if (signature.every((reference) => dismissed.includes(reference))) {
+                    return;
+                }
+
+                document.getElementById('noShowModal')
+                    ?.addEventListener('hidden.bs.modal', () => {
+                        try {
+                            sessionStorage.setItem(key, JSON.stringify(signature));
+                        } catch (error) {
+                            // Navigation privée : le pop-up se contente de revenir.
+                        }
+                    });
+
+                trigger?.click();
+            });
+        </script>
+    @endpush
+@endif
 
 @stack('scripts')
 </body>

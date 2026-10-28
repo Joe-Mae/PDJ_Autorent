@@ -36,6 +36,8 @@ return [
         'too_many_bookings' => 'Vous avez déjà :max réservation(s) en cours. Annulez-en une ou contactez l\'agence.',        'too_young' => 'Il faut avoir :age ans révolus pour louer un véhicule.',
         'invalid_transition' => 'On ne peut pas passer de « :from » à « :to ».',
         'cannot_cancel' => 'Cette réservation est « :status » : elle ne peut plus être annulée en ligne.',
+        'cannot_extend' => 'Cette réservation est « :status » : l\'heure de retrait ne peut plus être décalée.',
+        'extend_must_be_later' => 'La nouvelle heure de retrait doit être postérieure à celle déjà convenue.',
         'documents_missing' => 'Il manque un document. Returnnez à l\'étape précédente pour le déposer.',
         'documents_not_verified' => 'La remise du véhicule est bloquée : le contrôle d’identité et du permis doit être conforme.',
         'outside_opening_hours' => 'L\'agence est ouverte de :open à :close. Choisissez une heure dans cette plage.',

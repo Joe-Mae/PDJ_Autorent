@@ -37,6 +37,8 @@ return [
         'too_young' => 'You must be :age years old to rent a vehicle.',
         'invalid_transition' => 'Cannot move from “:from” to “:to”.',
         'cannot_cancel' => 'This booking is “:status”: it can no longer be cancelled online.',
+        'cannot_extend' => 'This booking is “:status”: the pickup time can no longer be moved.',
+        'extend_must_be_later' => 'The new pickup time must be later than the one already agreed.',
         'documents_missing' => 'A document is missing. Go back to the previous step to upload it.',
         'documents_not_verified' => 'Vehicle handover is blocked: the identity and driving licence checks must be approved.',
         'outside_opening_hours' => 'The agency is open from :open to :close. Please pick a time within that range.',

@@ -14,8 +14,8 @@ Artisan::command('inspire', function () {
 | Tâches planifiées
 |--------------------------------------------------------------------------
 | Trois rhythmmes, trois raisons :
-|   - le passage en « non présenté » est scruté toutes les 15 minutes, parce
-|     que chaque quart d'heure compte sur la disponibilité d'une voiture ;
+|   - l'absence au retrait est scrutée toutes les 15 minutes : le rappel part
+|     2 h après l'heure convenue, l'annulation automatique à 5 h ;
 |   - le rappel J-1 part le matin, quand le client pense à sa location ;
 |   - la purge des documents tourne la nuit, quand personne n'attend.
 */

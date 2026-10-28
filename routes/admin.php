@@ -116,6 +116,8 @@ Route::prefix('admin')
         Route::post('/reservations/{booking}/confirmer', [Admin\BookingController::class, 'confirm'])->name('bookings.confirm');
         Route::post('/reservations/{booking}/refuser', [Admin\BookingController::class, 'refuse'])->name('bookings.refuse');
         Route::post('/reservations/{booking}/annuler', [Admin\BookingController::class, 'cancel'])->name('bookings.cancel');
+        Route::post('/reservations/{booking}/prolonger', [Admin\BookingController::class, 'extendPickup'])->name('bookings.extend');
+        Route::post('/reservations/{booking}/absence/annuler', [Admin\BookingController::class, 'cancelNoShow'])->name('bookings.no-show.cancel');
         Route::post('/reservations/{booking}/modifier', [Admin\BookingController::class, 'update'])->name('bookings.update');
         Route::post('/reservations/{booking}/chauffeur/{driver}', [Admin\BookingController::class, 'assignDriver'])->name('bookings.driver.assign');
         Route::post('/reservations/{booking}/permis', [Admin\DocumentController::class, 'storePermit'])->name('bookings.permit.store');
