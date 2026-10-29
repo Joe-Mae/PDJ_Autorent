@@ -171,7 +171,7 @@ return [
         'vehicle' => 'Véhicule',
         'status' => 'Statut',
         'quote_error' => 'Impossible de mettre à jour cette estimation. Vérifiez les dates et heures.',
-        'start_must_be_future' => 'L’heure de départ doit être ultérieure à maintenant.',
+        'start_must_be_future' => 'La date et l’heure de départ doivent être postérieures à maintenant.',
         'return_after_pickup' => 'L’heure de retour doit être postérieure à l’heure de départ.',
         'invalid_period' => 'Vérifiez les dates et heures de location.',
     ],

@@ -204,6 +204,7 @@
                 <div class="admin-topbar__actions">
                     <div class="dropdown">
                         <button class="admin-icon-btn" type="button" data-bs-toggle="dropdown"
+                                data-admin-notification-bell
                                 aria-expanded="false" aria-label="{{ __('admin.notifications') }}" title="{{ __('admin.notifications') }}">
                             <i class="bi bi-bell"></i>
                             @if ($alertTotal > 0)
@@ -337,6 +338,32 @@
         </form>
     </div>
 </div>
+
+@unless ($singleAction)
+    {{-- Pop-up des nouvelles demandes : la page interroge le fil toutes les
+         quinze secondes. Quand une demande arrive, le pop-up s'affiche et une
+         sonnerie de quinze secondes prévient l'équipe, sans rechargement. --}}
+    <div class="toast-container position-fixed end-0 p-3 admin-request-toasts"
+         data-admin-notification-feed="{{ route('admin.notifications.feed') }}"
+         data-poll-interval="15000">
+        <div class="toast admin-request-toast" id="adminRequestToast" role="alert"
+             aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="bi bi-bell-fill text-warning me-2"></i>
+                <strong class="me-auto">{{ __('admin.new_request_toast_title') }}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"
+                        aria-label="{{ __('admin.close') }}"></button>
+            </div>
+            <div class="toast-body">
+                <div class="admin-request-toast__reference" data-toast-reference></div>
+                <div class="small text-muted" data-toast-details></div>
+                <a href="#" class="btn btn-sm btn-primary mt-3" data-toast-link>
+                    {{ __('admin.new_request_toast_cta') }}
+                </a>
+            </div>
+        </div>
+    </div>
+@endunless
 
 @if ($lateBookings->isNotEmpty())
     {{-- Pop-up d'absence : deux heures après l'heure de retrait convenue, les

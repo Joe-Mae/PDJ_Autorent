@@ -30,6 +30,11 @@ Route::prefix('admin')
 
         Route::get('/', Admin\DashboardController::class)->name('dashboard');
 
+        // Fil des nouvelles demandes : la cloche de la barre haute l'interroge
+        // pour faire apparaître le pop-up sonore sans recharger la page.
+        Route::get('/notifications/nouvelles', Admin\NotificationFeedController::class)
+            ->name('notifications.feed');
+
         // ── Périmètre gestionnaire : le parc et les tarifs ───────────────────
         Route::middleware('tier:gestionnaire')->group(function () {
 

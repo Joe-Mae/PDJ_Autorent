@@ -322,7 +322,9 @@ class GuestBookingController extends Controller
 
     private function validatePeriod(BookingPeriod $period): void
     {
-        if ($period->startsAt->isPast()) {
+        // Comparaison à l'heure près : les horaires sont choisis en heures
+        // pleines, donc un départ à l'heure en cours reste acceptable.
+        if ($period->startsAt->lessThan(now()->startOfHour())) {
             throw ValidationException::withMessages([
                 'du' => __('booking.guest.start_must_be_future'),
             ]);

@@ -69,13 +69,14 @@ class RequiredFieldsTest extends TestCase
             ->assertSessionHasErrors('plate');
     }
 
-    public function test_le_bloc_de_recherche_garde_ses_dates_par_defaut(): void
+    public function test_le_bloc_de_recherche_laisse_le_client_choisir_ses_dates(): void
     {
         $html = $this->get('/fr')->assertOk()->getContent();
 
-        // Le bloc de recherche est pré-rempli : aucun message ne doit
-        // apparaître dessus, et le bouton doit rester actif.
-        $this->assertStringContainsString('value="'.now()->addDay()->toDateString().'"', $html);
+        // Aucune date n'est imposée : les deux champs partent vides, le client
+        // renseigne ses propres dates.
+        $this->assertMatchesRegularExpression('/id="du" name="du"\s+value=""/', $html);
+        $this->assertMatchesRegularExpression('/id="au" name="au"\s+value=""/', $html);
         $this->assertStringNotContainsString('pdj-required-msg', $html);
     }
 }

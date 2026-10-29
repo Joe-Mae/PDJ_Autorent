@@ -441,6 +441,52 @@ class GuestBookingTest extends TestCase
         $this->assertSame(BookingStatus::Confirmee, $booking->refresh()->status);
     }
 
+    public function test_un_depart_a_l_heure_en_cours_est_accepte(): void
+    {
+        $this->travelTo(now()->setTime(14, 30));
+
+        $vehicle = $this->vehicle();
+        $data = $this->guestData();
+        $data['du'] = now()->toDateString();
+        $data['au'] = now()->addDay()->toDateString();
+        $data['heure_depart'] = 14;
+
+        // Les horaires se choisissent en heures pleines : 14 h reste valable
+        // à 14 h 30, sinon le client doit attendre 15 h pour réserver.
+        $this->get(route('booking.guest.create', [
+            'locale' => 'fr',
+            'vehicle' => $vehicle,
+            'du' => $data['du'],
+            'au' => $data['au'],
+            'heure_depart' => $data['heure_depart'],
+            'heure_retour' => $data['heure_retour'],
+        ]))->assertOk();
+
+        $this->post(route('booking.guest.store', [
+            'locale' => 'fr',
+            'vehicle' => $vehicle,
+        ]), $data)->assertRedirect();
+
+        $this->assertSame(1, Booking::query()->count());
+    }
+
+    public function test_un_depart_dans_une_heure_deja_passee_est_refuse(): void
+    {
+        $this->travelTo(now()->setTime(14, 30));
+
+        $vehicle = $this->vehicle();
+        $data = $this->guestData();
+        $data['du'] = now()->toDateString();
+        $data['au'] = now()->addDay()->toDateString();
+        $data['heure_depart'] = 13;
+
+        $this->from(route('booking.guest.create', ['locale' => 'fr', 'vehicle' => $vehicle]))
+            ->post(route('booking.guest.store', ['locale' => 'fr', 'vehicle' => $vehicle]), $data)
+            ->assertSessionHasErrors('du');
+
+        $this->assertSame(0, Booking::query()->count());
+    }
+
     /**
      * @return array<string, mixed>
      */

@@ -170,7 +170,7 @@ return [
         'vehicle' => 'Vehicle',
         'status' => 'Status',
         'quote_error' => 'Unable to update this estimate. Check the dates and times.',
-        'start_must_be_future' => 'The pickup time must be later than now.',
+        'start_must_be_future' => 'The pickup date and time must be later than now.',
         'return_after_pickup' => 'The return time must be later than the pickup time.',
         'invalid_period' => 'Check the rental dates and times.',
     ],

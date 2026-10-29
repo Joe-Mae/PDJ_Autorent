@@ -1731,6 +1731,42 @@ img.admin-brand__mark {
     }
 }
 
+// Pop-up des nouvelles demandes : il se pose sous la barre haute, à droite,
+// pour ne pas masquer la cloche qui vient de s'allumer.
+.admin-request-toasts {
+    z-index: 1080;
+    top: 76px;
+    width: min(370px, calc(100vw - 1.5rem));
+}
+
+.admin-request-toast {
+    overflow: hidden;
+    border: 1px solid #e7ece8;
+    border-left: 4px solid $green;
+    border-radius: 0.85rem;
+    background: #fff;
+    box-shadow: var(--pdj-shadow-lg);
+
+    .toast-header {
+        padding: 0.65rem 0.85rem;
+        border-bottom: 1px solid #eef2ef;
+        background: #f7faf8;
+        color: $ink;
+        font-size: 0.8rem;
+    }
+
+    .toast-body {
+        padding: 0.85rem;
+    }
+}
+
+.admin-request-toast__reference {
+    color: $ink;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+
 .admin-user-menu {
     min-width: 230px;
     padding: 0.35rem;

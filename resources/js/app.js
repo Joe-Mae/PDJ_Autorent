@@ -1,4 +1,5 @@
 import * as bootstrap from 'bootstrap';
+import './admin-notifications';
 
 /**
  * Interactions du site.
@@ -8,6 +9,33 @@ import * as bootstrap from 'bootstrap';
  *  2. la bascule chauffeur, pour recalculer le prix sans round-trip ;
  *  3. les estimations de réservation et la galerie de la fiche véhicule.
  */
+
+// ─── Panneau de recherche : dates cohérentes ──────────────────────────────
+document.querySelectorAll('[data-search-panel]').forEach((form) => {
+    const start = form.elements.namedItem('du');
+    const end = form.elements.namedItem('au');
+    const pickup = form.elements.namedItem('heure_depart');
+
+    if (!start || !end) return;
+
+    const pad = (value) => String(value).padStart(2, '0');
+    const now = new Date();
+    const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+
+    const syncDates = () => {
+        if (start.value) end.min = start.value;
+
+        // Un départ aujourd'hui ne peut pas tomber dans une heure déjà passée :
+        // on avance la sélection sur l'heure en cours.
+        if (pickup && start.value === today && Number(pickup.value) < now.getHours()) {
+            const option = [...pickup.options].find((item) => Number(item.value) >= now.getHours());
+            if (option) pickup.value = option.value;
+        }
+    };
+
+    start.addEventListener('change', syncDates);
+    if (start.value) end.min = start.value;
+});
 
 // ─── Devis en direct pour une demande sans compte ─────────────────────────
 document.querySelectorAll('[data-guest-booking-form]').forEach((form) => {
@@ -42,9 +70,13 @@ document.querySelectorAll('[data-guest-booking-form]').forEach((form) => {
                 headers: { Accept: 'application/json' },
                 signal: activeRequest.signal,
             });
-            const data = await response.json();
+            const data = await response.json().catch(() => null);
 
-            if (!response.ok) throw new Error(form.dataset.quoteError);
+            if (!response.ok) {
+                const message = data?.errors ? Object.values(data.errors).flat()[0] : null;
+
+                throw new Error(message || form.dataset.quoteError);
+            }
 
             const formatter = new Intl.NumberFormat(document.documentElement.lang || 'fr-FR');
             dailyPrice.textContent = formatter.format(data.daily_price);

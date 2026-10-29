@@ -402,6 +402,8 @@ return [
     'search_placeholder' => 'Reference, customer, phone…',
     'notifications' => 'Notifications',
     'no_notifications' => 'Nothing to report right now.',
+    'new_request_toast_title' => 'New booking request',
+    'new_request_toast_cta' => 'View request',
     'documents_to_check' => 'Documents to review',
     'account_menu' => 'Account menu',
     'collapse_menu' => 'Collapse menu',

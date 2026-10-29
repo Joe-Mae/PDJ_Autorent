@@ -13,8 +13,8 @@
     $action = $action ?? route('vehicles.index', ['locale' => $locale]);
     $settings = app(\App\Services\SettingsService::class);
 
-    $startDate = ($period ?? null)?->startsAtDate() ?? today()->addDay()->toDateString();
-    $endDate = ($period ?? null)?->endsAtDate() ?? today()->addDay()->addDays(3)->toDateString();
+    $startDate = ($period ?? null)?->startsAtDate() ?? '';
+    $endDate = ($period ?? null)?->endsAtDate() ?? '';
     $startHour = ($period ?? null)?->startsAtHour() ?? $settings->openHour();
     $endHour = ($period ?? null)?->endsAtHour() ?? $settings->closeHour();
     $withDriver = $withDriver ?? false;
@@ -23,7 +23,7 @@
 @endphp
 
 <div {{ $attributes->class(['search-panel']) }}>
-    <form action="{{ $action }}" method="GET" class="row g-3 search-panel__form">
+    <form action="{{ $action }}" method="GET" class="row g-3 search-panel__form" data-search-panel>
         <div class="col-12 search-panel__heading">
             <div class="search-panel__label">{{ __('general.search_title') }}</div>
             <p class="mb-0 text-muted small">{{ __('general.search_intro') }}</p>
@@ -40,11 +40,11 @@
             <label class="form-label" for="au">{{ __('general.search_return') }}</label>
             <input type="date" class="form-control" id="au" name="au"
                    value="{{ $endDate }}"
-                   min="{{ $startDate }}" required>
+                   min="{{ $startDate ?: today()->toDateString() }}" required>
         </div>
 
         <div class="col-6 col-md-2 search-panel__time">
-            <label class="form-label" for="heure_depart">{{ __('general.search_hour') }}</label>
+            <label class="form-label" for="heure_depart">{{ __('general.search_pickup_hour') }}</label>
             <select class="form-select" id="heure_depart" name="heure_depart">
                 @foreach ($hours as $hour)
                     <option value="{{ $hour }}" @selected($startHour === $hour)>
@@ -55,7 +55,7 @@
         </div>
 
         <div class="col-6 col-md-2 search-panel__time">
-            <label class="form-label" for="heure_retour">{{ __('general.search_hour') }}</label>
+            <label class="form-label" for="heure_retour">{{ __('general.search_return_hour') }}</label>
             <select class="form-select" id="heure_retour" name="heure_retour">
                 @foreach ($hours as $hour)
                     <option value="{{ $hour }}" @selected($endHour === $hour)>

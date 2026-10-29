@@ -402,6 +402,8 @@ return [
     'search_placeholder' => 'Référence, client, téléphone…',
     'notifications' => 'Notifications',
     'no_notifications' => 'Rien à signaler pour le moment.',
+    'new_request_toast_title' => 'Nouvelle demande de réservation',
+    'new_request_toast_cta' => 'Voir la demande',
     'documents_to_check' => 'Documents à vérifier',
     'account_menu' => 'Menu du compte',
     'collapse_menu' => 'Replier le menu',
