@@ -147,5 +147,10 @@ Route::prefix('admin')
         Route::middleware('tier:super_admin')->group(function () {
             Route::get('/parametres', [Admin\SettingController::class, 'index'])->name('settings.index');
             Route::post('/parametres', [Admin\SettingController::class, 'update'])->name('settings.update');
+
+            // Envoi des e-mails : SMTP, expéditeur, boîte de réception.
+            Route::get('/emails', [Admin\MailSettingsController::class, 'edit'])->name('mail.edit');
+            Route::post('/emails', [Admin\MailSettingsController::class, 'update'])->name('mail.update');
+            Route::post('/emails/test', [Admin\MailSettingsController::class, 'test'])->name('mail.test');
         });
     });

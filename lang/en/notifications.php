@@ -18,6 +18,10 @@ return [
         'title' => 'Booking :reference',
         'cta' => 'View my booking',
         'no_license' => 'Good news: with a chauffeur, no licence is needed — just bring your ID.',
+        'agency_title' => 'New request :reference',
+        'agency_cta' => 'Open in the back office',
+        'with_driver' => 'With a chauffeur',
+        'without_driver' => 'Without a chauffeur',
     ],
 
     'subjects' => [
@@ -25,6 +29,8 @@ return [
         'confirmed' => 'Booking :reference confirmed 👍 — :company',
         'refused' => 'Booking :reference could not be confirmed — :company',
         'cancelled' => 'Booking :reference cancelled — :company',
+        'new_request' => 'New booking request :reference — :company',
+        'new_driver_only_request' => 'New chauffeur request :reference — :company',
     ],
 
     'intros' => [
@@ -32,6 +38,8 @@ return [
         'confirmed' => 'Good news: your booking :reference is confirmed.',
         'refused' => 'Unfortunately your booking :reference could not be confirmed.',
         'cancelled' => 'Your booking :reference has been cancelled. No charge.',
+        'new_request' => 'A new booking request :reference is waiting for confirmation.',
+        'new_driver_only_request' => 'A new chauffeur-only request :reference is waiting for confirmation.',
     ],
 
     'lines' => [
@@ -42,6 +50,11 @@ return [
         'deposit' => 'Deposit',
         'driver' => 'With a chauffeur',
         'reason' => 'Reason',
+        'client' => 'Customer',
+        'phone' => 'Phone',
+        'email' => 'Email',
+        'service' => 'Service',
+        'driver_option' => 'Chauffeur',
     ],
 
     'footers' => [
@@ -50,5 +63,6 @@ return [
         'confirmed' => ':company — see you soon.',
         'refused' => ':company — call us on :phone, we will find a solution.',
         'cancelled' => ':company — feel free to book again.',
+        'agency_internal' => 'Internal notification — :company.',
     ],
 ];

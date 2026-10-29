@@ -28,6 +28,7 @@ class BackOfficeAccessTest extends TestCase
             'chauffeurs' => ['/admin/chauffeurs'],
             'clients' => ['/admin/clients'],
             'paramètres' => ['/admin/parametres'],
+            'e-mails et SMTP' => ['/admin/emails'],
             'écran de retrait' => ['/agent/retrait'],
             'écran de retour' => ['/agent/retour'],
             'caisse' => ['/agent/caisse'],

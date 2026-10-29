@@ -3,21 +3,20 @@
 namespace App\Mail;
 
 use App\Models\Booking;
+use App\Services\MailConfigurator;
 use App\Services\NotificationService;
 use App\Services\SettingsService;
-use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use Illuminate\Queue\SerializesModels;
 
 /**
- * E-mail de réservation, envoyé en file d'attente.
+ * E-mail de réservation, envoyé immédiatement.
  *
  * C'est le miroir écrit du message WhatsApp : mêmes faits, mise en page lisible
- * sur un écran et imprimable. Il part par la file (ShouldQueue) pour ne jamais
- * ralentir le tunnel — l'envoi réel se fait par un worker, loin de la requête
- * HTTP.
+ * sur un écran et imprimable. Aucun worker de file n'étant configuré, l'envoi
+ * est synchrone — le délai SMTP est borné et NotificationService absorbe les
+ * erreurs pour ne jamais ralentir ni casser le tunnel.
  *
  * Rien n'y est écrit en dur : l'identité visuelle (nom, couleurs, téléphone,
  * adresse, devise) sort du SettingsService, pour qu'un blanc-marque change de
@@ -25,8 +24,6 @@ use Illuminate\Queue\SerializesModels;
  */
 class BookingMail extends Mailable
 {
-    use Queueable, SerializesModels;
-
     /**
      * @param  string  $subjectKey  clé de langue du sujet, dans notifications.subjects
      * @param  string  $introKey  clé de langue du paragraphe d'ouverture
@@ -38,16 +35,14 @@ class BookingMail extends Mailable
         public readonly string $introKey,
         public readonly array $lines = [],
         public readonly string $footerKey = 'notifications.footers.agency',
-    ) {
-        $this->onQueue('mails');
-    }
+    ) {}
 
     public function envelope(): Envelope
     {
         $settings = app(SettingsService::class);
 
         return new Envelope(
-            from: $settings->string('contact.email'),
+            from: app(MailConfigurator::class)->fromAddress(),
             subject: __('notifications.subjects.'.$this->subjectKey, [
                 'reference' => $this->booking->reference,
                 'company' => $settings->string('agency.name'),
@@ -79,18 +74,21 @@ class BookingMail extends Mailable
     }
 
     /**
-     * Lien de suivi : public pour une réservation sans compte, réservé au
-     * personnel pour les réservations invitées protégées par un jeton — un
-     * e-mail ne doit pas ouvrir l'accès à quelqu'un qui ne l'aurait pas déjà.
+     * Lien de suivi : la fiche publique pour une réservation sans compte,
+     * la recherche par référence pour une demande invitée.
+     *
+     * Un invité n'a que le jeton de son lien, jamais conservé en clair : la
+     * page de recherche pré-remplie est le seul point d'entrée qui fonctionne
+     * depuis n'importe quel appareil, avec la référence déjà dans l'e-mail.
      */
     private function bookingLink(): string
     {
         $booking = $this->booking;
 
         if ($booking->guest_access_token_hash !== null) {
-            return route('booking.confirmation', [
+            return route('booking.lookup', [
                 'locale' => 'fr',
-                'booking' => $booking,
+                'reference' => $booking->reference,
             ]);
         }
 

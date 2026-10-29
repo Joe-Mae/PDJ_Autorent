@@ -62,6 +62,7 @@
                 ['route' => 'admin.contents.index', 'active' => 'admin.contents.*', 'label' => __('admin.contents'), 'icon' => 'megaphone', 'tier' => StaffTier::Gestionnaire],
                 ['route' => 'admin.appearance.edit', 'active' => 'admin.appearance.*', 'label' => __('admin.site_appearance'), 'icon' => 'palette', 'tier' => StaffTier::Gestionnaire],
                 ['route' => 'admin.settings.index', 'active' => 'admin.settings.*', 'label' => __('admin.settings'), 'icon' => 'gear', 'tier' => StaffTier::SuperAdmin],
+                ['route' => 'admin.mail.edit', 'active' => 'admin.mail.*', 'label' => __('admin.mail_settings'), 'icon' => 'envelope-at', 'tier' => StaffTier::SuperAdmin],
             ],
         ],
     ];

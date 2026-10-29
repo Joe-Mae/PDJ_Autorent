@@ -18,6 +18,10 @@ return [
         'title' => 'Réservation :reference',
         'cta' => 'Voir ma réservation',
         'no_license' => 'Bonne nouvelle : avec chauffeur, pas besoin de permis — présentez juste votre pièce d\'identité.',
+        'agency_title' => 'Nouvelle demande :reference',
+        'agency_cta' => 'Ouvrir dans l\'administration',
+        'with_driver' => 'Avec chauffeur',
+        'without_driver' => 'Sans chauffeur',
     ],
 
     'subjects' => [
@@ -25,6 +29,8 @@ return [
         'confirmed' => 'Réservation :reference confirmée 👍 — :company',
         'refused' => 'Réservation :reference non confirmée — :company',
         'cancelled' => 'Réservation :reference annulée — :company',
+        'new_request' => 'Nouvelle demande de réservation :reference — :company',
+        'new_driver_only_request' => 'Nouvelle demande de chauffeur :reference — :company',
     ],
 
     'intros' => [
@@ -32,6 +38,8 @@ return [
         'confirmed' => 'Bonne nouvelle : votre réservation :reference est confirmée.',
         'refused' => 'Votre réservation :reference n\'a malheureusement pas pu être confirmée.',
         'cancelled' => 'Votre réservation :reference est annulée. Aucun frais.',
+        'new_request' => 'Une nouvelle demande de réservation :reference attend une confirmation.',
+        'new_driver_only_request' => 'Une nouvelle demande de chauffeur seul :reference attend une confirmation.',
     ],
 
     'lines' => [
@@ -42,6 +50,11 @@ return [
         'deposit' => 'Caution',
         'driver' => 'Avec chauffeur',
         'reason' => 'Motif',
+        'client' => 'Client',
+        'phone' => 'Téléphone',
+        'email' => 'E-mail',
+        'service' => 'Prestation',
+        'driver_option' => 'Chauffeur',
     ],
 
     'footers' => [
@@ -50,5 +63,6 @@ return [
         'confirmed' => ':company — à bientôt.',
         'refused' => ':company — appelez-nous au :phone, on va trouver une solution.',
         'cancelled' => ':company — n\'hésitez pas à réserver à nouveau.',
+        'agency_internal' => 'Notification interne — :company.',
     ],
 ];

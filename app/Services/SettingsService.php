@@ -78,6 +78,19 @@ class SettingsService
         'document.selfie_enabled' => '1',
 
         'contact.email' => 'contact@pdj-autorent.tg',
+
+        // Envoi d'e-mails. Tant que l'agence n'a pas rempli son serveur SMTP,
+        // rien n'est envoyé : on ne veut pas qu'une réservation échoue parce
+        // qu'un réglage vide a été tenté.
+        'mail.enabled' => '0',
+        'mail.host' => '',
+        'mail.port' => '587',
+        'mail.encryption' => 'tls',
+        'mail.username' => '',
+        'mail.password' => '',
+        'mail.from_address' => '',
+        'mail.from_name' => '',
+        'mail.notification_address' => '',
     ];
 
     /** @var array<string, mixed>|null */
@@ -239,6 +252,8 @@ class SettingsService
             $key === 'document.retention_months' => 'int',
             $key === 'document.identity_retention_months' => 'int',
             $key === 'document.selfie_enabled' => 'bool',
+            $key === 'mail.enabled' => 'bool',
+            $key === 'mail.port' => 'int',
             default => 'string',
         };
     }

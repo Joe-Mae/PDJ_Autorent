@@ -2,10 +2,14 @@
 
 namespace App\Services;
 
+use App\Mail\AgencyRequestMail;
 use App\Mail\BookingMail;
 use App\Models\Booking;
+use App\Models\DriverOnlyBooking;
+use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 /**
  * Envois client : WhatsApp d'abord, SMS en secours, e-mail pour les documents.
@@ -17,7 +21,10 @@ use Illuminate\Support\Facades\Mail;
  */
 class NotificationService
 {
-    public function __construct(private readonly SettingsService $settings) {}
+    public function __construct(
+        private readonly SettingsService $settings,
+        private readonly MailConfigurator $mail,
+    ) {}
 
     public function sendBookingReceived(Booking $booking, ?string $email = null): bool
     {
@@ -50,7 +57,7 @@ class NotificationService
                 $lines[__('notifications.mail.lines.deposit')] = $this->formatAmount((int) $booking->deposit_amount);
             }
 
-            $this->queueBookingMail($booking, $email, 'received', 'booking.received', 'received', $lines);
+            $this->sendBookingMail($booking, $email, 'received', 'booking.received', 'received', $lines);
         }
 
         return $sent;
@@ -72,7 +79,7 @@ class NotificationService
         ]);
 
         if ($email !== null) {
-            $this->queueBookingMail($booking, $email, 'confirmed', 'booking.confirmed', 'confirmed', [
+            $this->sendBookingMail($booking, $email, 'confirmed', 'booking.confirmed', 'confirmed', [
                 __('notifications.mail.lines.reference') => $booking->reference,
                 __('notifications.mail.lines.vehicle') => $booking->vehicle?->displayName() ?? '—',
                 __('notifications.mail.lines.period') => $booking->starts_at->translatedFormat('d/m H:i').' → '.$booking->ends_at->translatedFormat('d/m H:i'),
@@ -92,7 +99,7 @@ class NotificationService
         ]);
 
         if ($email !== null) {
-            $this->queueBookingMail($booking, $email, 'refused', 'booking.refused', 'refused', [
+            $this->sendBookingMail($booking, $email, 'refused', 'booking.refused', 'refused', [
                 __('notifications.mail.lines.reference') => $booking->reference,
                 __('notifications.mail.lines.reason') => $reason,
             ]);
@@ -109,7 +116,7 @@ class NotificationService
         ]);
 
         if ($email !== null) {
-            $this->queueBookingMail($booking, $email, 'cancelled', 'booking.cancelled', 'cancelled', [
+            $this->sendBookingMail($booking, $email, 'cancelled', 'booking.cancelled', 'cancelled', [
                 __('notifications.mail.lines.reference') => $booking->reference,
             ]);
         }
@@ -173,24 +180,109 @@ class NotificationService
     }
 
     /**
-     * Mets l'e-mail en file d'attente, jamais envoyé depuis la requête HTTP.
+     * Envoie l'e-mail au client.
      *
-     * Un e-mail ne part que s'il y a une adresse : la majorité des clients ne
-     * donnent que leur numéro, et le canal WhatsApp reste le canal réel. En
-     * l'absence de file (worker non lancé), l'envoi se fait dans la foulée —
-     * l'e-mail est un miroir, il ne doit jamais faire échouer la réservation.
+     * L'envoi est synchrone : sans worker de file, un message « en file »
+     * n'arriverait jamais. Le délai SMTP est borné (10 s) et toute erreur est
+     * journalisée sans interrompre le tunnel — une réservation ne doit jamais
+     * échouer parce que la boîte de l'agence est muette.
      *
      * @param  array<string, string>  $lines
      */
-    private function queueBookingMail(Booking $booking, string $email, string $subjectKey, string $introKey, string $footerKey, array $lines): void
+    private function sendBookingMail(Booking $booking, string $email, string $subjectKey, string $introKey, string $footerKey, array $lines): void
     {
         if ($booking->with_driver) {
             $lines[__('notifications.mail.lines.driver')] = __('booking.reminder.no_license_needed');
         }
 
-        Mail::to($email)->queue(
-            new BookingMail($booking, $subjectKey, 'notifications.intros.'.$introKey, $lines, 'notifications.footers.'.$footerKey)
+        $this->send(
+            $email,
+            new BookingMail($booking, $subjectKey, 'notifications.intros.'.$introKey, $lines, 'notifications.footers.'.$footerKey),
         );
+    }
+
+    /**
+     * Prévient l'agence qu'une demande attend une confirmation.
+     *
+     * Sans cette alerte, une réservation déposée le soir pouvait attendre le
+     * lendemain : le client, lui, recevait déjà son accusé de réception.
+     */
+    public function sendNewBookingRequest(Booking $booking): bool
+    {
+        $email = $this->mail->notificationAddress();
+
+        if ($email === '') {
+            return false;
+        }
+
+        $lines = [
+            __('notifications.mail.lines.client') => $booking->user?->displayName() ?? $booking->customer_name ?? '—',
+            __('notifications.mail.lines.phone') => $booking->user?->phone ?? $booking->customer_phone ?? '—',
+            __('notifications.mail.lines.vehicle') => $booking->vehicle?->displayName() ?? '—',
+            __('notifications.mail.lines.period') => $booking->starts_at->translatedFormat('d/m H:i').' → '.$booking->ends_at->translatedFormat('d/m H:i'),
+            __('notifications.mail.lines.to_pay') => $this->formatAmount($booking->amountToCarry()),
+            __('notifications.mail.lines.driver_option') => $booking->with_driver
+                ? __('notifications.mail.with_driver')
+                : __('notifications.mail.without_driver'),
+        ];
+
+        $clientEmail = $booking->customer_email ?? $booking->user?->email;
+
+        if (filled($clientEmail)) {
+            $lines[__('notifications.mail.lines.email')] = $clientEmail;
+        }
+
+        return $this->send($email, new AgencyRequestMail(
+            reference: $booking->reference,
+            lines: $lines,
+            url: route('admin.bookings.show', ['booking' => $booking]),
+        ));
+    }
+
+    /** Même alerte pour une demande de chauffeur seul, qui n'a pas d'e-mail client. */
+    public function sendNewDriverOnlyRequest(DriverOnlyBooking $booking): bool
+    {
+        $email = $this->mail->notificationAddress();
+
+        if ($email === '') {
+            return false;
+        }
+
+        return $this->send($email, new AgencyRequestMail(
+            reference: $booking->reference,
+            lines: [
+                __('notifications.mail.lines.client') => $booking->customer_name,
+                __('notifications.mail.lines.phone') => $booking->phone,
+                __('notifications.mail.lines.service') => __('driver.solo_title'),
+                __('notifications.mail.lines.period') => $booking->starts_at->translatedFormat('d/m H:i').' → '.$booking->ends_at->translatedFormat('d/m H:i'),
+                __('notifications.mail.lines.to_pay') => $this->formatAmount((int) $booking->price_total),
+            ],
+            url: route('admin.driver-only-bookings.index'),
+            subjectKey: 'new_driver_only_request',
+            introKey: 'new_driver_only_request',
+        ));
+    }
+
+    /**
+     * Point d'envoi unique : jamais d'exception vers l'appelant.
+     *
+     * Le mail est un miroir de la réservation, pas sa condition de succès. Une
+     * panne SMTP doit rester visible dans les journaux, pas casser le tunnel.
+     */
+    private function send(string $email, Mailable $mailable): bool
+    {
+        try {
+            Mail::to($email)->send($mailable);
+
+            return true;
+        } catch (Throwable $e) {
+            Log::error('Échec de l’envoi d’un e-mail', [
+                'destinataire' => self::maskEmail($email),
+                'erreur' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
     }
 
     private function dispatch(Booking $booking, string $channel, string $template, array $data): bool
@@ -226,5 +318,13 @@ class NotificationService
         $digits = preg_replace('/\D/', '', $phone) ?? '';
 
         return strlen($digits) < 6 ? '***' : '***'.substr($digits, -4);
+    }
+
+    /** Les journaux ne doivent pas recopier l'adresse complète. */
+    private static function maskEmail(string $email): string
+    {
+        [$local, $domain] = array_pad(explode('@', $email, 2), 2, '');
+
+        return $domain === '' ? '***' : substr($local, 0, 1).'***@'.$domain;
     }
 }

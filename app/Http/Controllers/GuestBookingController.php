@@ -13,6 +13,7 @@ use App\Models\Booking;
 use App\Models\DriverOnlyBooking;
 use App\Models\Vehicle;
 use App\Services\BookingService;
+use App\Services\NotificationService;
 use App\Services\PricingService;
 use App\Services\SettingsService;
 use App\Support\BookingPeriod;
@@ -20,6 +21,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -27,6 +29,7 @@ class GuestBookingController extends Controller
 {
     public function __construct(
         private readonly BookingService $bookings,
+        private readonly NotificationService $notifications,
         private readonly PricingService $pricing,
         private readonly SettingsService $settings,
     ) {}
@@ -102,6 +105,12 @@ class GuestBookingController extends Controller
             return back()->withInput()->with('error', $exception->getMessage());
         }
 
+        // Accusé de réception au client (s'il a laissé une adresse) et alerte
+        // à l'agence : la demande ne doit pas attendre qu'un agent ouvre
+        // l'administration pour être vue.
+        $this->notifications->sendBookingReceived($booking, $booking->customer_email);
+        $this->notifications->sendNewBookingRequest($booking);
+
         return redirect()->route('booking.guest.documents', [
             'locale' => $locale,
             'booking' => $booking,
@@ -168,14 +177,16 @@ class GuestBookingController extends Controller
      * On refuse aussi les réservations rattachées à un compte : elles passent
      * par le tunnel authentifié, pas par ce lien public.
      */
-    public function lookup(string $locale): View
+    public function lookup(Request $request, string $locale): View
     {
         return view('booking.lookup', [
             'locale' => $locale,
             'booking' => null,
             'driverOnlyBooking' => null,
             'matches' => collect(),
-            'reference' => '',
+            // Le lien d'un e-mail arrive avec la référence : la pré-remplir
+            // évite au client de la recopier depuis sa boîte.
+            'reference' => Str::upper(trim($request->string('reference')->toString())),
             'customerName' => '',
             'error' => null,
         ]);

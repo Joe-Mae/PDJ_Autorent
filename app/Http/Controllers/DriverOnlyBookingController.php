@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\BookingException;
 use App\Http\Requests\Site\StoreDriverOnlyBookingRequest;
 use App\Services\DriverOnlyBookingService;
+use App\Services\NotificationService;
 use App\Services\SettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\UploadedFile;
@@ -13,6 +14,7 @@ class DriverOnlyBookingController extends Controller
 {
     public function __construct(
         private readonly DriverOnlyBookingService $bookings,
+        private readonly NotificationService $notifications,
         private readonly SettingsService $settings,
     ) {}
 
@@ -28,6 +30,8 @@ class DriverOnlyBookingController extends Controller
         } catch (BookingException $exception) {
             return back()->with('error', $exception->getMessage());
         }
+
+        $this->notifications->sendNewDriverOnlyRequest($booking);
 
         return redirect()
             ->route('page.driver', ['locale' => $locale])

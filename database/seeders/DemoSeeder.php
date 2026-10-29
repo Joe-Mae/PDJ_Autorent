@@ -91,6 +91,16 @@ class DemoSeeder extends Seeder
             ['document.identity_retention_months', '60', 'reservation', 'Conservation des pièces d\'identité et du permis (mois)', 'int'],
             ['document.selfie_enabled', '1', 'reservation', 'Proposer le selfie facultatif', 'bool'],
             ['contact.email', 'contact@pdj-autorent.tg', 'general', 'E-mail de contact', 'string'],
+
+            ['mail.enabled', '0', 'mail', 'Activer l’envoi des e-mails', 'bool'],
+            ['mail.host', '', 'mail', 'Serveur SMTP (hôte)', 'string'],
+            ['mail.port', '587', 'mail', 'Port SMTP', 'int'],
+            ['mail.encryption', 'tls', 'mail', 'Chiffrement SMTP', 'string'],
+            ['mail.username', '', 'mail', 'Identifiant SMTP', 'string'],
+            ['mail.password', '', 'mail', 'Mot de passe SMTP (chiffré)', 'string'],
+            ['mail.from_address', '', 'mail', 'Adresse d’expédition', 'string'],
+            ['mail.from_name', '', 'mail', 'Nom affiché de l’expéditeur', 'string'],
+            ['mail.notification_address', '', 'mail', 'Boîte qui reçoit les demandes', 'string'],
         ];
 
         foreach ($rows as [$key, $value, $group, $label, $type]) {
