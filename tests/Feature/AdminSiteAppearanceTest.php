@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Banner;
 use App\Models\Vehicle;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -63,6 +64,39 @@ class AdminSiteAppearanceTest extends TestCase
         $this->assertNotFalse($secondPhotoPosition);
         $this->assertNotFalse($firstPhotoPosition);
         $this->assertTrue($secondPhotoPosition < $firstPhotoPosition);
+    }
+
+    public function test_manager_can_edit_the_homepage_hero_texts(): void
+    {
+        $manager = $this->staff('gestionnaire');
+
+        $this->actingAs($manager)
+            ->get(route('admin.appearance.edit'))
+            ->assertOk()
+            ->assertSee('Textes du bandeau d’accueil')
+            ->assertSee('Une voiture pour la semaine, à Lomé');
+
+        $this->actingAs($manager)
+            ->post(route('admin.appearance.update'), [
+                ...$this->validPayload(),
+                'hero_title_fr' => 'Votre voiture à Lomé, dès aujourd’hui',
+                'hero_title_en' => 'Your car in Lomé, today',
+                'hero_subtitle_fr' => 'Des prix clairs, sans surprise.',
+                'hero_subtitle_en' => 'Clear prices, no surprises.',
+            ])
+            ->assertRedirect(route('admin.appearance.edit'))
+            ->assertSessionHas('status', 'Apparence du site mise à jour.');
+
+        $this->assertSame(1, Banner::query()->where('slot', 'home_hero')->count());
+
+        $this->get('/fr')
+            ->assertOk()
+            ->assertSee('Votre voiture à Lomé, dès aujourd’hui')
+            ->assertSee('Des prix clairs, sans surprise.');
+
+        $this->get('/en')
+            ->assertOk()
+            ->assertSee('Your car in Lomé, today');
     }
 
     public function test_agent_cannot_view_site_appearance_settings(): void
@@ -243,6 +277,10 @@ class AdminSiteAppearanceTest extends TestCase
             'accent_color' => '#ABCDEF',
             'brand_mark' => 'NP',
             'brand_label' => 'Nom public',
+            'hero_title_fr' => 'Une voiture pour la semaine, à Lomé',
+            'hero_title_en' => 'A car for the week, in Lomé',
+            'hero_subtitle_fr' => 'Prix clair en francs CFA.',
+            'hero_subtitle_en' => 'Clear prices in CFA francs.',
             'hero_eyebrow_fr' => 'Location à Lomé',
             'hero_eyebrow_en' => 'Car rental in Lome',
             'footer_tagline_fr' => 'Une signature française.',

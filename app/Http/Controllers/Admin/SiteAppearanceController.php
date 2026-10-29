@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SaveSiteAppearanceRequest;
+use App\Models\Banner;
 use App\Models\Setting;
 use App\Models\Vehicle;
 use App\Services\SettingsService;
@@ -27,6 +28,8 @@ class SiteAppearanceController extends Controller
             ->orderBy('model')
             ->get();
 
+        $hero = $this->heroBanner();
+
         return view('admin.appearance.edit', [
             'vehicles' => $vehicles,
             'heroVehicleIds' => $this->settings->get('site.hero_vehicle_ids', 'array'),
@@ -42,6 +45,10 @@ class SiteAppearanceController extends Controller
             'brandMark' => $this->settings->string('site.brand_mark'),
             'brandLabel' => $this->settings->string('site.brand_label'),
             'logoPath' => $this->safeLogoPath(),
+            'heroTitleFr' => $hero?->title_fr ?: trans('general.hero_title', [], 'fr'),
+            'heroTitleEn' => $hero?->title_en ?? '',
+            'heroSubtitleFr' => $hero?->subtitle_fr ?: trans('general.hero_subtitle', [], 'fr'),
+            'heroSubtitleEn' => $hero?->subtitle_en ?? '',
             'heroEyebrowFr' => $this->settings->string('site.hero_eyebrow.fr'),
             'heroEyebrowEn' => $this->settings->string('site.hero_eyebrow.en'),
             'footerTaglineFr' => $this->settings->string('site.footer_tagline.fr'),
@@ -78,6 +85,11 @@ class SiteAppearanceController extends Controller
     public function update(SaveSiteAppearanceRequest $request): RedirectResponse
     {
         $data = $request->validated();
+
+        // Le titre et le sous-titre du bandeau vivent dans la bannière
+        // d'accueil : l'écran d'apparence les expose, l'écran des contenus
+        // continue de les lire.
+        $heroBanner = $this->heroBanner();
 
         // Le logo est un fichier unique : on garde l'ancien pour le supprimer
         // seulement quand le nouveau est bien enregistré.
@@ -172,7 +184,7 @@ class SiteAppearanceController extends Controller
             'nav.lookup.en' => $data['nav_lookup_en'],
         ];
 
-        DB::transaction(function () use ($request, $values): void {
+        DB::transaction(function () use ($request, $values, $data, $heroBanner): void {
             foreach ($values as $key => $value) {
                 Setting::query()->updateOrCreate(
                     ['key' => $key],
@@ -184,6 +196,22 @@ class SiteAppearanceController extends Controller
                         'updated_by' => $request->user()->id,
                     ],
                 );
+            }
+
+            $heroValues = [
+                'title_fr' => $data['hero_title_fr'],
+                'title_en' => $data['hero_title_en'] ?? null,
+                'subtitle_fr' => $data['hero_subtitle_fr'],
+                'subtitle_en' => $data['hero_subtitle_en'] ?? null,
+            ];
+
+            if ($heroBanner instanceof Banner) {
+                $heroBanner->update($heroValues);
+            } else {
+                Banner::query()->create($heroValues + [
+                    'slot' => 'home_hero',
+                    'is_active' => true,
+                ]);
             }
         });
 
@@ -205,6 +233,20 @@ class SiteAppearanceController extends Controller
         $this->settings->flush();
 
         return to_route('admin.appearance.edit')->with('status', 'Apparence du site mise à jour.');
+    }
+
+    /**
+     * Bannière du bandeau d'accueil : celle affichée si elle est en ligne,
+     * sinon la première de l'emplacement pour que l'écran ne soit pas vide.
+     */
+    private function heroBanner(): ?Banner
+    {
+        return Banner::query()->live('home_hero')->first()
+            ?? Banner::query()
+                ->where('slot', 'home_hero')
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->first();
     }
 
     /** Chemin du logo, sûr à afficher : non vide, sans « .. », réellement présent. */

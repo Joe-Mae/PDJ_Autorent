@@ -86,6 +86,43 @@
 
         <section class="card border-0 shadow-sm mb-4">
             <div class="card-body p-4">
+                <h2 class="h5 mb-1">Textes du bandeau d’accueil</h2>
+                <p class="small text-muted mb-3">Le titre et le sous-titre affichés sur les photos d’accueil. L’anglais est facultatif : sans traduction, le texte français s’affiche.</p>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="hero_title_fr" class="form-label">Titre (FR)</label>
+                        <input class="form-control" id="hero_title_fr" name="hero_title_fr" maxlength="150" required
+                               value="{{ old('hero_title_fr', $heroTitleFr) }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="hero_title_en" class="form-label">Title (EN)</label>
+                        <input class="form-control" id="hero_title_en" name="hero_title_en" maxlength="150"
+                               value="{{ old('hero_title_en', $heroTitleEn) }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="hero_subtitle_fr" class="form-label">Sous-titre (FR)</label>
+                        <textarea class="form-control" id="hero_subtitle_fr" name="hero_subtitle_fr" maxlength="500" rows="2" required>{{ old('hero_subtitle_fr', $heroSubtitleFr) }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="hero_subtitle_en" class="form-label">Subtitle (EN)</label>
+                        <textarea class="form-control" id="hero_subtitle_en" name="hero_subtitle_en" maxlength="500" rows="2">{{ old('hero_subtitle_en', $heroSubtitleEn) }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="hero_eyebrow_fr" class="form-label">Accroche au-dessus du titre (FR)</label>
+                        <input class="form-control" id="hero_eyebrow_fr" name="hero_eyebrow_fr" maxlength="100" required
+                               value="{{ old('hero_eyebrow_fr', $heroEyebrowFr) }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="hero_eyebrow_en" class="form-label">Eyebrow above the title (EN)</label>
+                        <input class="form-control" id="hero_eyebrow_en" name="hero_eyebrow_en" maxlength="100" required
+                               value="{{ old('hero_eyebrow_en', $heroEyebrowEn) }}">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
                 <h2 class="h5 mb-3">Identité visuelle</h2>
                 <div class="row g-3">
                     <div class="col-md-2">
@@ -130,16 +167,6 @@
                                 <label class="form-check-label" for="remove_logo">Retirer le logo actuel</label>
                             </div>
                         @endif
-                    </div>
-                    <div class="col-md-6">
-                        <label for="hero_eyebrow_fr" class="form-label">Accroche du bandeau (FR)</label>
-                        <input class="form-control" id="hero_eyebrow_fr" name="hero_eyebrow_fr" maxlength="100" required
-                               value="{{ old('hero_eyebrow_fr', $heroEyebrowFr) }}">
-                    </div>
-                    <div class="col-md-6">
-                        <label for="hero_eyebrow_en" class="form-label">Bandeau eyebrow (EN)</label>
-                        <input class="form-control" id="hero_eyebrow_en" name="hero_eyebrow_en" maxlength="100" required
-                               value="{{ old('hero_eyebrow_en', $heroEyebrowEn) }}">
                     </div>
                     <div class="col-md-6">
                         <label for="footer_tagline_fr" class="form-label">Signature du pied de page (FR)</label>
