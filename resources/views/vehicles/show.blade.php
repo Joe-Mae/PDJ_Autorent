@@ -7,7 +7,9 @@
 
 @php
     $photos = $vehicle->galleryPhotos();
+    $video = $vehicle->vehicleVideo();
     $description = $vehicle->description($locale);
+    $placeholder = asset('images/vehicle-placeholder.svg');
 @endphp
 
 <div class="container py-4">
@@ -26,16 +28,35 @@
             <div data-gallery data-gallery-interval="5000">
                 <div class="gallery-main">
                     <img data-gallery-main
-                         src="{{ $photos->first()?->getUrl() ?: asset('images/vehicle-placeholder.svg') }}"
+                         src="{{ $photos->first()?->getUrl() ?: $placeholder }}"
                          alt="{{ $vehicle->fullName() }}"
-                         width="800" height="500">
+                         width="800" height="500"
+                         @if ($video) hidden @endif>
+                    @if ($video)
+                        <video data-gallery-video
+                               src="{{ $video->getUrl() }}"
+                               poster="{{ $photos->first()?->getUrl() ?: $placeholder }}"
+                               autoplay muted loop playsinline preload="metadata"
+                               aria-label="{{ __('vehicle.gallery_video') }}"></video>
+                    @endif
                 </div>
-                @if ($photos->count() > 1)
+                @if ($video || $photos->count() > 1)
                     <div class="gallery-thumbs">
+                        @if ($video)
+                            <button type="button"
+                                    class="gallery-thumb is-active"
+                                    data-gallery-thumb="{{ $video->getUrl() }}"
+                                    data-gallery-type="video"
+                                    aria-label="{{ __('vehicle.gallery_video') }}">
+                                <span class="gallery-thumb__play"><i class="bi bi-play-fill"></i></span>
+                                <img src="{{ $photos->first()?->getUrl() ?: $placeholder }}" alt="" loading="lazy">
+                            </button>
+                        @endif
                         @foreach ($photos as $index => $media)
                             <button type="button"
-                                    class="gallery-thumb {{ $index === 0 ? 'is-active' : '' }}"
+                                    class="gallery-thumb {{ ! $video && $index === 0 ? 'is-active' : '' }}"
                                     data-gallery-thumb="{{ $media->getUrl() }}"
+                                    data-gallery-type="image"
                                     aria-label="{{ __('vehicle.gallery_photo', ['number' => $index + 1, 'total' => $photos->count()]) }}">
                                 <img src="{{ $media->getUrl() }}" alt="" loading="lazy">
                             </button>

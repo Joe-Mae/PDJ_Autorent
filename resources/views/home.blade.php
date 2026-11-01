@@ -8,14 +8,27 @@
 {{-- ── Bandeau d'accueil ───────────────────────────────────────────────────── --}}
 @php
     $hero = $banners->first();
+    $heroSlides = collect();
+
+    if ($heroVideo) {
+        $heroSlides->push(['type' => 'video', 'url' => $heroVideo]);
+    }
+
+    $heroImages->each(fn (string $url) => $heroSlides->push(['type' => 'image', 'url' => $url]));
 @endphp
 <section class="pdj-hero home-hero" data-hero-carousel data-hero-interval="5000">
     <div class="home-hero__slides" aria-hidden="true">
-        @foreach ($heroImages as $image)
+        @foreach ($heroSlides as $slide)
             <div class="home-hero__slide {{ $loop->first ? 'is-active' : '' }}"
                  data-hero-slide
                  aria-hidden="{{ $loop->first ? 'false' : 'true' }}">
-                <img src="{{ $image }}" alt="" @if (! $loop->first) loading="lazy" @endif>
+                @if ($slide['type'] === 'video')
+                    <video src="{{ $slide['url'] }}"
+                           autoplay muted loop playsinline preload="metadata"
+                           @if ($heroImages->isNotEmpty()) poster="{{ $heroImages->first() }}" @endif></video>
+                @else
+                    <img src="{{ $slide['url'] }}" alt="" @if (! $loop->first) loading="lazy" @endif>
+                @endif
             </div>
         @endforeach
     </div>
@@ -61,13 +74,13 @@
         </div>
     </div>
 
-    @if ($heroImages->count() > 1)
+    @if ($heroSlides->count() > 1)
         <div class="home-hero__controls" aria-label="{{ __('general.hero_carousel_controls') }}">
             <button type="button" data-hero-previous aria-label="{{ __('general.hero_previous_slide') }}">
                 <i class="bi bi-arrow-left"></i>
             </button>
             <div class="home-hero__dots">
-                @foreach ($heroImages as $index => $image)
+                @foreach ($heroSlides as $index => $slide)
                     <button type="button"
                             data-hero-dot="{{ $index }}"
                             aria-label="{{ __('general.hero_goto_slide', ['number' => $index + 1]) }}"

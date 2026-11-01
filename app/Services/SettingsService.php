@@ -49,6 +49,7 @@ class SettingsService
 
         'site.hero_vehicle_ids' => '[]',
         'site.hero_uploaded_images' => '[]',
+        'site.hero_video_path' => '',
         'site.brand_color' => '#0A6E4C',
         'site.accent_color' => '#FFC400',
         'site.brand_mark' => 'PDJ',

@@ -36,6 +36,13 @@ class HomeController extends Controller
                 && Storage::disk('public')->exists($path))
             ->map(fn (string $path) => Storage::disk('public')->url($path))
             ->values();
+        $heroVideoPath = $this->settings->string('site.hero_video_path');
+        $heroVideo = $heroVideoPath !== ''
+            && str_starts_with($heroVideoPath, 'hero-videos/')
+            && ! str_contains($heroVideoPath, '..')
+            && Storage::disk('public')->exists($heroVideoPath)
+                ? Storage::disk('public')->url($heroVideoPath)
+                : null;
         $selectedHeroVehicleIds = $this->settings->get('site.hero_vehicle_ids', 'array');
         $heroVehicles = collect();
 
@@ -67,6 +74,7 @@ class HomeController extends Controller
                 ->unique()
                 ->take(4)
                 ->values(),
+            'heroVideo' => $heroVideo,
             'categories' => VehicleCategory::query()
                 ->active()
                 ->withCount(['vehicles' => fn ($q) => $q->listed()])

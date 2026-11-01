@@ -105,6 +105,8 @@ class VehicleController extends Controller
 
         $newMedia = $this->attachPhotos($request, $vehicle);
 
+        $this->attachVideo($request, $vehicle);
+
         $this->setMainPhoto($vehicle, $request->input('main_photo_id'), $newMedia, $request->input('main_photo_index'));
 
         return redirect()
@@ -147,6 +149,8 @@ class VehicleController extends Controller
         }
 
         $newMedia = $this->attachPhotos($request, $vehicle);
+
+        $this->attachVideo($request, $vehicle);
 
         $this->setMainPhoto($vehicle, $request->input('main_photo_id'), $newMedia, $request->input('main_photo_index'));
 
@@ -337,5 +341,28 @@ class VehicleController extends Controller
         }
 
         return $newMedia;
+    }
+
+    /**
+     * Vidéo de présentation du véhicule : une seule, remplacée à chaque
+     * nouvel envoi (collection « single file ») ou retirée sur demande.
+     */
+    private function attachVideo(Request $request, Vehicle $vehicle): void
+    {
+        if ($request->boolean('remove_video')) {
+            $vehicle->clearMediaCollection(Vehicle::MEDIA_VIDEO);
+
+            return;
+        }
+
+        $video = $request->file('video');
+
+        if ($video === null) {
+            return;
+        }
+
+        $vehicle->addMedia($video)
+            ->usingFileName(Str::slug($vehicle->brand.'-'.$vehicle->model).'-video.'.$video->getClientOriginalExtension())
+            ->toMediaCollection(Vehicle::MEDIA_VIDEO, 'fleet');
     }
 }

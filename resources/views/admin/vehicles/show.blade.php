@@ -18,19 +18,32 @@
 
     <div class="row g-4">
         <div class="col-lg-7">
-            @if ($vehicle->media->isNotEmpty())
+            @php
+                $photos = $vehicle->galleryPhotos();
+                $video = $vehicle->vehicleVideo();
+            @endphp
+
+            @if ($photos->isNotEmpty())
                 <div class="pdj-card mb-4">
                     <h2 class="h6 fw-bold mb-3">{{ __('admin.photos') }}</h2>
                     <div class="d-flex flex-wrap gap-2">
-                        @foreach ($vehicle->media->sortByDesc('order_column') as $media)
+                        @foreach ($photos as $media)
                             <div class="position-relative d-inline-block">
                                 <img src="{{ $media->getUrl() }}" class="rounded" style="width: 110px; height: 80px; object-fit: cover;" alt="">
-                                @if ($media->id === $vehicle->media->sortByDesc('order_column')->first()?->id)
+                                @if ($media->id === $photos->first()->id)
                                     <span class="badge bg-primary position-absolute top-0 start-0 m-1">{{ __('admin.main_photo') }}</span>
                                 @endif
                             </div>
                         @endforeach
                     </div>
+                </div>
+            @endif
+
+            @if ($video)
+                <div class="pdj-card mb-4">
+                    <h2 class="h6 fw-bold mb-3">{{ __('admin.video') }}</h2>
+                    <video src="{{ $video->getUrl() }}" controls muted playsinline preload="metadata"
+                           class="rounded w-100" style="max-height: 320px; background: #000;"></video>
                 </div>
             @endif
 

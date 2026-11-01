@@ -5,7 +5,7 @@
      rendue directement, avec un lien de retour vers le formulaire. --}}
 @extends('layouts.panel', ['singleAction' => true])
 
-@section('title', __('admin.photo_too_heavy', ['max' => 2]))
+@section('title', __('admin.upload_too_large_title'))
 
 @section('content')
     <div class="row justify-content-center">
@@ -14,10 +14,10 @@
             <div class="pdj-card p-4 p-lg-5">
                 <div class="d-flex align-items-start gap-3 mb-3">
                     <div class="feature-icon flex-shrink-0 mb-0">
-                        <i class="bi bi-file-earmark-image"></i>
+                        <i class="bi bi-exclamation-triangle"></i>
                     </div>
                     <div>
-                        <h1 class="h5 fw-bold mb-1">{{ __('admin.photo_too_heavy', ['max' => 2]) }}</h1>
+                        <h1 class="h5 fw-bold mb-1">{{ __('admin.upload_too_large_title') }}</h1>
                         <p class="mb-0 text-muted">{{ __('admin.upload_too_large') }}</p>
                     </div>
                 </div>
@@ -25,7 +25,7 @@
                 <div class="alert alert-warning mb-4">
                     <ul class="mb-0 ps-3 small">
                         <li>{{ __('admin.photos_max_hint') }}</li>
-                        <li>{{ __('admin.photos_hint') }}</li>
+                        <li>{{ __('admin.video_hint') }}</li>
                     </ul>
                 </div>
 

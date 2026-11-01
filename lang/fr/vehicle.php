@@ -35,6 +35,7 @@ return [
     'choose_dates_to_see_price' => 'Choisissez vos dates pour voir le prix et la disponibilité.',
     'similar' => 'Véhicules similaires',
     'gallery_photo' => 'Voir la photo :number sur :total',
+    'gallery_video' => 'Lire la vidéo de présentation',
     'not_free' => 'Ce véhicule n\'est pas libre sur ces dates. Choisissez une autre période, ou voyez la flotte complète.',
     'occupied' => 'Voiture occupée',
 

@@ -113,6 +113,7 @@ class DemoSeeder extends Seeder
         $websiteSettings = [
             ['site.hero_vehicle_ids', '[]', 'json', 'Ordre des photos du bandeau accueil'],
             ['site.hero_uploaded_images', '[]', 'json', 'Photos importées du diaporama accueil'],
+            ['site.hero_video_path', '', 'string', 'Chemin de la vidéo du diaporama accueil'],
             ['site.brand_color', '#0A6E4C', 'string', 'Couleur principale du site'],
             ['site.accent_color', '#FFC400', 'string', 'Couleur accent du site'],
             ['site.brand_mark', 'PDJ', 'string', 'Monogramme affiché dans le logo'],

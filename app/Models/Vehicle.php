@@ -32,6 +32,15 @@ class Vehicle extends Model implements HasMedia
 
     public const MEDIA_GALLERY = 'gallery';
 
+    public const MEDIA_VIDEO = 'video';
+
+    public function registerMediaCollections(): void
+    {
+        // Une seule vidéo de présentation par véhicule : un nouvel envoi
+        // remplace l'ancien, comme sur le logo du site.
+        $this->addMediaCollection(self::MEDIA_VIDEO)->singleFile();
+    }
+
     public function getRouteKeyName(): string
     {
         return 'id';
@@ -139,6 +148,12 @@ class Vehicle extends Model implements HasMedia
     public function mainPhotoUrl(): ?string
     {
         return $this->galleryPhotos()->first()?->getUrl();
+    }
+
+    /** Vidéo de présentation facultative, unique par véhicule. */
+    public function vehicleVideo(): ?Media
+    {
+        return $this->getFirstMedia(self::MEDIA_VIDEO);
     }
 
     public function isBookable(): bool

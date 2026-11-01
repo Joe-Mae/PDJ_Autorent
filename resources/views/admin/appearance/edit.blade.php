@@ -20,7 +20,7 @@
         <section class="card border-0 shadow-sm mb-4">
             <div class="card-body p-4">
                 <h2 class="h5 mb-1">Diaporama de l’accueil</h2>
-                <p class="small text-muted mb-3">Importez vos propres photos ou sélectionnez des véhicules : toutes les photos du véhicule choisi sont reprises, dans l'ordre de sa galerie. Les photos importées s'affichent en premier, puis les véhicules sélectionnés. Quatre photos maximum au total ; sans sélection, aucune image ne sera affichée dans le diaporama.</p>
+                <p class="small text-muted mb-3">Ajoutez une vidéo et/ou des photos. La vidéo, si elle existe, s'affiche en premier ; viennent ensuite les photos importées, puis toutes celles des véhicules sélectionnés, dans l'ordre de leur galerie. Quatre photos maximum au total ; sans photo, seul le bandeau de couleur s'affiche.</p>
 
                 @if ($heroImages->isNotEmpty())
                     <div class="row g-3 mb-4">
@@ -54,6 +54,27 @@
                             <div class="text-danger small mt-1" role="alert">{{ $message }}</div>
                         @enderror
                     @endfor
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" for="hero_video">Vidéo de présentation (facultative)</label>
+                    @if ($heroVideoUrl !== '')
+                        <div class="border rounded p-2 mb-2" style="max-width: 420px;">
+                            <video src="{{ $heroVideoUrl }}" class="rounded mb-2 w-100" controls muted playsinline
+                                   preload="metadata" style="max-height: 220px; background: #000;"></video>
+                            <label class="form-check small mb-0">
+                                <input class="form-check-input" type="checkbox" name="remove_hero_video" value="1"
+                                       @checked(old('remove_hero_video'))>
+                                <span class="form-check-label">Retirer la vidéo</span>
+                            </label>
+                        </div>
+                    @endif
+                    <input class="form-control" id="hero_video" name="hero_video" type="file"
+                           accept=".mp4,.webm,video/mp4,video/webm">
+                    <div class="form-text">Formats MP4 ou WebM, 20 Mo maximum. La vidéo est diffusée sans son et en boucle, avant les photos.</div>
+                    @error('hero_video')
+                        <div class="text-danger small mt-1" role="alert">{{ $message }}</div>
+                    @enderror
                 </div>
 
                 @for ($slot = 0; $slot < 4; $slot++)

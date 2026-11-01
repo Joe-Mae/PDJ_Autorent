@@ -29,6 +29,7 @@ class SiteAppearanceController extends Controller
             ->get();
 
         $hero = $this->heroBanner();
+        $heroVideoPath = $this->safeHeroVideoPath();
 
         return view('admin.appearance.edit', [
             'vehicles' => $vehicles,
@@ -45,6 +46,8 @@ class SiteAppearanceController extends Controller
             'brandMark' => $this->settings->string('site.brand_mark'),
             'brandLabel' => $this->settings->string('site.brand_label'),
             'logoPath' => $this->safeLogoPath(),
+            'heroVideoPath' => $heroVideoPath,
+            'heroVideoUrl' => $heroVideoPath !== '' ? Storage::disk('public')->url($heroVideoPath) : '',
             'heroTitleFr' => $hero?->title_fr ?: trans('general.hero_title', [], 'fr'),
             'heroTitleEn' => $hero?->title_en ?? '',
             'heroSubtitleFr' => $hero?->subtitle_fr ?: trans('general.hero_subtitle', [], 'fr'),
@@ -155,12 +158,33 @@ class SiteAppearanceController extends Controller
             $logoToDelete = $storedLogo;
         }
 
+        // La vidéo du diaporama est elle aussi unique : un nouvel envoi
+        // remplace l'ancien fichier, supprimé une fois le chemin écrit en base.
+        $storedHeroVideo = $this->settings->string('site.hero_video_path');
+        $heroVideoPath = $storedHeroVideo;
+        $heroVideoToDelete = null;
+
+        if ($request->boolean('remove_hero_video')) {
+            $heroVideoPath = '';
+            $heroVideoToDelete = $storedHeroVideo;
+        } elseif ($request->hasFile('hero_video')) {
+            $uploadedHeroVideo = $request->file('hero_video')->storePublicly('hero-videos', 'public');
+
+            if ($uploadedHeroVideo === false) {
+                throw new RuntimeException('Impossible d’enregistrer la vidéo du diaporama.');
+            }
+
+            $heroVideoPath = $uploadedHeroVideo;
+            $heroVideoToDelete = $storedHeroVideo;
+        }
+
         $values = [
             'site.hero_vehicle_ids' => $heroVehicleIds,
             'site.hero_uploaded_images' => [
                 ...$remainingHeroImages->all(),
                 ...$uploadedHeroImages,
             ],
+            'site.hero_video_path' => $heroVideoPath,
             'site.brand_color' => $data['brand_color'],
             'site.accent_color' => $data['accent_color'],
             'site.brand_mark' => $data['brand_mark'] ?? $this->settings->string('site.brand_mark'),
@@ -230,6 +254,14 @@ class SiteAppearanceController extends Controller
             Storage::disk('public')->delete($logoToDelete);
         }
 
+        if ($heroVideoToDelete !== null
+            && $heroVideoToDelete !== ''
+            && str_starts_with($heroVideoToDelete, 'hero-videos/')
+            && ! str_contains($heroVideoToDelete, '..')
+            && Storage::disk('public')->exists($heroVideoToDelete)) {
+            Storage::disk('public')->delete($heroVideoToDelete);
+        }
+
         $this->settings->flush();
 
         return to_route('admin.appearance.edit')->with('status', 'Apparence du site mise à jour.');
@@ -255,6 +287,18 @@ class SiteAppearanceController extends Controller
         $path = $this->settings->string('site.logo_path');
 
         if ($path === '' || str_contains($path, '..') || ! str_starts_with($path, 'brand/')) {
+            return '';
+        }
+
+        return Storage::disk('public')->exists($path) ? $path : '';
+    }
+
+    /** Même contrôle pour la vidéo du diaporama, rangée sous `hero-videos/`. */
+    private function safeHeroVideoPath(): string
+    {
+        $path = $this->settings->string('site.hero_video_path');
+
+        if ($path === '' || str_contains($path, '..') || ! str_starts_with($path, 'hero-videos/')) {
             return '';
         }
 

@@ -22,6 +22,9 @@ class SaveVehicleRequest extends FormRequest
      */
     private const MAX_PHOTO_KILOS = 2048;
 
+    /** Taille maximale de la vidéo de présentation, en kilo-octets (500 Mo). */
+    private const MAX_VIDEO_KILOS = 512000;
+
     /**
      * Les rôles sont vérifiés par les middlewares de route : toute requête
      * validée ici vient déjà d'un accès autorisé.
@@ -65,6 +68,11 @@ class SaveVehicleRequest extends FormRequest
             ],
             'main_photo_id' => ['nullable', 'integer'],
             'main_photo_index' => ['nullable', 'integer', 'min:0'],
+
+            // Vidéo de présentation : une seule par véhicule, lue par le
+            // navigateur du client (MP4 ou WebM uniquement).
+            'video' => ['nullable', 'file', 'mimetypes:video/mp4,video/webm', 'max:'.self::MAX_VIDEO_KILOS],
+            'remove_video' => ['nullable', 'boolean'],
         ];
     }
 
@@ -77,6 +85,9 @@ class SaveVehicleRequest extends FormRequest
             'photos.*.image' => __('admin.photo_not_image'),
             'photos.*.mimes' => __('admin.photo_bad_format'),
             'photos.*.max' => __('admin.photo_too_heavy', ['max' => self::MAX_PHOTO_KILOS]),
+            'video.file' => __('admin.video_upload_failed'),
+            'video.mimetypes' => __('admin.video_bad_format'),
+            'video.max' => __('admin.video_too_heavy', ['max' => self::MAX_VIDEO_KILOS / 1024]),
         ];
     }
 }

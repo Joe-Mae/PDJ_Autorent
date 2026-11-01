@@ -387,6 +387,110 @@ class AdminVehicleTest extends TestCase
         $this->assertSame(0, Vehicle::query()->count());
     }
 
+    // ── Vidéo de présentation ────────────────────────────────────────────────
+
+    public function test_ajoute_un_vehicule_avec_une_video_et_l_affiche_sur_sa_fiche(): void
+    {
+        $this->actingAs($this->staff('gestionnaire'))
+            ->post('/admin/vehicules', $this->payload([
+                'video' => UploadedFile::fake()->create('presentation.mp4', 4096, 'video/mp4'),
+            ]))
+            ->assertRedirect();
+
+        $vehicle = Vehicle::query()->latest('id')->firstOrFail();
+        $video = $vehicle->vehicleVideo();
+
+        $this->assertNotNull($video);
+        $this->assertTrue(Storage::disk('fleet')->exists($video->getPathRelativeToRoot()));
+
+        $this->get('/fr/vehicules/'.$vehicle->id)
+            ->assertOk()
+            ->assertSee($video->getUrl(), escape: false)
+            ->assertSee('data-gallery-type="video"', escape: false)
+            ->assertSee('Lire la vidéo de présentation');
+    }
+
+    public function test_une_nouvelle_video_remplace_l_ancienne(): void
+    {
+        $vehicle = $this->vehicle();
+        $ancienne = $vehicle->addMedia(UploadedFile::fake()->create('ancienne.mp4', 1024, 'video/mp4'))
+            ->toMediaCollection(Vehicle::MEDIA_VIDEO, 'fleet');
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->put('/admin/vehicules/'.$vehicle->id, $this->payload([
+                'video' => UploadedFile::fake()->create('nouvelle.mp4', 1024, 'video/mp4'),
+            ]))
+            ->assertRedirect();
+
+        $videos = $vehicle->refresh()->getMedia(Vehicle::MEDIA_VIDEO);
+
+        $this->assertCount(1, $videos);
+        $this->assertStringEndsWith('-video.mp4', $videos->first()->file_name);
+        Storage::disk('fleet')->assertMissing($ancienne->getPathRelativeToRoot());
+    }
+
+    public function test_l_admin_peut_retirer_la_video_d_un_vehicule(): void
+    {
+        $vehicle = $this->vehicle();
+        $vehicle->addMedia(UploadedFile::fake()->create('presentation.mp4', 1024, 'video/mp4'))
+            ->toMediaCollection(Vehicle::MEDIA_VIDEO, 'fleet');
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->put('/admin/vehicules/'.$vehicle->id, $this->payload(['remove_video' => '1']))
+            ->assertRedirect();
+
+        $this->assertCount(0, $vehicle->refresh()->getMedia(Vehicle::MEDIA_VIDEO));
+    }
+
+    public function test_une_video_de_500_mo_est_acceptee(): void
+    {
+        $this->actingAs($this->staff('gestionnaire'))
+            ->post('/admin/vehicules', $this->payload([
+                'video' => UploadedFile::fake()->create('presentation.mp4', 512000, 'video/mp4'),
+            ]))
+            ->assertRedirect();
+
+        $vehicle = Vehicle::query()->latest('id')->firstOrFail();
+
+        $this->assertNotNull($vehicle->vehicleVideo());
+    }
+
+    public function test_une_video_au_dela_de_500_mo_est_refusee(): void
+    {
+        $this->actingAs($this->staff('gestionnaire'))
+            ->post('/admin/vehicules', $this->payload([
+                'video' => UploadedFile::fake()->create('presentation.mp4', 512001, 'video/mp4'),
+            ]))
+            ->assertSessionHasErrors('video');
+
+        $this->assertSame(0, Vehicle::query()->count());
+    }
+
+    public function test_un_fichier_qui_n_est_pas_une_video_est_refuse(): void
+    {
+        $this->actingAs($this->staff('gestionnaire'))
+            ->post('/admin/vehicules', $this->payload([
+                'video' => UploadedFile::fake()->create('contrat.pdf', 40, 'application/pdf'),
+            ]))
+            ->assertSessionHasErrors('video');
+
+        $this->assertSame(0, Vehicle::query()->count());
+    }
+
+    public function test_le_formulaire_montre_la_video_existante_et_la_case_pour_la_retirer(): void
+    {
+        $vehicle = $this->vehicle();
+        $vehicle->addMedia(UploadedFile::fake()->create('presentation.mp4', 1024, 'video/mp4'))
+            ->toMediaCollection(Vehicle::MEDIA_VIDEO, 'fleet');
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->get('/admin/vehicules/'.$vehicle->id.'/edit')
+            ->assertOk()
+            ->assertSee('name="video"', escape: false)
+            ->assertSee('name="remove_video"', escape: false)
+            ->assertSee('Vidéo de présentation');
+    }
+
     /**
      * Le parc et les tarifs appartiennent a la direction : un agent d'accueil
      * qui gere le guichet ne decide pas de ce que l'agence prete, ni a quel

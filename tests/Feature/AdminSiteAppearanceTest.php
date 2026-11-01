@@ -265,6 +265,83 @@ class AdminSiteAppearanceTest extends TestCase
         $this->assertSame(7000, $this->settings()->int('driver.solo_discount_daily_price'));
     }
 
+    public function test_manager_can_upload_a_presentation_video_that_plays_before_the_photos(): void
+    {
+        Storage::fake('public');
+        $photoPath = 'hero-slides/photo.jpg';
+        Storage::disk('public')->put($photoPath, 'photo');
+        $this->settings()->put('site.hero_uploaded_images', [$photoPath]);
+
+        $manager = $this->staff('gestionnaire');
+
+        $this->actingAs($manager)
+            ->get(route('admin.appearance.edit'))
+            ->assertOk()
+            ->assertSee('Vidéo de présentation', escape: false)
+            ->assertSee('name="hero_video"', escape: false);
+
+        $this->actingAs($manager)
+            ->post(route('admin.appearance.update'), [
+                ...$this->validPayload(),
+                'hero_video' => UploadedFile::fake()->create('presentation.mp4', 4096, 'video/mp4'),
+            ])
+            ->assertRedirect(route('admin.appearance.edit'))
+            ->assertSessionHas('status', 'Apparence du site mise à jour.');
+
+        $videoPath = $this->settings()->string('site.hero_video_path');
+        $this->assertStringStartsWith('hero-videos/', $videoPath);
+        Storage::disk('public')->assertExists($videoPath);
+
+        $html = $this->get('/fr')->assertOk()->getContent();
+        $videoPosition = strpos($html, Storage::disk('public')->url($videoPath));
+        $photoPosition = strpos($html, Storage::disk('public')->url($photoPath));
+
+        $this->assertNotFalse($videoPosition);
+        $this->assertNotFalse($photoPosition);
+        $this->assertStringContainsString('<video', $html);
+        $this->assertTrue($videoPosition < $photoPosition);
+    }
+
+    public function test_manager_can_remove_the_presentation_video(): void
+    {
+        Storage::fake('public');
+        $path = 'hero-videos/ancienne-video.mp4';
+        Storage::disk('public')->put($path, 'video');
+        $this->settings()->put('site.hero_video_path', $path);
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->post(route('admin.appearance.update'), [
+                ...$this->validPayload(),
+                'remove_hero_video' => '1',
+            ])
+            ->assertRedirect(route('admin.appearance.edit'))
+            ->assertSessionHas('status', 'Apparence du site mise à jour.');
+
+        $this->assertSame('', $this->settings()->string('site.hero_video_path'));
+        Storage::disk('public')->assertMissing($path);
+
+        $this->get('/fr')
+            ->assertOk()
+            ->assertDontSee('ancienne-video.mp4', escape: false);
+    }
+
+    public function test_a_file_that_is_not_a_video_is_rejected_for_the_slideshow(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs($this->staff('gestionnaire'))
+            ->from(route('admin.appearance.edit'))
+            ->post(route('admin.appearance.update'), [
+                ...$this->validPayload(),
+                'hero_video' => UploadedFile::fake()->create('document.pdf', 200, 'application/pdf'),
+            ])
+            ->assertRedirect(route('admin.appearance.edit'))
+            ->assertSessionHasErrors('hero_video');
+
+        $this->assertSame('', $this->settings()->string('site.hero_video_path'));
+        $this->assertSame([], Storage::disk('public')->allFiles('hero-videos'));
+    }
+
     /**
      * @param  list<int>  $heroVehicleIds
      * @return array<string, mixed>

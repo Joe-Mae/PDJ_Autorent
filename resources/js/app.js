@@ -321,6 +321,7 @@ const gallery = document.querySelector('[data-gallery]');
 
 if (gallery) {
     const main = gallery.querySelector('[data-gallery-main]');
+    const video = gallery.querySelector('[data-gallery-video]');
     const thumbs = Array.from(gallery.querySelectorAll('[data-gallery-thumb]'));
     const interval = Number(gallery.dataset.galleryInterval) || 5000;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -332,20 +333,44 @@ if (gallery) {
         if (!main || thumbs.length === 0) return;
 
         activeIndex = (index + thumbs.length) % thumbs.length;
-        main.src = thumbs[activeIndex].dataset.galleryThumb;
-        thumbs.forEach((thumb, thumbIndex) => {
-            thumb.classList.toggle('is-active', thumbIndex === activeIndex);
+
+        const thumb = thumbs[activeIndex];
+        const isVideo = thumb.dataset.galleryType === 'video';
+
+        if (video) {
+            video.hidden = !isVideo;
+            main.hidden = isVideo;
+
+            if (isVideo) {
+                video.play().catch(() => {});
+            } else {
+                video.pause();
+                main.src = thumb.dataset.galleryThumb;
+            }
+        } else {
+            main.src = thumb.dataset.galleryThumb;
+        }
+
+        thumbs.forEach((item, thumbIndex) => {
+            item.classList.toggle('is-active', thumbIndex === activeIndex);
         });
     };
 
-    const stopRotation = () => window.clearInterval(timer);
+    const stopRotation = () => window.clearTimeout(timer);
 
     const startRotation = () => {
         stopRotation();
 
         if (thumbs.length < 2 || reducedMotion || paused || document.hidden) return;
 
-        timer = window.setInterval(() => showPhoto(activeIndex + 1), interval);
+        // La vidéo se regarde : on ne passe pas à la photo suivante au bout
+        // de cinq secondes. C'est un clic sur une vignette qui reprend la main.
+        if (thumbs[activeIndex]?.dataset.galleryType === 'video') return;
+
+        timer = window.setTimeout(() => {
+            showPhoto(activeIndex + 1);
+            startRotation();
+        }, interval);
     };
 
     thumbs.forEach((thumb, index) => {
@@ -625,6 +650,16 @@ if (heroCarousel) {
             const isActive = slideIndex === activeIndex;
             slide.classList.toggle('is-active', isActive);
             slide.setAttribute('aria-hidden', String(!isActive));
+
+            // Une vidéo hors du premier plan n'a pas à tourner.
+            const video = slide.querySelector('video');
+            if (video) {
+                if (isActive) {
+                    video.play().catch(() => {});
+                } else {
+                    video.pause();
+                }
+            }
         });
 
         dots.forEach((dot, dotIndex) => {
@@ -632,8 +667,18 @@ if (heroCarousel) {
         });
     };
 
+    const slideDelay = () => {
+        const duration = slides[activeIndex]?.querySelector('video')?.duration;
+
+        // Une vidéo a besoin de son temps de lecture avant de passer à la
+        // suite : cinq secondes fixes lui couperaient la parole.
+        return Number.isFinite(duration) && duration > 0
+            ? Math.min(Math.max(duration * 1000, interval), 30000)
+            : interval;
+    };
+
     const stopRotation = () => {
-        window.clearInterval(timer);
+        window.clearTimeout(timer);
     };
 
     const startRotation = () => {
@@ -648,7 +693,10 @@ if (heroCarousel) {
             return;
         }
 
-        timer = window.setInterval(() => showSlide(activeIndex + 1), interval);
+        timer = window.setTimeout(() => {
+            showSlide(activeIndex + 1);
+            startRotation();
+        }, slideDelay());
     };
 
     if (slides.length > 1) {
@@ -681,7 +729,18 @@ if (heroCarousel) {
             startRotation();
         });
 
+        // La durée n'est connue qu'une fois les métadonnées chargées : on
+        // relance alors le minuteur pour donner à la vidéo son temps complet.
+        slides.forEach((slide) => {
+            slide.querySelector('video')?.addEventListener('loadedmetadata', () => {
+                if (slide === slides[activeIndex]) {
+                    startRotation();
+                }
+            });
+        });
+
         document.addEventListener('visibilitychange', startRotation);
+        showSlide(activeIndex);
         startRotation();
     }
 }

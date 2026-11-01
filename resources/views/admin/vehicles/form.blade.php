@@ -140,6 +140,31 @@
                         <div class="form-text mt-2">{{ __('admin.main_photo_hint') }}</div>
                     @endif
                 </div>
+
+                <div class="pdj-card mt-4">
+                    <h2 class="h6 fw-bold mb-3">{{ __('admin.video') }}</h2>
+
+                    @if ($vehicle->exists && ($video = $vehicle->vehicleVideo()))
+                        <div class="border rounded p-2 mb-3" style="max-width: 420px;">
+                            <video src="{{ $video->getUrl() }}" class="rounded mb-2 w-100" controls muted playsinline
+                                   preload="metadata" style="max-height: 220px; background: #000;"></video>
+                            <label class="form-check small mb-0">
+                                <input class="form-check-input" type="checkbox" name="remove_video" value="1"
+                                       @checked(old('remove_video'))>
+                                <span class="form-check-label">{{ __('admin.remove_video') }}</span>
+                            </label>
+                        </div>
+                    @endif
+
+                    <input type="file" class="form-control" name="video" id="videoInput"
+                           accept=".mp4,.webm,video/mp4,video/webm">
+                    <div class="form-text">{{ __('admin.video_hint') }}</div>
+                    @error('video')
+                        <div class="text-danger small mt-1" role="alert">{{ $message }}</div>
+                    @enderror
+
+                    <div id="videoPreview" class="mt-3"></div>
+                </div>
             </div>
 
             <div class="col-lg-4">
@@ -179,46 +204,68 @@
         (function () {
             const input = document.getElementById('photosInput');
             const preview = document.getElementById('photoPreview');
-            if (!input || !preview) return;
 
-            input.addEventListener('change', function () {
-                preview.innerHTML = '';
-                const files = Array.from(input.files || []);
-                files.forEach(function (file, index) {
-                    const col = document.createElement('div');
-                    col.className = 'col-6 col-md-3';
+            if (input && preview) {
+                input.addEventListener('change', function () {
+                    preview.innerHTML = '';
+                    const files = Array.from(input.files || []);
+                    files.forEach(function (file, index) {
+                        const col = document.createElement('div');
+                        col.className = 'col-6 col-md-3';
 
-                    const thumb = document.createElement('div');
-                    thumb.className = 'admin-photo-thumb';
+                        const thumb = document.createElement('div');
+                        thumb.className = 'admin-photo-thumb';
 
-                    const img = document.createElement('img');
-                    img.alt = '';
-                    img.loading = 'lazy';
-                    const url = URL.createObjectURL(file);
-                    img.src = url;
-                    thumb.appendChild(img);
+                        const img = document.createElement('img');
+                        img.alt = '';
+                        img.loading = 'lazy';
+                        const url = URL.createObjectURL(file);
+                        img.src = url;
+                        thumb.appendChild(img);
 
-                    const check = document.createElement('div');
-                    check.className = 'form-check mt-1';
-                    const radio = document.createElement('input');
-                    radio.className = 'form-check-input';
-                    radio.type = 'radio';
-                    radio.name = 'main_photo_index';
-                    radio.value = String(index);
-                    radio.id = 'main-photo-new-' + index;
-                    if (index === 0) radio.checked = true;
-                    const label = document.createElement('label');
-                    label.className = 'form-check-label small';
-                    label.htmlFor = radio.id;
-                    label.textContent = '{{ __('admin.main_photo') }}';
-                    check.appendChild(radio);
-                    check.appendChild(label);
-                    thumb.appendChild(check);
+                        const check = document.createElement('div');
+                        check.className = 'form-check mt-1';
+                        const radio = document.createElement('input');
+                        radio.className = 'form-check-input';
+                        radio.type = 'radio';
+                        radio.name = 'main_photo_index';
+                        radio.value = String(index);
+                        radio.id = 'main-photo-new-' + index;
+                        if (index === 0) radio.checked = true;
+                        const label = document.createElement('label');
+                        label.className = 'form-check-label small';
+                        label.htmlFor = radio.id;
+                        label.textContent = '{{ __('admin.main_photo') }}';
+                        check.appendChild(radio);
+                        check.appendChild(label);
+                        thumb.appendChild(check);
 
-                    col.appendChild(thumb);
-                    preview.appendChild(col);
+                        col.appendChild(thumb);
+                        preview.appendChild(col);
+                    });
                 });
-            });
+            }
+
+            const videoInput = document.getElementById('videoInput');
+            const videoPreview = document.getElementById('videoPreview');
+
+            if (videoInput && videoPreview) {
+                videoInput.addEventListener('change', function () {
+                    videoPreview.innerHTML = '';
+                    const file = videoInput.files && videoInput.files[0];
+                    if (!file) return;
+
+                    const video = document.createElement('video');
+                    video.className = 'rounded w-100';
+                    video.style.maxWidth = '420px';
+                    video.style.backgroundColor = '#000';
+                    video.controls = true;
+                    video.muted = true;
+                    video.playsInline = true;
+                    video.src = URL.createObjectURL(file);
+                    videoPreview.appendChild(video);
+                });
+            }
         })();
     </script>
 @endsection
